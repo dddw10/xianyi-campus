@@ -1,25 +1,33 @@
 <template>
-    <div class="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white">
+    <div class="min-h-screen flex flex-col bg-[var(--bg)]">
         <!-- 头部导航 -->
-        <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-white/80 border-b border-slate-200/60 shadow-sm">
+        <header class="sticky top-0 z-50 w-full backdrop-blur-xl 
+                 bg-[var(--bg-elevated)]/80 
+                 border-b border-[var(--border)] 
+                 shadow-[var(--shadow)]
+                 transition-colors duration-300">
+
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="h-16 flex items-center justify-between">
 
-                    <!-- Logo / 平台名称 -->
+                    <!-- Logo 区域 -->
                     <div class="flex items-center gap-3 cursor-pointer group" @click="router.push('/')">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                        <div class="w-8 h-8 rounded-lg 
+                      bg-gradient-to-br from-[var(--primary)] to-cyan-400 
+                      flex items-center justify-center 
+                      shadow-md group-hover:shadow-lg transition-all">
                             <el-icon class="text-[var(--bg)]" :size="18">
                                 <ShoppingBag />
                             </el-icon>
                         </div>
-                        <span
-                            class="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span class="text-lg font-bold 
+                       bg-gradient-to-r from-[var(--primary)] to-cyan-400 
+                       bg-clip-text text-transparent">
                             闲易校园
                         </span>
                     </div>
 
-                    <!-- 桌面端菜单 -->
+                    <!-- 桌面端菜单 - 优化 Element Plus 菜单样式 -->
                     <el-menu v-if="changeMode" :default-active="activeIndex" mode="horizontal" :ellipsis="false"
                         @select="handleSelect" class="flex-1 mx-8 border-none bg-transparent">
                         <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index" class="menu-item">
@@ -40,50 +48,55 @@
                         <div class="flex items-center gap-2">
                             <!-- 未登录 -->
                             <template v-if="!isLogin">
-                                <el-button type="text" class="text-slate-600 hover:text-blue-600 font-medium"
+                                <el-button type="text"
+                                    class="text-[var(--text-secondary)] hover:text-[var(--primary)] font-medium transition-colors"
                                     @click="router.push('/auth/login')">
                                     登录
                                 </el-button>
-                                <el-button
-                                    class="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-[var(--bg)] border-none shadow-md hover:shadow-lg transition-all"
-                                    size="small" @click="router.push('/auth/register')">
+                                <el-button class="bg-gradient-to-r from-[var(--primary)] to-cyan-400 
+                       hover:from-[var(--primary-hover)] hover:to-cyan-500 
+                       text-[var(--bg)] border-none shadow-md hover:shadow-lg 
+                       transition-all" size="small" @click="router.push('/auth/register')">
                                     注册
                                 </el-button>
                             </template>
 
-                            <!-- 已登录 -->
+                            <!-- 已登录 - 优化下拉触发区域 -->
                             <template v-else>
                                 <el-dropdown trigger="hover" @command="handleUserCommand">
-                                    <div
-                                        class="flex items-center gap-2 cursor-pointer hover:bg-slate-100 rounded-full px-2 py-1 transition">
+                                    <div class="flex items-center gap-2 cursor-pointer 
+                            hover:bg-[var(--card-hover)] rounded-full px-2 py-1 
+                            transition-colors">
                                         <el-avatar :size="28" class="bg-gradient-to-br from-blue-400 to-cyan-300">
                                             {{ userName?.slice(-2)?.toUpperCase() }}
                                         </el-avatar>
-                                        <span class="text-sm font-medium text-slate-700 hidden sm:inline">{{
-                                            userName
-                                            }}</span>
-                                        <el-icon class="text-slate-400">
+                                        <span class="text-sm font-medium text-[var(--text)] hidden sm:inline">
+                                            {{ userName }}
+                                        </span>
+                                        <el-icon class="text-[var(--text-tertiary)]">
                                             <ArrowDown />
                                         </el-icon>
                                     </div>
                                     <template #dropdown>
-                                        <el-dropdown-menu class="shadow-lg border-slate-200">
-                                            <el-dropdown-item command="profile" class="py-2">
-                                                <el-icon class="mr-2">
+                                        <!-- 下拉菜单 - 使用 CSS 变量适配暗黑 -->
+                                        <el-dropdown-menu class="shadow-lg border-[var(--border)] bg-[var(--card)]">
+                                            <el-dropdown-item command="profile" class="py-2 text-[var(--text)]">
+                                                <el-icon class="mr-2 text-[var(--text-tertiary)]">
                                                     <User />
                                                 </el-icon>个人中心
                                             </el-dropdown-item>
-                                            <el-dropdown-item command="orders" class="py-2">
-                                                <el-icon class="mr-2">
+                                            <el-dropdown-item command="orders" class="py-2 text-[var(--text)]">
+                                                <el-icon class="mr-2 text-[var(--text-tertiary)]">
                                                     <List />
                                                 </el-icon>我的订单
                                             </el-dropdown-item>
-                                            <el-dropdown-item command="favorites" class="py-2">
-                                                <el-icon class="mr-2">
+                                            <el-dropdown-item command="favorites" class="py-2 text-[var(--text)]">
+                                                <el-icon class="mr-2 text-[var(--text-tertiary)]">
                                                     <Star />
                                                 </el-icon>我的收藏
                                             </el-dropdown-item>
-                                            <el-dropdown-item divided command="logout" class="py-2 text-red-500">
+                                            <el-dropdown-item divided command="logout"
+                                                class="py-2 text-[var(--error)] hover:bg-[var(--card-hover)]">
                                                 <el-icon class="mr-2">
                                                     <SwitchButton />
                                                 </el-icon>退出登录
@@ -96,7 +109,7 @@
 
                         <!-- 移动端菜单按钮 -->
                         <el-icon v-if="!changeMode" :size="24"
-                            class="text-slate-600 cursor-pointer hover:text-blue-600 transition p-1"
+                            class="text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary)] transition p-1"
                             @click="mobileMenuVisible = true">
                             <Menu />
                         </el-icon>
@@ -115,15 +128,6 @@
                         <Close />
                     </el-icon>
                 </div>
-
-                <!-- 移动端搜索 -->
-                <!-- <div class="flex items-center bg-slate-100 rounded-full px-4 py-2 mb-6">
-                    <el-icon class="text-slate-400">
-                        <Search />
-                    </el-icon>
-                    <input type="text" placeholder="搜索商品..."
-                        class="bg-transparent border-none outline-none px-2 text-sm flex-1 placeholder-slate-400">
-                </div> -->
 
                 <!-- 移动端菜单项 -->
                 <nav class="space-y-1">
@@ -150,7 +154,7 @@
                                 {{ userName?.[0]?.toUpperCase() }}
                             </el-avatar>
                             <div>
-                                <div class="font-medium text-slate-700">{{ userName }}</div>
+                                <div class="font-medium text-slate-400">{{ userName }}</div>
                                 <el-button type="text" size="small" class="text-red-500"
                                     @click="handleLogout">退出登录</el-button>
                             </div>
@@ -264,21 +268,22 @@ const handleLogout = () => {
 };
 </script>
 
+
 <style scoped>
-/* 修复自定义高度 */
-.h-80px {
-    height: 80px;
+/* ✅ 添加 transition 让主题切换更平滑 */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
-/* Element Plus 菜单样式优化 */
+/* Element Plus 菜单 - 暗黑模式适配 */
 :deep(.el-menu--horizontal) {
     border-bottom: none !important;
+    background: transparent !important;
 }
 
 :deep(.menu-item) {
     border: none !important;
-    color: #475569 !important;
-    /* slate-600 */
+    color: var(--text-secondary) !important;
     font-weight: 500;
     transition: all 0.2s ease;
 }
@@ -286,34 +291,99 @@ const handleLogout = () => {
 :deep(.menu-item:hover),
 :deep(.menu-item.is-active) {
     background: transparent !important;
-    color: #2563eb !important;
-    /* blue-600 */
+    color: var(--primary) !important;
 }
 
 :deep(.el-menu-item [class^="el-icon"]) {
     margin-right: 4px;
     vertical-align: middle;
+    color: inherit;
 }
 
-/* 下拉菜单样式 */
+/* 下拉菜单 - 关键：使用 CSS 变量 */
+:deep(.el-dropdown-menu) {
+    background: var(--card) !important;
+    border-color: var(--border) !important;
+}
+
 :deep(.el-dropdown-menu__item) {
     padding: 8px 16px !important;
     font-size: 14px;
+    color: var(--text) !important;
 }
 
 :deep(.el-dropdown-menu__item:hover) {
-    background: #f1f5f9 !important;
-    /* slate-100 */
-    color: #2563eb !important;
+    background: var(--card-hover) !important;
+    color: var(--primary) !important;
+}
+
+:deep(.el-dropdown-menu__item.is-disabled) {
+    color: var(--text-tertiary) !important;
+}
+
+:deep(.el-dropdown-menu__item.divided) {
+    border-color: var(--border) !important;
 }
 
 :deep(.el-dropdown-menu__item i) {
     font-size: 16px;
+    color: var(--text-tertiary);
 }
 
-/* 移动端抽屉样式 */
+/* 移动端抽屉 - 暗黑适配 */
+:deep(.mobile-menu .el-drawer) {
+    background: var(--bg-elevated) !important;
+    border-left: 1px solid var(--border);
+}
+
 :deep(.mobile-menu .el-drawer__body) {
     padding: 0;
-    background: #fff;
+    background: var(--bg-elevated);
+    color: var(--text);
+}
+
+:deep(.mobile-menu .el-icon) {
+    color: var(--text-secondary);
+}
+
+:deep(.mobile-menu .el-icon:hover) {
+    color: var(--primary);
+}
+
+/* 按钮 - 统一暗黑样式 */
+:deep(.el-button) {
+    transition: all 0.2s ease;
+}
+
+:deep(.el-button--text) {
+    color: var(--text-secondary);
+}
+
+:deep(.el-button--text:hover) {
+    color: var(--primary);
+}
+
+/* 输入框/搜索框暗黑适配（如果后续添加） */
+:deep(.el-input__wrapper) {
+    background: var(--input-bg) !important;
+    box-shadow: 0 0 0 1px var(--input-border) inset !important;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+    box-shadow: 0 0 0 1px var(--input-focus) inset !important;
+}
+
+:deep(.el-input__inner) {
+    color: var(--text) !important;
+}
+
+:deep(.el-input__inner::placeholder) {
+    color: var(--text-tertiary) !important;
+}
+
+/* Avatar 文字颜色适配 */
+:deep(.el-avatar) {
+    color: var(--bg) !important;
+    font-weight: 600;
 }
 </style>

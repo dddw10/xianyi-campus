@@ -11,6 +11,7 @@ import App from './App.vue'
 import router from './router'
 import 'element-plus/es/components/message/style/css'
 import './style/theme.scss'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import './style/global.scss'
 import 'virtual:uno.css'
 

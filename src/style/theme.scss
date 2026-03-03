@@ -1,29 +1,103 @@
+/* ============ 亮色模式 ============ */
 :root {
+    /* 品牌色 */
     --primary: #3b82f6;
-    --bg: #ffffff;
-    --text: #1a1a1a;
-    --border: #e5e7eb;
-    --card: #f9fafb;
-    /* 亮色：超浅蓝渐变 */
-    --page-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-}
+    --primary-hover: #2563eb;
+    --primary-light: #dbeafe;
 
-[data-theme="dark"] {
-    --primary: #60a5fa;
-    --bg: #121212;
-    --text: #f3f4f6;
-    --border: #374151;
-    --card: #1f2937;
-    /* 暗黑：浅灰蓝渐变 */
-    --page-bg: linear-gradient(135deg, #1e1b4b 0%, #334155 100%);
-}
+    /* 基础色 */
+    --bg: #f8fafc;
+    /* slate-50，比纯白更柔和 */
+    --bg-elevated: #ffffff;
+    /* 卡片/弹窗背景 */
+    --text: #0f172a;
+    /* slate-900 */
+    --text-secondary: #475569;
+    /* slate-600 */
+    --text-tertiary: #94a3b8;
+    /* slate-400 */
 
-[data-theme="campus"] {
-    --primary: #10b981;
-    --bg: #f0fdf4;
-    --text: #1f2937;
-    --border: #bbf7d0;
+    /* 边框/分割线 */
+    --border: #e2e8f0;
+    /* slate-200 */
+    --border-light: #f1f5f9;
+    /* slate-100 */
+
+    /* 卡片/悬浮层 */
     --card: #ffffff;
-    /* 校园绿：超浅绿渐变 */
-    --page-bg: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    --card-hover: #f8fafc;
+    --shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+    --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1);
+
+    /* 页面背景渐变 */
+    --page-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+
+    /* 状态色 */
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+
+    /* 输入框/表单 */
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-focus: #3b82f6;
+
+    /* 亮色模式：柔和紫蓝渐变（保持你原有的美学） */
+    --auth-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    /* 卡片悬浮/次级背景 */
+    --bg-elevated: #ffffff;
+}
+
+/* ============ 暗黑模式 ============ */
+/* ✅ 关键：使用 html.dark 选择器，与 Element Plus 保持一致 */
+html.dark {
+    /* 品牌色（稍降低饱和度，避免刺眼） */
+    --primary: #60a5fa;
+    --primary-hover: #93c5fd;
+    --primary-light: #1e3a5f;
+
+    /* 基础色 - 使用深蓝灰，避免纯黑 */
+    --bg: #0f172a;
+    /* slate-900 */
+    --bg-elevated: #1e293b;
+    /* slate-800，卡片背景 */
+    --text: #f1f5f9;
+    /* slate-100 */
+    --text-secondary: #94a3b8;
+    /* slate-400 */
+    --text-tertiary: #64748b;
+    /* slate-500 */
+
+    /* 边框 - 使用低透明度白色，更有层次感 */
+    --border: #334155;
+    /* slate-700 */
+    --border-light: #1e293b;
+    /* slate-800 */
+
+    /* 卡片/悬浮层 */
+    --card: #1e293b;
+    --card-hover: #334155;
+    --shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+
+    /* 页面背景渐变 - 深邃但不压抑 */
+    --page-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+
+    /* 状态色（降低亮度，避免刺眼） */
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+
+    /* 输入框/表单 */
+    --input-bg: #1e293b;
+    --input-border: #475569;
+    --input-focus: #60a5fa;
+
+    /* 暗黑模式：深邃蓝紫渐变（降低亮度，避免刺眼） */
+    --auth-bg: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+
+    /* 暗黑模式下卡片比页面背景稍亮，形成层级 */
+    --bg-elevated: #334155;
+    /* slate-700 */
 }

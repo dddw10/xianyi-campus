@@ -1,26 +1,23 @@
 <template>
-    <div>
-        <el-switch v-model="isDark" inline-prompt active-text="☀️" inactive-text="🌙" @change="changeTheme">
-            <!-- Element Plus 2.2+ 已废弃 action 插槽，直接用 text -->
-        </el-switch>
-    </div>
+    <el-switch v-model="isDark" inline-prompt active-text="🌙" inactive-text="☀️" @change="changeTheme" />
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watchEffect, isRef } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
 const { current, setTheme } = useTheme()
-// current 是 ref，使用 .value 初始化 isDark
-const isDark = ref(current === 'dark')
 
-// 监听 current 的 value 变化
-watch(() => current, (newTheme) => {
-    isDark.value = newTheme === 'dark'
+// 初始化 isDark，兼容 current 是 Ref 或 普通字符串
+const isDark = ref(isRef(current) ? current.value === 'dark' : current === 'dark')
+
+// 使用 watchEffect 来正确响应 current 的变化（如果 current 是 ref）
+watchEffect(() => {
+    isDark.value = isRef(current) ? current.value === 'dark' : current === 'dark'
 })
 
-// 接收 Element Plus switch 可能传入的 string | number | boolean
-const changeTheme = (val: string | number | boolean) => {
+// Element Plus switch 可能传入 boolean | string | number
+const changeTheme = (val: boolean | string | number) => {
     const isDarkMode = Boolean(val)
     setTheme(isDarkMode ? 'dark' : 'light')
 }
