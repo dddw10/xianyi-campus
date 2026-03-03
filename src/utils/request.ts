@@ -51,8 +51,9 @@ request.interceptors.response.use(
         }
 
         // 显示的错误提示
-        let message = '网络不给力，请稍后重试'
-        if (error.response) {
+        let message = error.response?.data?.msg
+
+        if (!message && error.response) {
             switch (error.response.status) {
                 case 400:
                     message = '请求参数错误'
@@ -70,13 +71,20 @@ request.interceptors.response.use(
                     message = '服务器开小差了'
                     break
                 default:
-                    message = error.response.data?.msg || '请求失败'
+                    message = '请求失败'
             }
-        } else if (error.request) {
-            // 请求发出去了，但是没有收到响应
-            message = '网络连接失败'
         }
-        ElMessage.error(message)
+        // 如果还是没有 message（比如网络错误）
+        if (!message) {
+            message = error.request
+                ? '网络连接失败，请检查网络设置'
+                : (error.message || '未知错误')
+        }
+
+        ElMessage.error({
+            message,
+            duration: 3000,
+        })
         return Promise.reject(error)
     }
 )
