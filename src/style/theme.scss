@@ -1,0 +1,29 @@
+:root {
+    --primary: #3b82f6;
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    /* 亮色：超浅蓝渐变 */
+    --page-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+[data-theme="dark"] {
+    --primary: #60a5fa;
+    --bg: #121212;
+    --text: #f3f4f6;
+    --border: #374151;
+    --card: #1f2937;
+    /* 暗黑：浅灰蓝渐变 */
+    --page-bg: linear-gradient(135deg, #1e1b4b 0%, #334155 100%);
+}
+
+[data-theme="campus"] {
+    --primary: #10b981;
+    --bg: #f0fdf4;
+    --text: #1f2937;
+    --border: #bbf7d0;
+    --card: #ffffff;
+    /* 校园绿：超浅绿渐变 */
+    --page-bg: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
