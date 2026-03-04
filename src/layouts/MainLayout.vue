@@ -201,7 +201,7 @@ const menuItems = [
     { index: '/', label: '首页', icon: HomeFilled },
     { index: '/products', label: '商品', icon: Goods },
     { index: '/chat', label: '聊天', icon: ChatDotRound },
-    { index: '/publish', label: '发布', icon: Plus },
+    { index: '/products/create', label: '发布', icon: Plus },
 ];
 
 const changeMode = computed(() => width.value > 768);
@@ -218,7 +218,7 @@ watch(
             : newPath || '/'
 
         // 菜单配置（和之前一样）
-        const menuPaths = ['/', '/products', '/chat', '/publish']
+        const menuPaths = ['/', '/products', '/chat', '/products/create']
 
         // 如果当前主路径在菜单中，更新 activeIndex
         if (menuPaths.includes(mainPath)) {

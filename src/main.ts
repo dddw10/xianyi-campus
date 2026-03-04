@@ -3,6 +3,7 @@
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { useUserStore } from '@/stores/modules/user'
 import { useTheme } from "@/composables/useTheme";
 import { registerGlobalComponents } from "@/plugins/components";//注册全局组件
 import { setupModalBox } from "./plugins/modalBox";
@@ -22,5 +23,8 @@ app.use(router)
 useTheme().init()
 registerGlobalComponents(app)
 setupModalBox(app)
+
+const userStore = useUserStore()
+userStore.init()
 
 app.mount('#app')

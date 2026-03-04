@@ -1,7 +1,6 @@
 import { createApp, h } from "vue";
 import modalMessage from "@/components/messageBox/modalMessage.vue";
 import type { Props as ModalProps } from "@/components/messageBox/modalMessage.vue";
-import { isVisible } from "element-plus/es/utils/index.mjs";
 
 export interface ModalBoxOptions extends Omit<ModalProps, 'visible'> {
     // 扩展
