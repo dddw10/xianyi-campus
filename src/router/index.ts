@@ -31,7 +31,7 @@ const routes: RouteRecordRaw[] = [
     name: 'main',
     component: () => import('@/layouts/MainLayout.vue'),
     redirect: { name: 'home' },
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
     children: [
       {
         path: 'home',
@@ -68,6 +68,16 @@ const routes: RouteRecordRaw[] = [
         name: 'products-detail',
         component: () => import('@/views/products/products-detail/index.vue'),
         meta: { title: '商品详情', public: true }
+      },
+      {
+        path: ':pathMatch(.*)*',  // 匹配 /products/xxx 任意子路径
+        name: 'products-protected',
+        component: () => import('@/layouts/MainLayout.vue'),  // 占位布局
+        meta: {
+          requiresAuth: true,  // ✅ 标记需要登录，进入守卫逻辑
+          title: '加载中...',
+          isDynamicPlaceholder: true  // ✅ 自定义标记，用于识别
+        }
       }
     ]
   },

@@ -2,31 +2,43 @@
 <template>
     <div class="image-upload-container">
 
-        <!-- 图片预览列表 -->
+        <!-- 🔥 图片预览列表（横向排列） -->
         <div class="image-list" v-if="imageList.length > 0">
             <div v-for="(img, index) in imageList" :key="img" class="image-item">
+                <!-- 图片预览 -->
                 <img :src="img" class="image-preview" @click="previewImage(img)" alt="preview" />
-                <el-icon class="delete-btn" @click.stop="removeImage(index)">
-                    <Close />
-                </el-icon>
-                <div v-if="index === 0" class="main-tag">主图</div>
+
+                <!-- 删除按钮（hover 显示） -->
+                <div class="delete-overlay" @click.stop="removeImage(index)">
+                    <el-icon class="text-white text-lg">
+                        <Close />
+                    </el-icon>
+                </div>
+
+                <!-- 主图标记 -->
+                <div v-if="index === 0" class="main-tag">
+                    <el-icon class="mr-1">
+                        <Star />
+                    </el-icon>
+                    首图
+                </div>
             </div>
         </div>
 
-        <!-- 上传区域 -->
+        <!-- 🔥 上传区域（虚线框样式，横向排列） -->
         <el-upload v-if="imageList.length < limit" :action="uploadUrl" :headers="headers" :before-upload="beforeUpload"
             :on-success="handleSuccess" :on-error="handleError" :show-file-list="false" accept="image/*"
-            class="upload-btn">
-            <el-button type="primary" :disabled="imageList.length >= limit">
-                <el-icon class="mr-1">
+            class="upload-area">
+            <div class="upload-placeholder">
+                <el-icon class="upload-icon">
                     <Plus />
                 </el-icon>
-                上传图片
-            </el-button>
+                <span class="upload-text">添加首图</span>
+            </div>
         </el-upload>
 
         <!-- 预览对话框 -->
-        <el-dialog v-model="previewVisible" :width="800">
+        <el-dialog v-model="previewVisible" :width="800" class="image-preview-dialog">
             <img :src="previewUrl" class="preview-full" alt="preview" />
         </el-dialog>
     </div>
@@ -35,7 +47,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Close } from '@element-plus/icons-vue'
+import { Plus, Close, Star } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { modalBox } from "@/components/messageBox/modalBox"
 
@@ -64,7 +76,7 @@ const headers = computed(() => ({
     Authorization: `Bearer ${userStore.token}`
 }))
 
-// 🔹 监听 props 变化（父组件/Pinia 更新时同步）
+// 🔹 监听 props 变化
 watch(() => props.modelValue, (newVal) => {
     if (JSON.stringify(newVal) !== JSON.stringify(imageList.value)) {
         imageList.value = [...newVal]
@@ -88,7 +100,6 @@ const handleSuccess = (response: any) => {
 
         if (imageUrl) {
             imageList.value.push(imageUrl)
-            // ✅ 关键：emit 给父组件（父组件会同步到 Pinia）
             emit('update:modelValue', [...imageList.value])
             ElMessage.success('上传成功')
         } else {
@@ -115,7 +126,6 @@ const removeImage = (index: number) => {
     }).then((result: boolean) => {
         if (result) {
             imageList.value.splice(index, 1)
-            // ✅ 关键：emit 给父组件
             emit('update:modelValue', [...imageList.value])
             ElMessage.success('删除成功')
         }
@@ -130,33 +140,44 @@ const previewImage = (url: string) => {
 </script>
 
 <style scoped>
-/* 样式保持不变，略 */
+/* 🔥 容器 */
 .image-upload-container {
     display: flex;
-    flex-direction: column;
     gap: 12px;
 }
 
+/* 🔥 图片列表（横向排列） */
 .image-list {
     display: flex;
     gap: 12px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    /* 不换行 */
+    overflow-x: auto;
+    /* 超出可滚动 */
+    padding-bottom: 4px;
 }
 
+/* 🔥 图片项 - 默认小屏 80px */
 .image-item {
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    /* 不收缩 */
     border-radius: 8px;
     overflow: hidden;
-    border: 2px solid var(--el-border-color);
+    border: 2px solid var(--el-border-color-lighter);
+    background: var(--el-fill-color-blank);
+    transition: all 0.3s ease;
 }
 
 .image-item:hover {
     border-color: var(--el-color-primary);
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(var(--el-color-primary-rgb), 0.15);
+    transform: translateY(-2px);
 }
 
+/* 🔥 图片预览 */
 .image-preview {
     width: 100%;
     height: 100%;
@@ -164,118 +185,154 @@ const previewImage = (url: string) => {
     cursor: pointer;
 }
 
-.delete-btn {
+/* 🔥 删除遮罩层 */
+.delete-overlay {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border-radius: 50%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
     cursor: pointer;
-    z-index: 1;
+    z-index: 2;
 }
 
-.delete-btn:hover {
-    background: rgba(239, 68, 68, 0.9);
+.image-item:hover .delete-overlay {
+    opacity: 1;
+}
+
+.delete-overlay:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* 🔥 主图标记（缩小版） */
+.main-tag {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: linear-gradient(135deg, var(--el-color-warning) 0%, var(--el-color-warning-light-3) 100%);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 3;
+}
+
+.main-tag .el-icon {
+    font-size: 10px;
+    margin-right: 2px;
+}
+
+/* 🔥 上传区域（虚线框）- 默认小屏 80px */
+.upload-area {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.upload-area :deep(.el-upload) {
+    width: 100%;
+    height: 100%;
+}
+
+.upload-placeholder {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed var(--el-border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--el-fill-color-blank);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-placeholder:hover {
+    border-color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+}
+
+.upload-icon {
+    font-size: 20px;
+    color: var(--el-color-primary);
+    transition: transform 0.3s ease;
+}
+
+.upload-placeholder:hover .upload-icon {
     transform: scale(1.1);
 }
 
-.main-tag {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: var(--el-color-warning);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    z-index: 1;
+.upload-text {
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
 }
 
+/* 🔥 预览对话框 */
 .preview-full {
     width: 100%;
     max-height: 80vh;
     object-fit: contain;
+    border-radius: 8px;
+}
+
+/* 🔥 响应式：768px 以上改为 120px */
+@media (min-width: 768px) {
+
+    .image-item,
+    .upload-area {
+        width: 120px;
+        height: 120px;
+    }
+
+    .upload-icon {
+        font-size: 28px;
+    }
+
+    .upload-text {
+        font-size: 13px;
+    }
+
+    .main-tag {
+        top: 6px;
+        left: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+
+    .main-tag .el-icon {
+        font-size: 11px;
+        margin-right: 3px;
+    }
 }
 </style>
 
-<style scoped>
-.image-upload-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.image-list {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.image-item {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid var(--el-border-color);
-    transition: all 0.3s;
-}
-
-.image-item:hover {
-    border-color: var(--el-color-primary);
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.image-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    cursor: pointer;
-}
-
-.delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border-radius: 50%;
+<!-- ✅ 对话框全局样式 -->
+<style>
+.image-preview-dialog .el-dialog__body {
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    z-index: 1;
+    background: rgba(0, 0, 0, 0.9);
 }
 
-.delete-btn:hover {
-    background: rgba(239, 68, 68, 0.9);
-    transform: scale(1.1);
-}
-
-.main-tag {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: var(--el-color-warning);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    z-index: 1;
-}
-
-.preview-full {
-    width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
+.image-preview-dialog .el-dialog__header {
+    display: none;
 }
 </style>

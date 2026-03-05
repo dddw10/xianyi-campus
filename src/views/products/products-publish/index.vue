@@ -1,51 +1,111 @@
 <!-- src/views/products/products-publish/index.vue -->
 <template>
-    <div class="publish-container">
-        <h2 class="page-title">发布商品</h2>
+    <div class="w-90% md:w-60% my-4 md:m-auto ">
 
-        <el-form :model="formData" :rules="rules" ref="formRef" label-width="100px" class="publish-form">
-            <!-- 商品名称 -->
-            <el-form-item label="商品名称" prop="title">
-                <el-input v-model="formData.title" placeholder="请输入商品名称" maxlength="50" show-word-limit />
-            </el-form-item>
+        <!-- 🔥 页面容器：居中 + 内边距 + 主题背景 -->
+        <div class="bg-$el-bg-color p-6 sm:p-8 rounded-2xl shadow-lg border border-$el-border-color-light">
 
-            <!-- 商品价格 -->
-            <el-form-item label="商品价格" prop="price">
-                <el-input-number v-model="formData.price" :min="0" :precision="2" :step="0.01" />
-                <span class="price-unit">元</span>
-            </el-form-item>
 
-            <!-- 商品分类 -->
-            <el-form-item label="商品分类" prop="category">
-                <el-select v-model="formData.category" placeholder="请选择分类" style="width: 200px">
-                    <el-option label="数码产品" value="数码" />
-                    <el-option label="图书教材" value="图书" />
-                    <el-option label="生活用品" value="生活" />
-                    <el-option label="服饰鞋包" value="服饰" />
-                    <el-option label="其他" value="其他" />
-                </el-select>
-            </el-form-item>
+            <!-- <div class=" bg-$el-fill-color-blank py-8 px-4 rounded-2xl"> -->
+            <div class="max-w-2xl mx-auto">
 
-            <!-- 商品描述 -->
-            <el-form-item label="商品描述" prop="description">
-                <el-input v-model="formData.description" type="textarea" :rows="4" placeholder="请描述商品成色、使用情况等"
-                    maxlength="500" show-word-limit />
-            </el-form-item>
+                <!-- 🔥 标题区域 -->
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-$el-text-color-primary">
+                        发闲置
+                    </h2>
+                    <p class="mt-2 text-sm text-$el-text-color-secondary">
+                        填写以下信息，让你的闲置快速找到新主人 ✨
+                    </p>
+                </div>
 
-            <!-- 🔥 商品图片（v-model 绑定 Pinia 数据） -->
-            <el-form-item label="商品图片" prop="images">
-                <AdvancedImageUpload v-model="formData.images" :limit="3" />
-                <div class="upload-tip">最多上传 3 张图片，第一张将作为主图展示</div>
-            </el-form-item>
+                <!-- 📦 区块 1：商品图片 -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="w-1 h-4 bg-$el-color-primary rounded-full"></span>
+                        <h3 class="text-base font-semibold text-$el-text-color-primary">商品图片</h3>
+                        <el-tag size="small" type="info" effect="plain" class="ml-auto">最多 3 张</el-tag>
+                    </div>
+                    <AdvancedImageUpload v-model="formData.images" :limit="3" />
+                    <p class="mt-2 text-xs text-$el-text-color-secondary flex items-center gap-1">
+                        <el-icon>
+                            <InfoFilled />
+                        </el-icon>
+                        第一张图片将作为主图展示
+                    </p>
+                </div>
 
-            <!-- 提交按钮 -->
-            <el-form-item>
-                <el-button type="primary" :loading="submitting" @click="handleSubmit" size="large">
-                    立即发布
-                </el-button>
-                <el-button @click="handleReset" size="large">重置</el-button>
-            </el-form-item>
-        </el-form>
+                <!-- 📦 区块 2：基础信息 -->
+                <div class="mb-8 pb-8 border-b border-$el-border-color-light">
+                    <div class="flex items-center gap-2 mb-5">
+                        <span class="w-1 h-4 bg-$el-color-primary rounded-full"></span>
+                        <h3 class="text-base font-semibold text-$el-text-color-primary">基础信息</h3>
+                    </div>
+
+                    <el-form :model="formData" :rules="rules" ref="formRef" label-width="100px" label-position="left"
+                        class="space-y-5">
+                        <!-- 商品名称 -->
+                        <el-form-item label="商品名称" prop="title">
+                            <el-input v-model="formData.title" placeholder="如：二手 华为 123123mate70 Pro 标准版" maxlength="50"
+                                show-word-limit class="w-full" type="textarea" :autosize="{ minRows: 1, maxRows: 4 }" />
+                        </el-form-item>
+
+                        <!-- 价格 + 分类（并排布局） -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <el-form-item label="商品价格" prop="price" class="mb-0">
+                                <div class="flex items-center">
+                                    <el-input-number v-model="formData.price" :min="0" :precision="2" :step="0.01"
+                                        placeholder="0.00" class="w-full" />
+                                    <span class="ml-3 text-$el-text-color-secondary font-medium">元</span>
+                                </div>
+                            </el-form-item>
+
+                            <el-form-item label="商品分类" prop="category" class="mb-0">
+                                <el-select v-model="formData.category" placeholder="请选择" class="w-full">
+                                    <el-option label="📱 数码产品" value="数码" />
+                                    <el-option label="📚 图书教材" value="图书" />
+                                    <el-option label="🏠 生活用品" value="生活" />
+                                    <el-option label="👕 服饰鞋包" value="服饰" />
+                                    <el-option label="🎁 其他" value="其他" />
+                                </el-select>
+                            </el-form-item>
+                        </div>
+
+                        <!-- 商品描述 -->
+                        <el-form-item label="商品描述" prop="description">
+                            <el-input v-model="formData.description" type="textarea" :rows="4"
+                                placeholder="• 购买时间和渠道&#10;• 使用情况和新旧程度&#10;• 有无瑕疵或维修史&#10;• 包含的配件或赠品" maxlength="500"
+                                show-word-limit class="w-full resize-none" />
+                        </el-form-item>
+                    </el-form>
+                </div>
+
+                <!-- 🔥 提交按钮区域 -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                    <el-button @click="handleReset" size="large"
+                        class="px-10 py-6 rounded-xl font-medium border-$el-border-color text-$el-text-color-regular hover:bg-$el-fill-color-light hover:-translate-y-0.5 transition-all duration-200">
+                        <el-icon class="mr-1">
+                            <Refresh />
+                        </el-icon>
+                        重置
+                    </el-button>
+                    <el-button type="primary" :loading="submitting" @click="handleSubmit" size="large"
+                        class="px-10 py-6 rounded-xl font-medium bg-$el-color-primary border-$el-color-primary hover:bg-$el-color-primary-dark-2 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                        <el-icon class="mr-1">
+                            <UploadFilled />
+                        </el-icon>
+                        {{ submitting ? '发布中...' : '立即发布' }}
+                    </el-button>
+                </div>
+
+            </div>
+
+            <!-- 🔥 底部提示 -->
+            <p class="text-center mt-6 text-sm text-$el-text-color-secondary">
+                发布后请保持在线，方便买家联系您 🎯
+            </p>
+
+        </div>
     </div>
 </template>
 
@@ -55,23 +115,23 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
-import { usePublishStore } from '@/stores/modules/publish'  // ✅ 导入 Pinia Store
-
+import { usePublishStore } from '@/stores/modules/publish'
 import AdvancedImageUpload from '@/components/AdvanceImageUpload.vue'
+import { Refresh, UploadFilled } from "@element-plus/icons-vue";
 
 const router = useRouter()
 const userStore = useUserStore()
-const publishStore = usePublishStore()  // ✅ 获取 Store 实例
+const publishStore = usePublishStore()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 
-// 🔥 关键：formData 用 computed 绑定到 Pinia（双向同步）
+// formData 用 computed 绑定到 Pinia（双向同步）
 const formData = computed({
     get: () => publishStore.formData,
     set: (val) => publishStore.updateForm(val)
 })
 
-// 🔹 表单验证规则
+// 表单验证规则
 const rules: FormRules = {
     title: [
         { required: true, message: '请输入商品名称', trigger: 'blur' },
@@ -89,7 +149,7 @@ const rules: FormRules = {
     ]
 }
 
-// 🔹 提交表单
+// 提交表单
 const handleSubmit = async () => {
     if (!formRef.value) return
 
@@ -109,7 +169,7 @@ const handleSubmit = async () => {
                     price: formData.value.price,
                     category: formData.value.category,
                     description: formData.value.description,
-                    images: formData.value.images  // ✅ 从 Pinia 读取图片列表
+                    images: formData.value.images
                 })
             })
 
@@ -117,7 +177,7 @@ const handleSubmit = async () => {
 
             if (result.code === 201) {
                 ElMessage.success('发布成功')
-                publishStore.resetForm()  // ✅ 发布成功后重置 Pinia 数据
+                publishStore.resetForm()
                 router.push('/products')
             } else {
                 ElMessage.error(result.msg || '发布失败')
@@ -131,51 +191,22 @@ const handleSubmit = async () => {
     })
 }
 
-// 🔹 重置表单
+// 重置表单
 const handleReset = () => {
     formRef.value?.resetFields()
-    publishStore.resetForm()  // ✅ 重置 Pinia 数据
+    publishStore.resetForm()
 }
 </script>
 
-<style scoped>
-.publish-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
+<!-- ✅ 可选：保留少量全局样式（用于 :deep 选择器） -->
+<style>
+/* Element Plus 表单标签加粗 */
+.el-form-item__label {
+    @apply font-medium;
 }
 
-.page-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    text-align: center;
-    color: var(--el-text-color-primary);
-}
-
-.price-unit {
-    margin-left: 10px;
-    color: var(--el-text-color-secondary);
-}
-
-.upload-tip {
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-}
-
-.publish-form {
-    background: var(--el-bg-color);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-:deep(.el-form-item__label) {
-    font-weight: 500;
-}
-
-:deep(.el-input-number) {
-    width: 200px;
+/* 输入框宽度统一 */
+.el-input-number {
+    @apply w-[200px];
 }
 </style>
