@@ -10,7 +10,9 @@ export const useUserStore = defineStore('user', {
         token: getToken() || '',
         userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}'),
         routes: JSON.parse(localStorage.getItem('routes') || '[]'),
-        permissions: JSON.parse(localStorage.getItem('permissions') || '{}')
+        permissions: JSON.parse(localStorage.getItem('permissions') || '{}'),
+        role: localStorage.getItem('userRole') || 'user',  // 'user' | 'admin'
+        userPermissions: JSON.parse(localStorage.getItem('userPermissions') || '[]')  // 细粒度权限数组
     }),
 
     getters: {
@@ -18,7 +20,8 @@ export const useUserStore = defineStore('user', {
         isVerified: (state) => state.userInfo.isVerified || false,
         isAdmin: (state) => state.userInfo.role === 'admin',
         canPost: (state) => state.permissions.canPost || false,
-        requireVerification: (state) => state.permissions.requireVerification || false
+        requireVerification: (state) => state.permissions.requireVerification || false,
+        hasPermission: (state) => (perm: string) => state.userPermissions?.includes(perm)  // 新增：细粒度权限检查
     },
 
     actions: {
@@ -30,16 +33,25 @@ export const useUserStore = defineStore('user', {
         },
 
         async setUserInfo(data: any) {
+            // 1. 保存基础数据
             this.token = data.token
             this.userInfo = data.user
             this.routes = data.routes || []
             this.permissions = data.permissions || {}
 
+            // 🔥 2. 保存角色和细粒度权限（管理员专用）
+            this.role = data.user?.role || 'user'
+            this.userPermissions = data.permissions?.permissions || []
+
+            // 3. 持久化到 localStorage
             setToken(data.token)
             localStorage.setItem('userInfo', JSON.stringify(data.user))
             localStorage.setItem('routes', JSON.stringify(data.routes))
             localStorage.setItem('permissions', JSON.stringify(data.permissions))
+            localStorage.setItem('userRole', this.role)  // 🔥 新增
+            localStorage.setItem('userPermissions', JSON.stringify(this.userPermissions))  // 🔥 新增
 
+            // 4. 加载动态路由
             await this.loadDynamicRoutes()
         },
 
@@ -66,6 +78,7 @@ export const useUserStore = defineStore('user', {
         },
 
         async logout() {
+            // 1. 清理动态路由
             const routeNames = (this.routes || [])
                 .map((r: any) => r?.name)
                 .filter((name: any): name is string => typeof name === 'string' && name.length > 0)
@@ -74,17 +87,25 @@ export const useUserStore = defineStore('user', {
                 removeDynamicRoutes(routeNames)
             }
 
+            // 2. 清空所有状态
             this.token = ''
             this.userInfo = {}
             this.routes = []
             this.permissions = {}
+            this.role = 'user'  // 🔥 重置角色
+            this.userPermissions = []  // 🔥 重置权限
 
+            // 3. 清理存储
             removeToken()
             localStorage.removeItem('userInfo')
             localStorage.removeItem('routes')
             localStorage.removeItem('permissions')
+            localStorage.removeItem('userRole')  // 🔥 新增
+            localStorage.removeItem('userPermissions')  // 🔥 新增
 
-            router.push({ name: 'login' })
+            // 4. 根据角色跳转到对应登录页
+            const redirectPath = this.role === 'admin' ? '/admin/login' : '/auth/login'
+            router.push({ path: redirectPath })
         },
 
         hasPermission(permission: string) {

@@ -11,6 +11,15 @@ const authApi = {
         return request.post('/api/auth/login', data)
     },
 
+    // 🔥 新增：管理员登录
+    adminLogin(data: { username: string; password: string }) {
+        return request({
+            url: '/api/admin/login',  // 🔥 管理员登录接口路径
+            method: 'post',
+            data
+        })
+    },
+
     // 提交身份验证
     submitVerification(data: any) {
         return request.post('/api/auth/verify', data)
