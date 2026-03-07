@@ -19,6 +19,40 @@ const adminApi = {
         return request.get(`/api/admin/users/${userId}`)
     },
 
+    // 获取审核列表
+    getLoadPendingProducts(params: any) {
+        return request({
+            url: '/api/admin/products/pending',
+            method: 'get',
+            params
+        })
+    },
+
+    // 审核单个商品
+    reviewSingleProduct(productId: number, action: 'approve' | 'reject', reason?: string) {
+        return request({
+            url: `/api/admin/products/${productId}/review`,
+            method: 'put',
+            data: {
+                action,
+                reason: action === 'reject' ? reason : undefined
+            }
+        })
+    },
+
+    // 批量审批
+    passBatchReview(ids: number[], action: 'approve' | 'reject', reason?: string) {
+        return request({
+            url: '/api/admin/products/batch-review',
+            method: 'post',
+            data: {
+                ids,
+                action,
+                reason: action === 'reject' ? reason : undefined
+            }
+        })
+    }
+
 }
 
 export default adminApi

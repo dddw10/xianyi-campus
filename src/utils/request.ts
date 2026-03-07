@@ -2,6 +2,13 @@ import axios from "axios"
 import { ElMessage } from "element-plus";
 import { getToken } from "./token";
 
+// 🔥 定义后端响应数据结构
+export interface ApiResponse<T = any> {
+    code: number
+    msg: string
+    data: T
+}
+
 // 创建axios实例
 const request = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || '/api',

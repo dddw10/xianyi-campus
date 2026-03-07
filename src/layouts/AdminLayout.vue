@@ -96,6 +96,7 @@
                     <h2 class="text-lg font-semibold text-$el-text-color-primary">
                         {{ currentMenu?.title || '管理后台' }}
                     </h2>
+
                 </div>
 
                 <!-- 右侧操作 -->
@@ -103,6 +104,7 @@
                     <!-- 小屏：管理员信息 + 退出（下拉菜单） -->
                     <el-dropdown v-if="isMobile">
                         <div class="flex items-center gap-2 cursor-pointer">
+                            <themeSwitch class="mr-4"></themeSwitch>
                             <el-avatar :size="32" class="bg-indigo-500">
                                 <el-icon>
                                     <User />
@@ -121,9 +123,11 @@
                         </template>
                     </el-dropdown>
 
+
                     <!-- 大屏：完整用户信息 + 退出 -->
                     <el-dropdown v-else>
                         <div class="flex items-center gap-2 cursor-pointer">
+                            <themeSwitch class="mr-4"></themeSwitch>
                             <el-avatar :size="32" class="bg-indigo-500">
                                 <el-icon>
                                     <User />
@@ -171,6 +175,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { modalBox } from "@/components/messageBox/modalBox"
+import themeSwitch from "@/components/theme.Switch.vue";
 
 const router = useRouter()
 const route = useRoute()

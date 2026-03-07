@@ -9,7 +9,7 @@ export interface ModalBoxOptions extends Omit<ModalProps, 'visible'> {
 }
 
 export function modalBox(options: ModalBoxOptions): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         // 创建容器
         const container = document.createElement('div')
         document.body.appendChild(container)
@@ -33,7 +33,7 @@ export function modalBox(options: ModalBoxOptions): Promise<boolean> {
                     },
                     onCancel: () => {
                         options.onCancel?.()
-                        resolve(false)
+                        reject('cancel')
                     }
                 })
             }
