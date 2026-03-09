@@ -28,7 +28,7 @@ const componentMap: Record<string, any> = {
 const publicPaths = ['/auth', '/home']
 
 // 🔹 需要继承 MainLayout 的路径前缀（用于动态路由）
-const mainLayoutPaths = ['/verify', '/chat']
+const mainLayoutPaths = ['/verify', '/chat', '/profile']
 
 const routes: RouteRecordRaw[] = [
   // ==================== 主布局 ====================
@@ -128,6 +128,9 @@ const router = createRouter({
 
 // 🔹 添加动态路由
 export function addDynamicRoutes(dynamicRoutes: any[]) {
+  // 🔥 在 addDynamicRoutes 开头添加
+  console.log('📦 后端返回的动态路由配置:')
+  console.log(JSON.stringify(dynamicRoutes.filter(r => r.name === 'user-profile'), null, 2))
   console.log('🔍 addDynamicRoutes 开始处理，数量:', dynamicRoutes.length)
 
   let hasAdded = false

@@ -246,7 +246,7 @@ const handleMobileSelect = (key: string) => {
 const handleUserCommand = (command: string) => {
     switch (command) {
         case 'profile':
-            router.push('/profile');
+            router.push('/main/profile');
             break;
         case 'orders':
             router.push('/products/orders');

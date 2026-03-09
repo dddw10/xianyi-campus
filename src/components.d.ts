@@ -55,6 +55,8 @@ declare module 'vue' {
     ElTableCloumn: typeof import('element-plus/es')['ElTableCloumn']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTableItem: typeof import('element-plus/es')['ElTableItem']
+    ElTabPane: typeof import('element-plus/es')['ElTabPane']
+    ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']

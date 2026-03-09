@@ -1,6 +1,6 @@
 <!-- src/views/products/products-publish/index.vue -->
 <template>
-    <div class="w-90% md:w-60% my-4 md:m-auto ">
+    <div class="w-90% md:w-60% my-4 md:my-12 mx-auto ">
 
         <!-- 🔥 页面容器：居中 + 内边距 + 主题背景 -->
         <div class="bg-$el-bg-color p-6 sm:p-8 rounded-2xl shadow-lg border border-$el-border-color-light">
@@ -178,7 +178,7 @@ const handleSubmit = async () => {
             if (result.code === 201) {
                 ElMessage.success('发布成功')
                 publishStore.resetForm()
-                router.push('/products')
+                router.push('/products/orders')
             } else {
                 ElMessage.error(result.msg || '发布失败')
             }
