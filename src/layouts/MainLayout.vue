@@ -249,7 +249,7 @@ const handleUserCommand = (command: string) => {
             router.push('/profile');
             break;
         case 'orders':
-            router.push('/orders');
+            router.push('/products/orders');
             break;
         case 'favorites':
             router.push('/favorites');

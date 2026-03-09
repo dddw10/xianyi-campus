@@ -1,6 +1,6 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw, RouteLocationNormalized } from 'vue-router'
 import { useUserStore } from "@/stores/modules/user"
 import { ElMessage } from 'element-plus'
 import { modalBox } from "@/components/messageBox/modalBox"
@@ -14,7 +14,7 @@ const componentMap: Record<string, any> = {
   // 🛍️ 商品相关
   'ProductList': () => import('@/views/products/products-list/index.vue'),
   'CreateProduct': () => import('@/views/products/products-publish/index.vue'),
-  'MyProducts': () => import('@/views/products/my/index.vue'),
+  'Orders': () => import('@/views/products/orders/index.vue'),
 
   // 👨‍💼 管理员相关
   'AdminDashboard': () => import('@/views/admin/dashboard/index.vue'),
@@ -24,8 +24,11 @@ const componentMap: Record<string, any> = {
   'AdminReportManagement': () => import('@/views/admin/report/index.vue'),
 }
 
-// 🔹 公开路由（✅ 移除 /admin）
-const publicPaths = ['/auth', '/products', '/home']
+// 🔹 公开路由（无需登录即可访问）
+const publicPaths = ['/auth', '/home']
+
+// 🔹 需要继承 MainLayout 的路径前缀（用于动态路由）
+const mainLayoutPaths = ['/verify', '/chat']
 
 const routes: RouteRecordRaw[] = [
   // ==================== 主布局 ====================
@@ -61,7 +64,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [
       {
-        path: 'login',  // ✅ 完整路径：/admin/login
+        path: 'login',
         name: 'adminLogin',
         component: () => import('@/views/admin/login.vue')
       }
@@ -70,22 +73,23 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     name: 'admin',
-    component: () => import('@/layouts/AdminLayout.vue'),  // ✅ 管理员专属布局
+    component: () => import('@/layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, requiresAdmin: true },
     redirect: '/admin/dashboard',
-    // children 留空，动态路由会添加到这里
     children: []
   },
 
-
-  // ==================== 商品相关（公开）====================
+  // ==================== 商品相关 ====================
   {
     path: '/products',
+    name: 'products',
     component: () => import('@/layouts/MainLayout.vue'),
+    redirect: { name: 'products-list' },
+    meta: { title: '商品', public: true },
     children: [
       {
         path: '',
-        name: 'products',
+        name: 'products-list',
         component: () => import('@/views/products/products-list/index.vue'),
         meta: { title: '商品列表', public: true }
       },
@@ -94,19 +98,19 @@ const routes: RouteRecordRaw[] = [
         name: 'products-detail',
         component: () => import('@/views/products/products-detail/index.vue'),
         meta: { title: '商品详情', public: true }
-      },
-      // 🔥 catch-all 路由必须放在 children 最后
-      {
-        path: ':pathMatch(.*)*',
-        name: 'products-protected',
-        component: () => import('@/layouts/MainLayout.vue'),
-        meta: {
-          requiresAuth: true,
-          title: '加载中...',
-          isDynamicPlaceholder: true
-        }
       }
+      // 🔥 动态路由（如 /products/create）会通过 addDynamicRoutes 添加到这里
     ]
+  },
+
+  // ==================== 受保护的主布局路由（动态路由父级）====================
+  {
+    path: '/main',
+    name: 'main-protected',
+    component: () => import('@/layouts/MainLayout.vue'),
+    meta: { requiresAuth: true, isLayoutWrapper: true },
+    redirect: { name: 'home' },
+    children: []
   },
 
   // ==================== 404（必须放在最后）====================
@@ -122,16 +126,14 @@ const router = createRouter({
   routes,
 })
 
-// 🔹 添加动态路由（✅ 修复：作为顶级路由添加）
-// src/router/index.ts
-
+// 🔹 添加动态路由
 export function addDynamicRoutes(dynamicRoutes: any[]) {
   console.log('🔍 addDynamicRoutes 开始处理，数量:', dynamicRoutes.length)
 
   let hasAdded = false
 
   dynamicRoutes.forEach((route: any) => {
-    console.log(`\n🔄 处理路由: ${route.name}`)
+    console.log(`\n🔄 处理路由: ${route.name}, path: ${route.path}`)
 
     // 1. 转换 component 字符串
     if (typeof route.component === 'string') {
@@ -140,36 +142,65 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
         route.component = comp
         console.log('  ✅ component 转换成功')
       } else {
-        console.warn('  ❌ component 映射失败:', route.component)
+        // 🔥 模糊匹配提示
+        const possibleKeys = Object.keys(componentMap).filter(k =>
+          k.toLowerCase() === route.component.toLowerCase()
+        )
+        if (possibleKeys.length > 0) {
+          console.warn(`  ⚠️ 大小写不匹配: "${route.component}"，建议后端返回: "${possibleKeys[0]}"`)
+        } else {
+          console.warn(`  ❌ component 映射失败: "${route.component}"，可用键:`, Object.keys(componentMap))
+        }
         route.component = () => import('@/views/NotFound.vue')
       }
     }
 
-    // 2. 确保 meta
+    // 2. 确保 meta + 强制设置 requiresAuth
     if (!route.meta) route.meta = {}
-    if (route.meta.requiresAuth === undefined) route.meta.requiresAuth = true
+    route.meta.requiresAuth = true  // 🔥 动态路由默认需要登录
 
-    // 🔥 3. 管理员路由：转换为相对路径，添加到 /admin 下
+    // 3. 管理员路由：添加到 /admin 父路由下
     if (route.path?.startsWith('/admin/')) {
-      // /admin/dashboard → dashboard（相对路径）
       route.path = route.path.replace('/admin/', '')
-
-      // 🔥 添加到 'admin' 父路由下
       try {
-        router.addRoute('admin', route)  // ✅ 指定 parent: 'admin'
+        router.addRoute('admin', route)
         console.log(`  ✅ 子路由添加: ${route.name} → /admin/${route.path}`)
         hasAdded = true
       } catch (error) {
         console.error(`  ❌ 添加失败 ${route.name}:`, error)
       }
     }
-    // 🔥 普通用户路由：作为顶级路由添加
+    // 4. 商品相关路由：添加到 /products 父路由下
+    else if (route.path?.startsWith('/products/') && route.path !== '/products') {
+      route.path = route.path.replace('/products/', '')
+      try {
+        router.addRoute('products', route)
+        console.log(`  ✅ 子路由添加: ${route.name} → /products/${route.path}`)
+        hasAdded = true
+      } catch (error) {
+        console.error(`  ❌ 添加失败 ${route.name}:`, error)
+      }
+    }
+    // 5. 需要 MainLayout 的顶级路由：添加到 main-protected 父路由下
+    else if (mainLayoutPaths.some(prefix =>
+      route.path === prefix || route.path?.startsWith(prefix + '/')
+    )) {
+      route.path = route.path.replace(/^\//, '')
+      try {
+        router.addRoute('main-protected', route)
+        console.log(`  ✅ 子路由添加: ${route.name} → /main/${route.path}`)
+        hasAdded = true
+      } catch (error) {
+        console.error(`  ❌ 添加失败 ${route.name}:`, error)
+      }
+    }
+    // 6. 其他路由：作为顶级路由添加
     else {
       if (!route.path?.startsWith('/')) {
         route.path = '/' + route.path
       }
       try {
-        router.addRoute(route)  // ✅ 顶级路由
+        router.addRoute(route)
         console.log(`  ✅ 顶级路由添加: ${route.name} → ${route.path}`)
         hasAdded = true
       } catch (error) {
@@ -178,28 +209,42 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
     }
   })
 
-  // 4. 强制刷新
+  // 7. 强制刷新 + 验证
   if (hasAdded) {
     console.log('\n🔄 动态路由已添加，强制刷新...')
     setTimeout(() => {
       const currentPath = window.location.pathname + window.location.search
-      router.replace({ path: currentPath }).catch(err => {
-        if (err?.name !== 'NavigationDuplicated') {
-          router.push({ path: currentPath }).catch(() => { })
-        }
-      })
+      router.replace({ path: currentPath })
+        .catch(err => {
+          if (err?.name === 'NavigationDuplicated') return
+          return router.push({ path: currentPath })
+        })
+        .catch(err => {
+          if (err?.name !== 'NavigationDuplicated') {
+            console.warn('⚠️ 路由刷新失败:', err)
+          }
+        })
     }, 100)
+
+    // 验证路由添加结果
+    setTimeout(() => {
+      console.log('\n📋 路由添加验证:')
+      const verifyPaths = ['/products/create', '/verify', '/admin/dashboard']
+      verifyPaths.forEach(path => {
+        const matched = router.resolve(path)
+        console.log(`  ${path.padEnd(25)} → ${matched.name?.toString() || '❌ 未匹配'}`)
+      })
+    }, 200)
   }
 }
 
-// 6. 打印路由表（调试用）
+// 🔹 打印路由表（调试用）
 console.log('\n📋 当前所有路由:')
 router.getRoutes().forEach((r: any) => {
   if (r.meta?.title || ['AdminDashboard', 'AdminUserReview'].includes(r.name)) {
     console.log(`  - ${r.path} (${r.name})`)
   }
 })
-
 
 // 🔹 移除动态路由
 export function removeDynamicRoutes(routeNames: string[]) {
@@ -211,14 +256,70 @@ export function removeDynamicRoutes(routeNames: string[]) {
   })
 }
 
-// 🔹 前置守卫（✅ 修复：publicPaths 移除 /admin）
-router.beforeEach(async (to, from, next) => {
+// 🔹 前置守卫（✅ 修复：精确匹配公开路径 + 先检查登录）
+router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
   const userStore = useUserStore()
   const meta = to.meta as Record<string, any>
 
-  // 🔥 管理员路由特殊处理（/admin/* 开头）
+  // 🔥【关键修复】未登录时，先拦截可能的受保护路由
+  if (!userStore.isLoggedIn) {
+    // 排除：公开路由、登录注册页、首页
+    const isAuthPage = to.path.startsWith('/auth')
+    const isHome = to.path === '/' || to.path === '/home'
+
+    // 🔥【核心修复】精确匹配 /products 下的公开路径（只放行列表和详情）
+    const isPublicProduct =
+      to.path === '/products' ||                    // ✅ 商品列表页
+      to.path === '/products/detail' ||             // ✅ 商品详情（无参数）
+      to.path.startsWith('/products/detail/')       // ✅ 商品详情（有参数）
+
+    // 🔥 如果是可能的受保护路由（如 /products/create、/verify 等），提示登录
+    if (!isAuthPage && !isHome && !isPublicProduct && !meta?.public) {
+      console.log('🔐 未登录访问受保护路由，弹出提示:', to.path)
+
+      try {
+        const result = await modalBox({
+          type: 'question',
+          title: '温馨提示',
+          message: '登录后即可使用此功能，是否前往登录？',
+          cancel: '再逛逛',
+          confirm: '去登录'
+        })
+        if (result === true) {
+          console.log('🔐 用户选择登录，跳转:', `/auth/login?redirect=${to.fullPath}`)
+          next({ path: '/auth/login', query: { redirect: to.fullPath } })
+        } else {
+          console.log('🔐 用户取消，停留在当前页')
+          next(false)
+        }
+      } catch (error) {
+        console.log('🔐 modalBox 异常:', error)
+        next(false)
+      }
+      return  // 🔥 关键：返回，不再执行后续逻辑
+    }
+  }
+
+  // 🔥 /main/* 路由的处理（继承 MainLayout 的保护路由）
+  if (to.path.startsWith('/main')) {
+    if (!userStore.isLoggedIn) {
+      next({ name: 'login', query: { redirect: to.fullPath.replace('/main', '') } })
+      return
+    }
+    if (meta.permission) {
+      const userPerms = userStore.permissions?.permissions || []
+      if (!userPerms.includes(meta.permission)) {
+        ElMessage.error('权限不足')
+        next({ name: 'home' })
+        return
+      }
+    }
+    next()
+    return
+  }
+
+  // 🔥 管理员登录页特殊处理
   if (to.name === 'adminLogin') {
-    // 已登录管理员访问登录页，重定向到后台
     if (userStore.isLoggedIn && userStore.userInfo?.role === 'admin') {
       next({ name: 'AdminDashboard' })
       return
@@ -229,20 +330,15 @@ router.beforeEach(async (to, from, next) => {
 
   // 🔥 管理员后台路由（/admin/*）
   if (to.path.startsWith('/admin')) {
-    // 1. 检查是否登录
     if (!userStore.isLoggedIn) {
       next({ name: 'adminLogin', query: { redirect: to.fullPath } })
       return
     }
-
-    // 2. 检查是否是管理员
     if (userStore.userInfo?.role !== 'admin') {
       ElMessage.error('权限不足，需要管理员账号')
       next({ name: 'home' })
       return
     }
-
-    // 3. 检查细粒度权限
     if (meta.permission) {
       const userPerms = userStore.permissions?.permissions || []
       if (!userPerms.includes(meta.permission)) {
@@ -251,15 +347,11 @@ router.beforeEach(async (to, from, next) => {
         return
       }
     }
-
-    // 4. 管理员路由放行
     next()
     return
   }
 
-  // 🔹 普通用户路由逻辑
-
-  // ✅ 1. 公开路由直接放行（✅ publicPaths 已移除 /admin）
+  // 🔥 公开路由放行（放在登录检查之后）
   if (publicPaths.some(path => to.path.startsWith(path)) && !meta.requiresAuth) {
     if (to.path.startsWith('/auth') && userStore.isLoggedIn) {
       ElMessage.warning({ message: '您已经登录了', duration: 1500 })
@@ -270,40 +362,14 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // ✅ 2. 需要登录的路由：检查登录状态
-  if (!userStore.isLoggedIn) {
-    const showToast = !from.path.startsWith('/auth')
-    if (showToast) {
-      try {
-        const result = await modalBox({
-          type: 'question',
-          title: '温馨提示',
-          message: '登录后即可使用此功能，是否前往登录？',
-          cancel: '再逛逛',
-          confirm: '去登录'
-        })
-        if (result) {
-          next({ path: '/auth/login', query: { redirect: to.fullPath } })
-        } else {
-          next(false)
-        }
-      } catch {
-        next(false)
-      }
-    } else {
-      next(false)
-    }
-    return
-  }
-
-  // ✅ 3. 普通用户权限检查
+  // 🔥 普通用户权限检查
   if (meta.requiresVerified && !userStore.isVerified) {
     ElMessage.warning('请先完成身份认证')
     next({ name: 'Verification' })
     return
   }
 
-  // ✅ 4. 其他情况放行
+  // 🔥 其他情况放行
   next()
 })
 
