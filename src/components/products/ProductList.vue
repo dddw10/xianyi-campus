@@ -45,15 +45,6 @@
                         {{ getStatusText(item) }}
                     </el-tag>
 
-                    <!-- 🔹 拒绝理由提示图标：调整位置 + 层级
-                    <el-tooltip v-if="item.review_status === 'rejected' && item.review_reason"
-                        :content="item.review_reason" placement="top" effect="dark"
-                        :popper-options="{ placement: 'top' }">
-                        <el-icon
-                            class="absolute -bottom-2 -right-2 text-red-500 bg-white dark:bg-gray-800 rounded-full p-1 shadow cursor-help !z-20 hover:scale-110 transition-transform">
-                            <Warning />
-                        </el-icon>
-                    </el-tooltip> -->
                 </div>
 
                 <!-- 🔹 商品信息 -->
@@ -113,8 +104,6 @@
                                     🗑️
                                 </el-button>
                             </template>
-
-                            <!-- 🔸 已售出/已下架：只显示"详情" -->
 
                             <!-- 🔸 通用：详情按钮（始终显示） -->
                             <el-button size="small" @click.stop="emit('view-detail', item)"
