@@ -1,12 +1,10 @@
 <!-- src/views/products/products-publish/index.vue -->
 <template>
-    <div class="w-90% md:w-60% my-4 md:my-12 mx-auto ">
+    <div class="w-90% md:w-60% my-4 md:my-12 mx-auto">
 
         <!-- 🔥 页面容器：居中 + 内边距 + 主题背景 -->
         <div class="bg-$el-bg-color p-6 sm:p-8 rounded-2xl shadow-lg border border-$el-border-color-light">
 
-
-            <!-- <div class=" bg-$el-fill-color-blank py-8 px-4 rounded-2xl"> -->
             <div class="max-w-2xl mx-auto">
 
                 <!-- 🔥 标题区域 -->
@@ -117,7 +115,8 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
 import { usePublishStore } from '@/stores/modules/publish'
 import AdvancedImageUpload from '@/components/AdvanceImageUpload.vue'
-import { Refresh, UploadFilled } from "@element-plus/icons-vue";
+import { Refresh, UploadFilled, InfoFilled } from "@element-plus/icons-vue"
+import productApi from "@/api/product"
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -149,49 +148,57 @@ const rules: FormRules = {
     ]
 }
 
-// 提交表单
+// 🔹 提交表单（✅ 修复：移除 JSON.stringify，统一用 async/await）
 const handleSubmit = async () => {
     if (!formRef.value) return
 
-    await formRef.value.validate(async (valid) => {
-        if (!valid) return
+    try {
+        // 🔥 1. 先校验表单
+        await formRef.value.validate()
+
+        // 🔥 2. 设置提交状态
         submitting.value = true
 
-        try {
-            const response = await fetch('/api/products', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${userStore.token}`
-                },
-                body: JSON.stringify({
-                    title: formData.value.title,
-                    price: formData.value.price,
-                    category: formData.value.category,
-                    description: formData.value.description,
-                    images: formData.value.images
-                })
-            })
-
-            const result = await response.json()
-
-            if (result.code === 201) {
-                ElMessage.success('发布成功')
-                publishStore.resetForm()
-                router.push('/products/orders')
-            } else {
-                ElMessage.error(result.msg || '发布失败')
-            }
-        } catch (error) {
-            console.error('发布失败:', error)
-            ElMessage.error('发布失败，请稍后重试')
-        } finally {
-            submitting.value = false
+        // 🔥 3. 构建请求数据（✅ 直接传对象，不要 JSON.stringify！）
+        const requestData = {
+            title: formData.value.title,
+            price: formData.value.price,
+            category: formData.value.category,
+            description: formData.value.description,
+            images: formData.value.images
         }
-    })
+
+        // 🔥 4. 调用 API（✅ 统一用 async/await，不要混用 .then()）
+        await productApi.createProduct(requestData).then((res: any) => {
+            // 🔥 5. 处理响应
+            if (res?.code === 200) {
+                ElMessage.success('✅ 发布成功，请等待审核')
+                publishStore.resetForm()
+                // 🔥 跳转到"我发布的"列表
+                router.push('/products/orders?tab=published')
+            } else {
+                ElMessage.error(res?.msg || '发布失败')
+            }
+        })
+
+    } catch (error: any) {
+        // 🔥 表单校验失败也会进入这里，但不需要提示
+        if (error?.fields) {
+            // 表单校验错误，Element Plus 会自动提示
+            return
+        }
+
+        // 🔥 网络/业务错误
+        console.error('❌ 发布失败:', error)
+        ElMessage.error(error?.response?.data?.msg || '发布失败，请稍后重试')
+
+    } finally {
+        // 🔥 无论成功失败都结束 loading
+        submitting.value = false
+    }
 }
 
-// 重置表单
+// 🔹 重置表单
 const handleReset = () => {
     formRef.value?.resetFields()
     publishStore.resetForm()

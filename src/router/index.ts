@@ -58,25 +58,35 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // 管理员登录路由
+  // 🔥【关键修复】管理员登录页：独立路由 + AuthLayout + 公开访问
   {
-    path: '/admin',
-    component: () => import('@/layouts/AuthLayout.vue'),
+    path: '/admin/login',
+    name: 'adminLogin',
+    component: () => import('@/layouts/AuthLayout.vue'),  // 🔥 使用认证布局
+    meta: {
+      title: '管理员登录',
+      public: true,
+      isPublic: true,
+      isAuthLayout: true
+    },
     children: [
       {
-        path: 'login',
-        name: 'adminLogin',
-        component: () => import('@/views/admin/login.vue')
+        path: '',  // 🔥 空路径，直接渲染登录组件
+        name: 'adminLoginContent',
+        component: () => import('@/views/admin/login.vue'),
+        meta: { title: '管理员登录' }
       }
     ]
   },
+
+  // 🔥【关键修复】管理员后台：需要登录 + 管理员角色 + AdminLayout
   {
     path: '/admin',
     name: 'admin',
-    component: () => import('@/layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true },
+    component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
+    meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
     redirect: '/admin/dashboard',
-    children: []
+    children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
   },
 
   // ==================== 商品相关 ====================
@@ -128,7 +138,6 @@ const router = createRouter({
 
 // 🔹 添加动态路由
 export function addDynamicRoutes(dynamicRoutes: any[]) {
-  // 🔥 在 addDynamicRoutes 开头添加
   console.log('📦 后端返回的动态路由配置:')
   console.log(JSON.stringify(dynamicRoutes.filter(r => r.name === 'user-profile'), null, 2))
   console.log('🔍 addDynamicRoutes 开始处理，数量:', dynamicRoutes.length)
@@ -145,7 +154,6 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
         route.component = comp
         console.log('  ✅ component 转换成功')
       } else {
-        // 🔥 模糊匹配提示
         const possibleKeys = Object.keys(componentMap).filter(k =>
           k.toLowerCase() === route.component.toLowerCase()
         )
@@ -160,7 +168,7 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
 
     // 2. 确保 meta + 强制设置 requiresAuth
     if (!route.meta) route.meta = {}
-    route.meta.requiresAuth = true  // 🔥 动态路由默认需要登录
+    route.meta.requiresAuth = true
 
     // 3. 管理员路由：添加到 /admin 父路由下
     if (route.path?.startsWith('/admin/')) {
@@ -229,7 +237,6 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
         })
     }, 100)
 
-    // 验证路由添加结果
     setTimeout(() => {
       console.log('\n📋 路由添加验证:')
       const verifyPaths = ['/products/create', '/verify', '/admin/dashboard']
@@ -244,7 +251,7 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
 // 🔹 打印路由表（调试用）
 console.log('\n📋 当前所有路由:')
 router.getRoutes().forEach((r: any) => {
-  if (r.meta?.title || ['AdminDashboard', 'AdminUserReview'].includes(r.name)) {
+  if (r.meta?.title || ['AdminDashboard', 'AdminUserReview', 'adminLogin'].includes(r.name)) {
     console.log(`  - ${r.path} (${r.name})`)
   }
 })
@@ -259,27 +266,32 @@ export function removeDynamicRoutes(routeNames: string[]) {
   })
 }
 
-// 🔹 前置守卫（✅ 修复：精确匹配公开路径 + 先检查登录）
+// 🔹 前置守卫（✅ 修复：管理员登录公开 + 精确匹配）
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
   const userStore = useUserStore()
   const meta = to.meta as Record<string, any>
 
-  // 🔥【关键修复】未登录时，先拦截可能的受保护路由
+  // 🔥【关键】管理员登录页：始终公开，使用 AuthLayout
+  if (to.name === 'adminLogin' || to.path === '/admin/login') {
+    if (userStore.isLoggedIn && userStore.userInfo?.role === 'admin') {
+      next({ name: 'AdminDashboard' })
+      return
+    }
+    next()
+    return
+  }
+
+  // 🔥 未登录时，先拦截可能的受保护路由
   if (!userStore.isLoggedIn) {
-    // 排除：公开路由、登录注册页、首页
     const isAuthPage = to.path.startsWith('/auth')
     const isHome = to.path === '/' || to.path === '/home'
-
-    // 🔥【核心修复】精确匹配 /products 下的公开路径（只放行列表和详情）
     const isPublicProduct =
-      to.path === '/products' ||                    // ✅ 商品列表页
-      to.path === '/products/detail' ||             // ✅ 商品详情（无参数）
-      to.path.startsWith('/products/detail/')       // ✅ 商品详情（有参数）
+      to.path === '/products' ||
+      to.path === '/products/detail' ||
+      to.path.startsWith('/products/detail/')
 
-    // 🔥 如果是可能的受保护路由（如 /products/create、/verify 等），提示登录
     if (!isAuthPage && !isHome && !isPublicProduct && !meta?.public) {
       console.log('🔐 未登录访问受保护路由，弹出提示:', to.path)
-
       try {
         const result = await modalBox({
           type: 'question',
@@ -299,7 +311,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
         console.log('🔐 modalBox 异常:', error)
         next(false)
       }
-      return  // 🔥 关键：返回，不再执行后续逻辑
+      return
     }
   }
 
@@ -321,18 +333,8 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 管理员登录页特殊处理
-  if (to.name === 'adminLogin') {
-    if (userStore.isLoggedIn && userStore.userInfo?.role === 'admin') {
-      next({ name: 'AdminDashboard' })
-      return
-    }
-    next()
-    return
-  }
-
-  // 🔥 管理员后台路由（/admin/*）
-  if (to.path.startsWith('/admin')) {
+  // 🔥 管理员后台路由（/admin/*，排除登录页）
+  if (to.path.startsWith('/admin') && to.name !== 'adminLogin') {
     if (!userStore.isLoggedIn) {
       next({ name: 'adminLogin', query: { redirect: to.fullPath } })
       return

@@ -1,5 +1,5 @@
 <template>
-    <div class=" w-90% my-4 md:w-60% md:my-12 mx-auto bg-[--card] rounded-2xl shadow-2xl ">
+    <div class="w-90% my-4 md:w-60% md:my-12 mx-auto bg-[--card] rounded-2xl shadow-2xl ">
         <!-- 页面标题 -->
         <div class="max-w-5xl mx-auto px-4 py-6">
             <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">

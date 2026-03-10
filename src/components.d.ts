@@ -67,6 +67,7 @@ declare module 'vue' {
     IconTooling: typeof import('./components/icons/IconTooling.vue')['default']
     ModalMessage: typeof import('./components/messageBox/modalMessage.vue')['default']
     ModelMessage: typeof import('./components/messageBox/modelMessage.vue')['default']
+    ProductList: typeof import('./components/products/ProductList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     'Theme.Switch': typeof import('./components/theme.Switch.vue')['default']
