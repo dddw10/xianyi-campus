@@ -1,7 +1,5 @@
-<!-- src/views/products/products-detail/index.vue -->
 <template>
-    <div
-        class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50/30 to-purple-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
         <!-- 🔹 加载状态 -->
         <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
@@ -11,199 +9,218 @@
         <!-- 🔹 商品详情 -->
         <div v-else-if="product" class="max-w-5xl mx-auto px-4 py-6">
 
-            <!-- 🔸 返回按钮 + 卖家操作按钮 -->
-            <div class="flex items-center justify-between mb-6">
-                <el-button @click="router.back()" class="!rounded-full">
+            <!-- 🔸 顶部：返回 + 卖家信息 -->
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <el-button @click="router.back()" class="!rounded-full !px-4">
                     ← 返回
                 </el-button>
 
-                <!-- 🔹 卖家操作按钮（根据状态动态显示） -->
-                <div v-if="isSeller" class="flex items-center gap-2">
-
-                    <!-- 🔸 在售：编辑 + 下架 -->
-                    <template v-if="product.review_status === 'approved' && product.status === 'available'">
-                        <el-button @click="handleEdit" class="!rounded-full">
-                            ✏️ 编辑
-                        </el-button>
-                        <el-button type="danger" @click="handleAction('delete')" class="!rounded-full">
-                            🗑️ 下架
-                        </el-button>
-                    </template>
-
-                    <!-- 🔸 已售出：只读 -->
-                    <template v-else-if="product.review_status === 'approved' && product.status === 'sold'">
-                        <el-tag type="warning" class="!rounded-full">🟡 已售出</el-tag>
-                    </template>
-
-                    <!-- 🔸 被拒绝：修改重提 -->
-                    <template v-else-if="product.review_status === 'rejected'">
-                        <el-button type="primary" @click="handleEdit" class="!rounded-full">
-                            ✏️ 修改重提
-                        </el-button>
-                    </template>
-
-                    <!-- 🔸 审核中：修改 + 取消审核 -->
-                    <template v-else-if="product.review_status === 'pending'">
-                        <el-button @click="handleEdit" class="!rounded-full">
-                            ✏️ 修改
-                        </el-button>
-                        <el-button type="warning" @click="handleAction('cancel_review')" class="!rounded-full">
-                            ⏹️ 取消审核
-                        </el-button>
-                    </template>
-
-                    <!-- 🔸 已下架：重新上架 + 删除 -->
-                    <template v-else-if="product.status === 'deleted'">
-                        <el-button @click="handleAction('republish')" class="!rounded-full">
-                            🔄 重新上架
-                        </el-button>
-                        <el-button type="danger" @click="handleDelete" class="!rounded-full">
-                            🗑️ 删除
-                        </el-button>
-                    </template>
+                <div class="flex items-center gap-3">
+                    <el-avatar :size="36" :src="product.seller_avatar" class="!bg-blue-100">
+                        {{ product.seller_name?.[0] || 'U' }}
+                    </el-avatar>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-800 dark:text-gray-100 text-sm">
+                                {{ product.seller_name || '匿名卖家' }}
+                            </span>
+                            <el-tag size="small" type="success" class="!rounded-full !h-5 !text-xs">
+                                ✓ 实名
+                            </el-tag>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <span>📍 {{ product.seller_location || '未知' }}</span>
+                            <span>•</span>
+                            <span>{{ formatRelativeTime(product.created_at) }}</span>
+                        </div>
+                    </div>
+                    <!-- <el-button size="small" class="!rounded-full !ml-2">关注</el-button> -->
                 </div>
             </div>
 
-            <!-- 🔸 状态提示栏（卖家可见） -->
-            <el-alert v-if="isSeller && product.review_status !== 'approved'" :title="getStatusAlertTitle()"
-                :type="getStatusAlertType()" :closable="false" class="mb-6" show-icon>
-                <template #default>
-                    <p v-if="product.review_status === 'rejected' && product.review_reason" class="mt-1 text-sm">
-                        <span class="font-medium">拒绝理由：</span>{{ product.review_reason }}
-                    </p>
-                    <p v-if="product.review_status === 'pending'" class="mt-1 text-sm">
-                        商品正在审核中，审核通过后将展示在公共列表
-                    </p>
-                </template>
-            </el-alert>
+            <!-- 🔸 主体内容：左右布局 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-            <!-- 🔸 商品主图 + 信息 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- 🔹 左侧：图片 -->
+                <div class="space-y-3">
+                    <!-- 主图 -->
+                    <div class="rounded-2xl overflow-hidden bg-white dark:bg-gray-800">
+                        <el-image :src="currentImage || product.images?.[0]" class="w-full aspect-square" fit="contain"
+                            :preview-src-list="product.images" preview-teleported>
+                            <template #error>
+                                <div
+                                    class="w-full aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                    <el-icon class="text-gray-400 text-5xl">
+                                        <Picture />
+                                    </el-icon>
+                                </div>
+                            </template>
+                        </el-image>
+                    </div>
 
-                <!-- 🔹 图片区域 -->
-                <div
-                    class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <el-image :src="product.images?.[0]" class="w-full aspect-square rounded-xl object-cover"
-                        fit="cover" :preview-src-list="product.images" preview-teleported>
-                        <template #error>
-                            <div
-                                class="w-full aspect-square rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                <el-icon class="text-gray-400 text-6xl">
-                                    <Picture />
-                                </el-icon>
-                            </div>
-                        </template>
-                    </el-image>
-
-                    <!-- 🔹 缩略图列表 -->
-                    <div v-if="product.images?.length > 1" class="flex gap-2 mt-4 overflow-x-auto pb-2">
-                        <el-image v-for="(img, idx) in product.images" :key="idx" :src="img"
-                            class="w-16 h-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-blue-400 transition-colors"
-                            fit="cover" @click="currentImage = img" />
+                    <!-- 缩略图 -->
+                    <div v-if="product.images?.length > 1" class="flex gap-2 overflow-x-auto pb-1">
+                        <div v-for="(img, idx) in product.images" :key="idx" @click="currentImage = img"
+                            class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-all"
+                            :class="currentImage === img ? 'border-blue-500' : 'border-transparent hover:border-gray-300'">
+                            <el-image :src="img" class="w-full h-full" fit="cover" />
+                        </div>
                     </div>
                 </div>
 
-                <!-- 🔹 商品信息 -->
-                <div
-                    class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-                        {{ product.title }}
-                    </h1>
+                <!-- 🔹 右侧：信息 + 操作 -->
+                <div class="space-y-0 bg-gray-100 p-4 rounded-2xl">
 
-                    <!-- 🔹 状态标签 -->
-                    <el-tag :type="getStatusTagType()" size="large" class="mb-4 !rounded-full !px-4 !py-1">
-                        {{ getStatusText() }}
-                    </el-tag>
-
-                    <!-- 🔹 价格 -->
-                    <div class="flex items-baseline gap-3 mb-4">
-                        <span class="text-3xl font-bold text-red-500">¥{{ formatPrice(product.price) }}</span>
-                    </div>
-
-                    <!-- 🔹 分类 -->
-                    <div class="flex items-center gap-2 mb-4 text-sm text-gray-500 dark:text-gray-400">
-                        <el-icon>
-                            <Collection />
-                        </el-icon>
-                        <span>分类：{{ getCategoryName(product.category) }}</span>
-                    </div>
-
-                    <!-- 🔹 卖家信息 -->
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl mb-4">
-                        <el-avatar :size="40" :src="product.seller_avatar" class="!bg-blue-100">
-                            {{ product.seller_name?.[0] || 'U' }}
-                        </el-avatar>
-                        <div>
-                            <p class="font-medium text-gray-800 dark:text-gray-100">
-                                {{ product.seller_name || '匿名卖家' }}
-                            </p>
-                            <p class="text-xs text-gray-400">
-                                发布于 {{ formatDate(product.created_at) }}
-                            </p>
+                    <!-- 价格 + 状态 -->
+                    <div class="pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-baseline gap-3 mb-2">
+                            <span class="text-3xl font-bold text-orange-500">¥{{ formatPrice(product.price) }}</span>
+                            <span v-if="product.original_price" class="text-gray-400 line-through">
+                                ¥{{ formatPrice(product.original_price) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <el-tag :type="product.status === 'available' ? 'success' : 'info'" size="small"
+                                class="!rounded-full">
+                                {{ product.status === 'available' ? '在售' : product.status === 'sold' ? '已售出' : '已下架' }}
+                            </el-tag>
+                            <span v-if="product.condition" class="text-sm text-gray-500">{{ product.condition }}</span>
+                            <span class="text-sm text-gray-400 ml-auto">浏览 {{ product.view_count || 0 }}</span>
                         </div>
                     </div>
 
-                    <!-- 🔹 买家操作按钮（非卖家） -->
-                    <div v-if="!isSeller" class="flex gap-3">
-                        <el-button v-if="product.status === 'available'" type="primary" size="large"
-                            class="!rounded-full !px-8 !py-3 flex-1" @click="handleBuy">
-                            🛒 立即购买
-                        </el-button>
-                        <el-button v-if="product.status === 'available'" size="large" class="!rounded-full !px-4 !py-3"
-                            @click="handleContact">
-                            💬
-                        </el-button>
-                        <el-button v-if="product.status === 'sold'" size="large" disabled
-                            class="!rounded-full !px-8 !py-3 flex-1">
-                            ✅ 已售出
-                        </el-button>
+                    <!-- 标题 + 分类 -->
+                    <div class="py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2 leading-snug">
+                            {{ product.title }}
+                        </h1>
+                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                            <el-icon class="text-gray-400">
+                                <Collection />
+                            </el-icon>
+                            <span>{{ getCategoryName(product.category) }}</span>
+                            <span class="mx-1">|</span>
+                            <span>{{ formatDate(product.created_at) }} 发布</span>
+                        </div>
+                    </div>
+
+                    <!-- 规格参数（如果有） -->
+                    <!-- <div v-if="product.specs" class="py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2 gap-y-2 text-sm">
+                            <div v-for="(value, key) in product.specs" :key="key" class="flex justify-between">
+                                <span class="text-gray-500">{{ formatSpecKey(key) }}</span>
+                                <span class="text-gray-800 dark:text-gray-200 font-medium">{{ value }}</span>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- 商品描述 -->
+                    <div class="py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="font-medium text-gray-800 dark:text-gray-100 mb-3">商品描述</h3>
+                        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm">
+                            {{ product.description || '暂无描述' }}
+                        </p>
+                    </div>
+
+                    <!-- 交易信息 -->
+                    <div class="py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-500">发货地</span>
+                                <p class="text-gray-800 dark:text-gray-200 mt-1">{{ product.seller_location || '未知' }}
+                                </p>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">运费</span>
+                                <p class="text-gray-800 dark:text-gray-200 mt-1">{{ product.shipping_fee ?
+                                    `¥${product.shipping_fee}` :
+                                    '面议' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮区（买家） -->
+                    <div v-if="!isSeller"
+                        class="pt-4 sticky bottom-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm -mx-4 px-4 py-3">
+                        <div class="flex gap-3">
+                            <el-button v-if="product.status === 'available'" type="warning" size="large"
+                                class="!rounded-full !px-6 flex-1 font-medium" @click="handleContact">
+                                💬 聊一聊
+                            </el-button>
+                            <el-button v-if="product.status === 'available'" type="primary" size="large"
+                                class="!rounded-full !px-6 flex-1 font-medium !bg-gray-900 !border-gray-900 hover:!bg-gray-800"
+                                @click="handleBuy">
+                                🛒 立即购买
+                            </el-button>
+                            <el-button v-if="product.status === 'sold'" size="large" disabled
+                                class="!rounded-full !px-6 flex-1">
+                                ✅ 已售出
+                            </el-button>
+                            <el-button size="large" class="!rounded-full !w-12 !p-0" @click="handleFavorite">
+                                ⭐
+                            </el-button>
+                        </div>
+                    </div>
+
+                    <!-- 卖家操作按钮 -->
+                    <div v-if="isSeller" class="pt-4">
+                        <div class="flex gap-3">
+                            <el-button v-if="canEdit" @click="handleEdit" class="!rounded-full flex-1">
+                                ✏️ 编辑
+                            </el-button>
+                            <el-button v-if="canDelete" type="danger" @click="handleDelete"
+                                class="!rounded-full flex-1">
+                                🗑️ 删除
+                            </el-button>
+                            <el-button v-if="canRepublish" type="success" @click="handleRepublish"
+                                class="!rounded-full flex-1">
+                                🔄 重新上架
+                            </el-button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 🔸 商品描述 -->
-            <div
-                class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-                    📝 商品描述
-                </h3>
-                <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {{ product.description || '暂无描述' }}
-                </p>
-            </div>
-
-            <!-- 🔸 审核时间（卖家可见） -->
-            <div v-if="isSeller && product.reviewed_at" class="text-center text-sm text-gray-400">
-                最后审核：{{ formatDateTime(product.reviewed_at) }}
+            <!-- 🔸 底部保障 -->
+            <div class="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 text-center text-xs text-gray-400">
+                <span class="flex items-center justify-center gap-4">
+                    <span class="flex items-center gap-1">
+                        <span>🛡️</span> 担保交易
+                    </span>
+                    <span>|</span>
+                    <span class="cursor-pointer hover:text-gray-600" @click="handleReport">举报</span>
+                    <span>|</span>
+                    <span>© 2024 XianYI</span>
+                </span>
             </div>
         </div>
 
         <!-- 🔹 404 状态 -->
         <div v-else class="flex flex-col items-center justify-center min-h-[60vh]">
-            <div class="text-6xl mb-4">🔍</div>
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            <div class="text-5xl mb-4">🔍</div>
+            <h3 class="text-base font-medium text-gray-700 dark:text-gray-200 mb-3">
                 商品不存在或不可见
             </h3>
-            <el-button @click="router.push('/products')" class="!rounded-full">
+            <el-button @click="router.push('/')" class="!rounded-full">
                 🛍️ 浏览其他商品
             </el-button>
         </div>
-    </div>
 
-    <!-- 🔹 编辑弹窗 -->
-    <EditProductModal v-if="showEditModal" :product="product" @close="showEditModal = false"
-        @success="handleEditSuccess" />
+        <!-- 🔹 编辑弹窗 -->
+        <EditProductModal v-if="showEditModal" :product="product" @close="showEditModal = false"
+            @success="handleEditSuccess" />
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { ElMessage, ElMessageBox } from "element-plus"
-import { Picture, Collection, Warning } from "@element-plus/icons-vue"
 import { useUserStore } from "@/stores/modules/user"
-import productApi from "@/api/product"
+import { Picture, Collection } from "@element-plus/icons-vue"
 import EditProductModal from "@/components/products/EditProductModal.vue"
 import adminCategoryApi from "@/api/admin/category"
+import productApi from "@/api/product";
 
 const router = useRouter()
 const route = useRoute()
@@ -214,15 +231,34 @@ const loading = ref(true)
 const product = ref<any>(null)
 const currentImage = ref('')
 const showEditModal = ref(false)
-const typeOptions = ref<any[]>([])  // 🔥 新增：存储后端返回的分类列表
+const typeOptions = ref<any[]>([])
 
-// 🔹 计算属性：是否是卖家本人
+// 🔹 计算属性
 const isSeller = computed(() => {
     return userStore.isLoggedIn && product.value?.seller_id === userStore.userInfo?.id
 })
 
-// 🔹 获取商品详情（修复：用 async/await）
-const fetchProductDetail = () => {
+const canEdit = computed(() => {
+    if (!product.value) return false
+    return (
+        (product.value.review_status === 'approved' && product.value.status === 'available') ||
+        product.value.review_status === 'pending' ||
+        product.value.review_status === 'rejected'
+    )
+})
+
+const canDelete = computed(() => {
+    if (!product.value) return false
+    return product.value.status === 'deleted' || product.value.review_status === 'rejected'
+})
+
+const canRepublish = computed(() => {
+    if (!product.value) return false
+    return product.value.status === 'deleted' && product.value.review_status === 'approved'
+})
+
+// 🔹 获取商品详情
+const fetchProductDetail = async () => {
     loading.value = true
     try {
         const productId = route.params.id
@@ -232,7 +268,6 @@ const fetchProductDetail = () => {
                 currentImage.value = res.data.images?.[0]
             }
         })
-
     } catch (error: any) {
         console.error('❌ 获取商品详情失败:', error)
         if (error?.response?.status === 404) {
@@ -245,35 +280,29 @@ const fetchProductDetail = () => {
     }
 }
 
-// 🔹 获取启用的分类列表（修复版：async/await + 正确解析）
+// 🔹 获取分类列表
 const getEnabledCategories = async () => {
     try {
-        const res = await adminCategoryApi.getCategoriesEnabled().then((res: any) => {
+        adminCategoryApi.getCategoriesEnabled().then((res: any) => {
             if (res?.code === 200) {
-                // 🔥 后端返回的是 { list: [...], pagination: {...} }
                 typeOptions.value = res.data.list || []
             }
         })
 
     } catch (error) {
         console.error('获取分类失败:', error)
-        ElMessage.error('获取商品分类失败')
     }
 }
 
-// 🔹 分类名称映射（用后端动态数据 + 硬编码兜底）
+// 🔹 工具函数
 const getCategoryName = (categoryValue?: string) => {
-    // 🔥 优先从后端返回的分类列表中查找
-    const category = typeOptions.value.find((cat: any) =>
+    const category = typeOptions.value.find((cat) =>
         cat.value === categoryValue ||
         cat.id === categoryValue ||
         cat.name?.includes(categoryValue || '')
     )
-    if (category) {
-        return category.name || categoryValue  // 🔥 返回后端定义的名称（如 "📱 数码"）
-    }
+    if (category) return category.name || categoryValue
 
-    // 🔥 兜底：硬编码映射（兼容旧数据）
     const map: Record<string, string> = {
         books: '📚 书籍教材',
         electronics: '💻 数码电子',
@@ -285,51 +314,18 @@ const getCategoryName = (categoryValue?: string) => {
     return map[categoryValue || ''] || categoryValue || '未分类'
 }
 
-// 🔹 状态文案（双状态支持）
-const getStatusText = () => {
-    if (!product.value) return ''
-    if (product.value.review_status === 'pending') return '⏳ 待审核'
-    if (product.value.review_status === 'rejected') return '❌ 审核拒绝'
+// const formatSpecKey = (key: string) => {
+//     const map: Record<string, string> = {
+//         brand: '品牌',
+//         condition: '成色',
+//         size: '尺寸',
+//         color: '颜色',
+//         model: '型号',
+//         warranty: '保修'
+//     }
+//     return map[key] || key
+// }
 
-    const map: Record<string, string> = {
-        available: '🟢 在售',
-        sold: '🟡 已售出',
-        deleted: '🔴 已下架'
-    }
-    return map[product.value.status] || '未知'
-}
-
-// 🔹 状态标签颜色
-const getStatusTagType = () => {
-    if (!product.value) return 'info'
-    if (product.value.review_status === 'pending') return 'info'
-    if (product.value.review_status === 'rejected') return 'danger'
-
-    const map: Record<string, 'success' | 'warning' | 'danger'> = {
-        available: 'success',
-        sold: 'warning',
-        deleted: 'danger'
-    }
-    return map[product.value.status] || 'info'
-}
-
-// 🔹 状态提示栏标题
-const getStatusAlertTitle = () => {
-    if (!product.value) return ''
-    if (product.value.review_status === 'pending') return '⏳ 商品正在审核中'
-    if (product.value.review_status === 'rejected') return '❌ 审核未通过'
-    return ''
-}
-
-// 🔹 状态提示栏类型
-const getStatusAlertType = () => {
-    if (!product.value) return 'info'
-    if (product.value.review_status === 'pending') return 'info'
-    if (product.value.review_status === 'rejected') return 'error'
-    return 'info'
-}
-
-// 🔹 格式化函数
 const formatPrice = (price: string | number) => {
     const num = typeof price === 'string' ? parseFloat(price) : price
     return Number.isNaN(num) ? '0.00' : num.toFixed(2)
@@ -340,12 +336,20 @@ const formatDate = (date: string) => {
     return date.slice(0, 10)
 }
 
-const formatDateTime = (date: string) => {
+const formatRelativeTime = (date: string) => {
     if (!date) return ''
-    return new Date(date).toLocaleString('zh-CN')
+    const now = new Date()
+    const past = new Date(date)
+    const diff = now.getTime() - past.getTime()
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    if (days === 0) return '今天'
+    if (days === 1) return '昨天'
+    if (days < 7) return `${days}天前`
+    return formatDate(date)
 }
 
-// 🔹 操作处理：编辑商品
+// 🔹 操作处理
 const handleEdit = () => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
@@ -355,51 +359,6 @@ const handleEdit = () => {
     showEditModal.value = true
 }
 
-// 🔹 操作处理：下架/取消审核/重新上架
-const handleAction = async (action: 'delete' | 'cancel_review' | 'republish') => {
-    if (!userStore.isLoggedIn) {
-        ElMessage.warning('请先登录')
-        return
-    }
-
-    const confirmMap: Record<'delete' | 'cancel_review' | 'republish', { title: string; message: string; type: 'success' | 'warning' | 'error' }> = {
-        delete: { title: '下架商品', message: '确定要下架此商品吗？下架后将不在公共列表显示', type: 'warning' },
-        cancel_review: { title: '取消审核', message: '确定要取消审核并下架吗？', type: 'warning' },
-        republish: { title: '重新上架', message: '重新上架后需要重新审核，确认吗？', type: 'success' }
-    }
-
-    const { title, message, type } = confirmMap[action]!
-
-    try {
-        await ElMessageBox.confirm(message, title, {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type
-        })
-
-        await productApi.updateProduct(product.value.id, {
-            title: product.value.title,
-            description: product.value.description,
-            price: product.value.price,
-            category: product.value.category,
-            images: product.value.images,
-            action
-        })
-
-        const successMap: Record<string, string> = {
-            delete: '商品已下架',
-            cancel_review: '已取消审核并下架',
-            republish: '已重新提交审核'
-        }
-        ElMessage.success(successMap[action])
-        fetchProductDetail()
-
-    } catch {
-        // 取消
-    }
-}
-
-// 🔹 操作处理：永久删除商品
 const handleDelete = async () => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
@@ -407,11 +366,10 @@ const handleDelete = async () => {
     }
 
     try {
-        await ElMessageBox.confirm('确定要永久删除此商品吗？删除后不可恢复', '删除商品', {
+        await ElMessageBox.confirm('确定要删除此商品吗？', '删除商品', {
             confirmButtonText: '删除',
             cancelButtonText: '取消',
-            type: 'error',
-            confirmButtonClass: '!bg-red-500'
+            type: 'warning'
         })
 
         await productApi.deleteProduct(product.value.id)
@@ -422,7 +380,35 @@ const handleDelete = async () => {
     }
 }
 
-// 🔹 操作处理：购买
+const handleRepublish = async () => {
+    if (!userStore.isLoggedIn) {
+        ElMessage.warning('请先登录')
+        return
+    }
+
+    try {
+        await ElMessageBox.confirm('重新上架后需要重新审核，确认吗？', '重新上架', {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            type: 'success'
+        })
+
+        await productApi.updateProduct(product.value.id, {
+            title: product.value.title,
+            description: product.value.description,
+            price: product.value.price,
+            category: product.value.category,
+            images: product.value.images,
+            action: 'republish'
+        })
+
+        ElMessage.success('已重新提交审核')
+        fetchProductDetail()
+    } catch {
+        // 取消
+    }
+}
+
 const handleBuy = () => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
@@ -436,7 +422,6 @@ const handleBuy = () => {
     router.push(`/orders/confirm?product_id=${product.value.id}`)
 }
 
-// 🔹 操作处理：联系卖家
 const handleContact = () => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
@@ -445,27 +430,45 @@ const handleContact = () => {
     ElMessage.info(`正在联系卖家 "${product.value?.seller_name}"...`)
 }
 
-// 🔹 编辑成功回调
+const handleFavorite = () => {
+    if (!userStore.isLoggedIn) {
+        ElMessage.warning('请先登录')
+        return
+    }
+    ElMessage.success('已加入收藏')
+}
+
+const handleReport = () => {
+    ElMessageBox.prompt('请输入举报原因', '举报商品', {
+        confirmButtonText: '提交',
+        cancelButtonText: '取消',
+        inputPattern: /.+/,
+        inputErrorMessage: '请输入举报原因'
+    }).then(({ value }) => {
+        ElMessage.success('举报已提交，我们会尽快处理')
+    }).catch(() => { })
+}
+
 const handleEditSuccess = () => {
     showEditModal.value = false
-    ElMessage.success('商品已更新，重新提交审核')
+    ElMessage.success('商品已更新')
     fetchProductDetail()
 }
 
 // 🔹 初始化
 onMounted(() => {
-    fetchProductDetail()      // 🔥 获取商品详情
-    getEnabledCategories()    // 🔥 新增：获取分类列表
+    fetchProductDetail()
+    getEnabledCategories()
 })
 </script>
 
 <style scoped>
-/* 🔹 图片预览遮罩 */
+/* 图片预览 */
 :deep(.el-image-viewer__wrapper) {
     @apply z-50;
 }
 
-/* 🔹 缩略图滚动条隐藏 */
+/* 缩略图滚动条隐藏 */
 .overflow-x-auto {
     scrollbar-width: none;
 }
@@ -474,7 +477,7 @@ onMounted(() => {
     @apply hidden;
 }
 
-/* 🔹 骨架屏圆角 */
+/* 骨架屏 */
 :deep(.el-skeleton__item) {
     @apply rounded-xl;
 }
