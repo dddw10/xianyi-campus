@@ -140,6 +140,7 @@ const login = async () => {
             ElMessage.success('🎉 登录成功')
             await useUserStore().setUserInfo(res.data)
             router.push('/')
+            // window.location.reload()
         } else {
             ElMessage.error('登录失败')
         }

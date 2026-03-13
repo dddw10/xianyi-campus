@@ -4,6 +4,7 @@ import { getToken, setToken, removeToken } from "@/utils/token"
 import router from "@/router"
 import { buildUserRoutes } from "@/utils/dynamicRoutes"
 import { addDynamicRoutes, removeDynamicRoutes } from "@/router"  // ✅ 从 router/index.ts 导入
+import { useFavoriteStore } from './favorite'
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -94,6 +95,10 @@ export const useUserStore = defineStore('user', {
             this.permissions = {}
             this.role = 'user'  // 🔥 重置角色
             this.userPermissions = []  // 🔥 重置权限
+
+            const favoriteStore = useFavoriteStore()
+            favoriteStore.clear()
+            console.log('✅ 已清空收藏数据')
 
             // 3. 清理存储
             removeToken()

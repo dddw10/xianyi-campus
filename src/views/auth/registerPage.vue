@@ -17,8 +17,8 @@
         <el-form ref="formRef" :model="countData" :rules="rules" class="space-y-5">
 
             <!-- 学号输入 -->
-            <el-form-item prop="studentId">
-                <el-input v-model="countData.studentId" clearable placeholder="请输入 10-13 位学号" class="w-full">
+            <el-form-item prop="student_id">
+                <el-input v-model="countData.student_id" clearable placeholder="请输入 10-13 位学号" class="w-full">
                     <template #prepend>
                         <el-icon class="text-gray-400">
                             <User />
@@ -107,19 +107,19 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 
 interface countDataType {
-    studentId: string | null
+    student_id: string | null
     password: string | null
     repeatPassword: string | null
 }
 
 const countData = ref<countDataType>({
-    studentId: null,
+    student_id: null,
     password: null,
     repeatPassword: null
 })
 
 const rules: FormRules = {
-    studentId: [
+    student_id: [
         { required: true, message: '请输入学号', trigger: 'blur' },
         { pattern: /^\d{10,13}$/, message: '学号格式不正确（10-13 位数字）', trigger: 'blur' }
     ],
@@ -176,7 +176,7 @@ const register = async () => {
 
         // 调用接口
         const res = await authApi.register({
-            studentId: countData.value.studentId,
+            student_id: countData.value.student_id,
             password: countData.value.password
         })
 

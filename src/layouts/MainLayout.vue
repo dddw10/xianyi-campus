@@ -252,7 +252,7 @@ const handleUserCommand = (command: string) => {
             router.push('/products/orders');
             break;
         case 'favorites':
-            router.push('/favorites');
+            router.push('/main/favorites');
             break;
         case 'logout':
             handleLogout();

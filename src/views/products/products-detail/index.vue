@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- 🔹 右侧：信息 + 操作 -->
-                <div class="space-y-0 bg-gray-100 p-4 rounded-2xl">
+                <div class="space-y-0 bg-[--bg] p-4 rounded-2xl">
 
                     <!-- 价格 + 状态 -->
                     <div class="pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -156,9 +156,10 @@
                                 class="!rounded-full !px-6 flex-1">
                                 ✅ 已售出
                             </el-button>
-                            <el-button size="large" class="!rounded-full !w-12 !p-0" @click="handleFavorite">
+                            <FavoriteButton size="large" :product-id="product.id"
+                                @change="handleFavorite(product.id, $event)">
                                 ⭐
-                            </el-button>
+                            </FavoriteButton>
                         </div>
                     </div>
 
@@ -221,10 +222,13 @@ import { Picture, Collection } from "@element-plus/icons-vue"
 import EditProductModal from "@/components/products/EditProductModal.vue"
 import adminCategoryApi from "@/api/admin/category"
 import productApi from "@/api/product";
+import FavoriteButton from "@/components/products/FavoriteButton.vue";
+import { useFavoriteStore } from "@/stores/modules/favorite";
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
 
 // 🔹 状态
 const loading = ref(true)
@@ -430,12 +434,14 @@ const handleContact = () => {
     ElMessage.info(`正在联系卖家 "${product.value?.seller_name}"...`)
 }
 
-const handleFavorite = () => {
+const handleFavorite = (productId: number, favorited: boolean): void => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
         return
     }
-    ElMessage.success('已加入收藏')
+    if (!favorited) {
+        favoriteStore.removeFromList(productId)
+    }
 }
 
 const handleReport = () => {

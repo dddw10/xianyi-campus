@@ -10,6 +10,7 @@ const componentMap: Record<string, any> = {
   // 👤 用户相关
   'Profile': () => import('@/views/user/profile/index.vue'),
   'Verification': () => import('@/views/user/verification/index.vue'),
+  'Favorites': () => import('@/views/favorites/index.vue'),
 
   // 🛍️ 商品相关
   'ProductList': () => import('@/views/products/products-list/index.vue'),
@@ -28,7 +29,7 @@ const componentMap: Record<string, any> = {
 const publicPaths = ['/auth', '/home']
 
 // 🔹 需要继承 MainLayout 的路径前缀（用于动态路由）
-const mainLayoutPaths = ['/verify', '/chat', '/profile']
+const mainLayoutPaths = ['/verify', '/chat', '/profile', '/favorites']
 
 const routes: RouteRecordRaw[] = [
   // ==================== 主布局 ====================
