@@ -1,284 +1,437 @@
-<!-- src/views/products/products-detail/components/EditProductModal.vue -->
+<!-- src/components/products/EditProductModal.vue -->
 <template>
-    <el-dialog v-model="dialogVisible" :title="props.product?.review_status === 'rejected' ? '✏️ 修改后重新提交' : '✏️ 编辑商品'"
-        :close-on-click-modal="false" width="560px" class="edit-dialog !rounded-2xl" @closed="handleClose">
-        <el-form ref="formRef" :model="formData" :rules="rules" label-position="top" class="space-y-5">
+    <Teleport to="body">
+        <div
+            class="modal-overlay fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
 
-            <!-- 🔹 商品标题 -->
-            <el-form-item label="商品标题" prop="title">
-                <el-input v-model="formData.title" placeholder="例如：苹果 AirPods Pro 2 代，仅拆封" maxlength="100"
-                    show-word-limit class="!rounded-xl" />
-            </el-form-item>
+            <div class="modal-container bg-white dark:bg-gray-800 w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:animate-fade-in"
+                :class="{ 'h-full': isMobile }">
+                <!-- 🔹 头部 -->
+                <div
+                    class="modal-header flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <el-icon class="text-yellow-500 text-xl flex-shrink-0">
+                            <Edit />
+                        </el-icon>
+                        <h3 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-100 truncate">
+                            {{ getModalTitle() }}
+                        </h3>
+                    </div>
+                    <el-button type="text" @click="handleClose"
+                        class="!p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full flex-shrink-0">
+                        <el-icon class="text-xl">
+                            <Close />
+                        </el-icon>
+                    </el-button>
+                </div>
 
-            <!-- 🔹 商品描述 -->
-            <el-form-item label="商品描述" prop="description">
-                <el-input v-model="formData.description" type="textarea" :rows="4"
-                    placeholder="详细描述商品状况、使用情况、有无瑕疵等，越详细越容易卖出～" maxlength="500" show-word-limit class="!rounded-xl" />
-            </el-form-item>
+                <!-- 🔹 表单内容 -->
+                <div class="modal-body flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
-            <!-- 🔹 价格 + 分类（一行两列） -->
-            <div class="grid grid-cols-2 gap-4">
-                <el-form-item label="价格（元）" prop="price">
-                    <el-input-number v-model="formData.price" :min="0.01" :precision="2" :step="0.1" class="!w-full"
-                        controls-position="right" />
-                </el-form-item>
-                <el-form-item label="商品分类" prop="category">
-                    <el-select v-model="formData.category" placeholder="请选择" class="!w-full" :teleported="false">
-                        <el-option v-for="cat in categories" :key="cat.value" :label="cat.label" :value="cat.value" />
-                    </el-select>
-                </el-form-item>
-            </div>
-
-            <!-- 🔹 图片上传（修复：确保数组格式 + 预览） -->
-            <el-form-item label="商品图片" prop="images">
-                <div class="space-y-2">
-                    <!-- 已上传图片预览 -->
-                    <div v-if="formData.images?.length" class="flex flex-wrap gap-2">
-                        <div v-for="(img, idx) in formData.images" :key="idx"
-                            class="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 group">
-                            <el-image :src="img" class="w-full h-full object-cover" fit="cover"
-                                :preview-src-list="formData.images" :initial-index="idx" preview-teleported>
-                                <template #error>
-                                    <div
-                                        class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                        <el-icon class="text-gray-400">
-                                            <Picture />
-                                        </el-icon>
-                                    </div>
-                                </template>
-                            </el-image>
-                            <!-- 删除按钮 -->
-                            <button type="button" @click="removeImage(idx)"
-                                class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
-                                ×
-                            </button>
-                        </div>
+                    <!-- 商品标题 -->
+                    <div class="form-item space-y-2">
+                        <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="text-red-500 mr-1">*</span>商品标题
+                        </label>
+                        <el-input v-model="formData.title" placeholder="请输入商品标题（建议10-30字）" maxlength="100"
+                            show-word-limit class="!w-full" :input-class="isMobile ? 'text-base' : ''" size="large" />
                     </div>
 
+                    <!-- 商品描述 -->
+                    <div class="form-item space-y-2">
+                        <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="text-red-500 mr-1">*</span>商品描述
+                        </label>
+                        <el-input v-model="formData.description" type="textarea" :rows="isMobile ? 5 : 4"
+                            placeholder="请详细描述商品成色、使用情况、瑕疵等..." maxlength="500" show-word-limit class="!w-full"
+                            :textarea-class="isMobile ? 'text-base' : ''" />
+                    </div>
+
+                    <!-- 价格 -->
+                    <div class="form-item space-y-2">
+                        <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="text-red-500 mr-1">*</span>价格（元）
+                        </label>
+                        <el-input-number v-model="formData.price" :min="0.01" :max="999999" :precision="2" :step="1"
+                            controls-position="right" placeholder="请输入价格" class="!w-full"
+                            :input-class="isMobile ? 'text-base' : ''" size="large" />
+                        <p class="text-xs text-gray-500 mt-1">建议参考市场价合理定价</p>
+                    </div>
+
+                    <!-- 商品分类 -->
+                    <div class="form-item space-y-2">
+                        <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="text-red-500 mr-1">*</span>商品分类
+                        </label>
+                        <el-select v-model="formData.category" placeholder="请选择分类" class="!w-full"
+                            :size="isMobile ? 'large' : 'default'">
+                            <el-option v-for="item in categories" :label="item.name" :value="item.name" />
+                        </el-select>
+                    </div>
+
+                    <!-- 🔥 商品图片 -->
+                    <div class="form-item space-y-3">
+                        <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="text-red-500 mr-1">*</span>商品图片
+                            <span class="text-gray-400 font-normal ml-1">（至少1张，最多3张）</span>
+                        </label>
+
+                        <!-- 图片上传组件容器 -->
+                        <div class="image-upload-container">
+                            <AdvanceImageUpload v-model="formData.images" :limit="3" :width="isMobile ? 100 : 120" />
+                        </div>
+
+                        <!-- 图片上传提示 -->
+                        <p class="text-xs text-gray-500 flex items-start gap-1.5">
+                            <el-icon class="flex-shrink-0 mt-0.5">
+                                <InfoFilled />
+                            </el-icon>
+                            <span>支持 JPG/PNG 格式，单张不超过 5MB，最多 3 张</span>
+                        </p>
+                    </div>
+
+                    <!-- 审核拒绝理由 -->
+                    <div v-if="mode === 'resubmit' && props.product?.review_reason" class="form-item">
+                        <div
+                            class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 sm:p-4">
+                            <div class="flex items-start gap-2">
+                                <el-icon class="text-red-500 text-lg flex-shrink-0 mt-0.5">
+                                    <WarningFilled />
+                                </el-icon>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">
+                                        上次审核未通过原因：
+                                    </p>
+                                    <p class="text-sm text-red-600 dark:text-red-400 break-words">
+                                        {{ props.product.review_reason }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </el-form-item>
 
-            <!-- 🔹 拒绝理由提示（仅审核拒绝时显示） -->
-            <el-alert v-if="props.product?.review_status === 'rejected' && props.product?.review_reason"
-                :title="`上次拒绝理由：${props.product.review_reason}`" type="warning" :closable="false" class="!rounded-xl"
-                show-icon />
-        </el-form>
-
-        <template #footer>
-            <div class="flex justify-end gap-3 pt-2">
-                <el-button @click="dialogVisible = false" class="!rounded-full">取消</el-button>
-                <el-button type="primary" :loading="submitting" @click="handleSubmit" class="!rounded-full !px-6">
-                    {{ props.product?.review_status === 'rejected' ? '重新提交' : '保存更新' }}
-                </el-button>
+                <!-- 🔹 底部操作按钮 -->
+                <div
+                    class="modal-footer px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
+                    <div class="flex gap-3" :class="isMobile ? 'flex-col' : 'flex-row justify-end'">
+                        <el-button @click="handleClose" class="flex-1 sm:flex-none sm:min-w-[100px]"
+                            :size="isMobile ? 'large' : 'default'">
+                            取消
+                        </el-button>
+                        <span></span>
+                        <el-button type="primary" @click="handleSubmit" :loading="submitting"
+                            class="flex-1 sm:flex-none sm:min-w-[100px] " :size="isMobile ? 'large' : 'default'">
+                            {{ getSubmitButtonText() }}
+                        </el-button>
+                    </div>
+                </div>
             </div>
-        </template>
-    </el-dialog>
+        </div>
+    </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue"
-import { ElMessage, ElUpload } from "element-plus"
-import { Plus, Picture } from "@element-plus/icons-vue"
-import type { FormInstance, FormRules, UploadFile, UploadRequestOptions } from 'element-plus'
-import productApi from "@/api/product"
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Edit, Close, InfoFilled, WarningFilled } from '@element-plus/icons-vue'
+import productApi from '@/api/product'
+import AdvanceImageUpload from "@/components/AdvanceImageUpload.vue"
+import adminCategoryApi from "@/api/admin/category";
 
 const props = defineProps<{
     product?: any
+    mode?: 'edit' | 'resubmit' | 'view'
 }>()
 
 const emit = defineEmits<{
     (e: 'close'): void
-    (e: 'success'): void
+    (e: 'success', product: any): void
 }>()
 
-// 🔹 弹窗控制
-const dialogVisible = ref(true)
-const submitting = ref(false)
-const formRef = ref<FormInstance>()
+const isMobile = computed(() => {
+    return window.innerWidth < 640
+})
 
-// 🔹 表单数据
+const submitting = ref(false)
 const formData = ref({
     title: '',
     description: '',
     price: 0,
     category: '',
-    images: [] as string[]  // ✅ 确保是字符串数组
+    images: [] as string[]
 })
 
-// 🔹 上传文件列表（el-upload 专用）
-const uploadFileList = ref<UploadFile[]>([])
-
-// 🔹 分类选项
-
-// 分类修改一下
-const categories = [
-    { label: '📚 书籍教材', value: 'books' },
-    { label: '💻 数码电子', value: 'electronics' },
-    { label: '👕 服饰鞋包', value: 'clothing' },
-    { label: '🏠 生活用品', value: 'daily' },
-    { label: '🎨 兴趣爱好', value: 'hobby' },
-    { label: '🎁 其他', value: 'other' }
-]
-
-// 🔹 表单校验规则
-const rules = computed<FormRules>(() => ({
-    title: [
-        { required: true, message: '请输入商品标题', trigger: 'blur' },
-        { min: 2, max: 100, message: '标题长度 2-100 个字符', trigger: 'blur' }
-    ],
-    description: [
-        { required: true, message: '请输入商品描述', trigger: 'blur' },
-        { min: 10, message: '描述至少 10 个字符', trigger: 'blur' }
-    ],
-    price: [
-        { required: true, message: '请输入价格', trigger: 'blur' },
-        { type: 'number', min: 0.01, message: '价格必须大于 0', trigger: 'blur' }
-    ],
-    category: [
-        { required: true, message: '请选择商品分类', trigger: 'change' }
-    ],
-    images: [
-        { required: true, type: 'array', min: 1, message: '请至少上传 1 张图片', trigger: 'change' }
-    ]
-}))
-
-// 🔥 关键修复：初始化表单时确保 images 是数组
-watch(() => props.product, (newVal) => {
-    if (newVal) {
-        // 🔥 安全解析 images：兼容字符串/数组/空值
-        const parseImages = (imgs: any): string[] => {
-            if (!imgs) return []
-            if (Array.isArray(imgs)) return imgs.filter((i: any) => i)
-            if (typeof imgs === 'string') {
-                try {
-                    const parsed = JSON.parse(imgs)
-                    return Array.isArray(parsed) ? parsed.filter((i: any) => i) : [imgs]
-                } catch {
-                    return imgs ? [imgs] : []
-                }
-            }
-            return []
+// 获取商品分类
+const categories = ref()
+const getCategoryData = () => {
+    adminCategoryApi.getCategoriesEnabled().then((res: any) => {
+        if (res.code === 200) {
+            categories.value = res.data
         }
-
-        formData.value = {
-            title: newVal.title || '',
-            description: newVal.description || '',
-            price: parseFloat(newVal.price) || 0,
-            category: newVal.category || '',
-            images: parseImages(newVal.images)  // ✅ 确保是字符串数组
-        }
-
-        // 🔥 同步上传列表（用于 el-upload 显示）
-        nextTick(() => {
-            uploadFileList.value = formData.value.images.map((url, idx) => ({
-                uid: -idx,  // 负数避免与后端返回的 id 冲突
-                name: `image-${idx}.jpg`,
-                status: 'success',
-                url
-            }))
-        })
-    }
-}, { immediate: true })
-
-// 🔹 移除图片
-const removeImage = (index: number) => {
-    formData.value.images.splice(index, 1)
-    uploadFileList.value.splice(index, 1)
-}
-
-// 🔹 上传前校验
-const beforeUpload = (file: File) => {
-    const isValidType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-    const isValidSize = file.size / 1024 / 1024 < 5  // 5MB
-
-    if (!isValidType) {
-        ElMessage.error('仅支持 jpg/png/webp 格式')
-        return false
-    }
-    if (!isValidSize) {
-        ElMessage.error('图片大小不能超过 5MB')
-        return false
-    }
-    if (formData.value.images.length >= 5) {
-        ElMessage.warning('最多上传 5 张图片')
-        return false
-    }
-    return true
-}
-
-// 🔥 关键修复：自定义上传逻辑（模拟上传，实际应调用你的 OSS 接口）
-const handleCustomUpload = async (options: UploadRequestOptions) => {
-    const { file, onSuccess, onError } = options
-
-    try {
-        // 🔥 这里替换为你的实际上传接口
-        // 示例：调用你的 OSS 上传接口
-        // const res = await uploadToOSS(file)
-        // const imageUrl = res.url
-
-        // 🎯 模拟上传（实际使用时删除这段，替换为真实接口）
-        const imageUrl = await mockUpload(file)
-
-        // ✅ 更新表单数据
-        formData.value.images.push(imageUrl)
-
-        // ✅ 更新上传列表
-        const uploadFile: UploadFile = {
-            uid: Date.now(),
-            name: file.name,
-            status: 'success',
-            url: imageUrl
-        }
-        uploadFileList.value.push(uploadFile)
-
-        onSuccess?.(uploadFile)
-        ElMessage.success('图片上传成功')
-    } catch (error) {
-        ElMessage.error('图片上传失败')
-    }
-}
-
-// 🔥 模拟上传函数（实际使用时删除，替换为你的 OSS 上传逻辑）
-const mockUpload = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            // 实际应返回 OSS URL，这里用 base64 模拟
-            resolve(e.target?.result as string)
-        }
-        reader.readAsDataURL(file)
     })
 }
 
-// 🔹 提交表单
+onMounted(() => {
+    if (props.product) {
+        getCategoryData()
+        formData.value = {
+            title: props.product.title || '',
+            description: props.product.description || '',
+            price: parseFloat(props.product.price) || 0,
+            category: props.product.category || '',
+            images: Array.isArray(props.product.images)
+                ? [...props.product.images]
+                : props.product.images
+                    ? [props.product.images]
+                    : []
+        }
+    }
+
+    window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+})
+
+const handleResize = () => {
+    window.dispatchEvent(new Event('resize'))
+}
+
+const getModalTitle = () => {
+    if (props.mode === 'resubmit') return '重新提交审核'
+    if (props.mode === 'view') return '商品详情'
+    return '编辑商品'
+}
+
+const getSubmitButtonText = () => {
+    if (submitting.value) return '提交中...'
+    if (props.mode === 'resubmit') return '重新提交'
+    if (props.mode === 'view') return '查看'
+    return '保存修改'
+}
+
+const validateForm = () => {
+    if (!formData.value.title?.trim()) {
+        ElMessage.warning('请输入商品标题')
+        return false
+    }
+
+    if (!formData.value.description?.trim()) {
+        ElMessage.warning('请输入商品描述')
+        return false
+    }
+
+    if (!formData.value.price || formData.value.price <= 0) {
+        ElMessage.warning('请输入正确的价格')
+        return false
+    }
+
+    if (!formData.value.category) {
+        ElMessage.warning('请选择商品分类')
+        return false
+    }
+
+    if (formData.value.images.length === 0) {
+        ElMessage.warning('请至少上传1张商品图片')
+        return false
+    }
+
+    if (formData.value.images.length > 3) {
+        ElMessage.warning('最多只能上传3张图片')
+        return false
+    }
+
+    return true
+}
+
 const handleSubmit = async () => {
-    if (!formRef.value) return
+    if (props.mode === 'view') {
+        handleClose()
+        return
+    }
+
+    if (!validateForm()) return
+
+    submitting.value = true
 
     try {
-        await formRef.value.validate()
-        submitting.value = true
+        const payload = {
+            title: formData.value.title.trim(),
+            description: formData.value.description.trim(),
+            price: formData.value.price,
+            category: formData.value.category,
+            images: formData.value.images,
+            action: props.mode === 'resubmit' ? 'resubmit' : 'update'
+        }
 
-        // 🔥 提交数据（确保 images 是数组）
-        await productApi.updateProduct(props.product.id, {
-            ...formData.value,
-            images: formData.value.images  // ✅ 已经是数组，无需再处理
-        })
+        const response = await productApi.updateProduct(props.product?.id, payload)
 
-        ElMessage.success('商品已更新，重新提交审核')
-        emit('success')
-        // 直接改为提交同时关闭弹窗跳到我的订单页面
-        dialogVisible.value = false
+        ElMessage.success(
+            props.mode === 'resubmit' ? '✅ 已重新提交审核' : '✅ 商品已更新'
+        )
+        emit('success', response.data?.product || response.data)
+        handleClose()
+
     } catch (error: any) {
-        ElMessage.error(error?.response?.data?.msg || '更新失败')
+        console.error('提交失败:', error)
+        ElMessage.error(error?.response?.data?.msg || '提交失败，请重试')
     } finally {
         submitting.value = false
     }
 }
 
-// 🔹 关闭弹窗
 const handleClose = () => {
     emit('close')
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 🔥 动画 */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+}
+
+/* 🔥 图片上传容器优化 */
+.image-upload-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* 🔥 移动端优化 */
+@media (max-width: 639px) {
+    .modal-container {
+        border-radius: 1rem 1rem 0 0;
+        max-height: 95vh;
+    }
+
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .modal-body::-webkit-scrollbar {
+        display: none;
+    }
+
+    .form-item {
+        margin-bottom: 0.5rem;
+    }
+
+    /* 增大输入框触摸区域 */
+    :deep(.el-input__inner),
+    :deep(.el-textarea__inner) {
+        min-height: 44px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    /* 优化按钮样式 */
+    .modal-footer .el-button {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    /* 取消按钮样式优化 */
+    .modal-footer .el-button:not(.el-button--primary) {
+        border: 1px solid var(--el-border-color);
+        background-color: var(--el-fill-color-blank);
+        color: var(--el-text-color-regular);
+    }
+
+    .modal-footer .el-button:not(.el-button--primary):hover {
+        border-color: var(--el-color-primary);
+        color: var(--el-color-primary);
+        background-color: var(--el-color-primary-light-9);
+    }
+
+    /* 优化选择器 */
+    :deep(.el-select) {
+        width: 100%;
+    }
+
+    /* 优化数字输入框 */
+    :deep(.el-input-number) {
+        width: 100%;
+    }
+
+    /* 优化图片上传区域 */
+    :deep(.upload-area),
+    :deep(.el-upload) {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    :deep(.upload-placeholder) {
+        width: 100px !important;
+        height: 100px !important;
+        border-width: 2px;
+    }
+
+    :deep(.upload-icon) {
+        font-size: 28px;
+    }
+
+    :deep(.upload-text) {
+        font-size: 12px;
+    }
+}
+
+/* 🔥 桌面端优化 */
+@media (min-width: 640px) {
+    .modal-container {
+        max-height: 85vh;
+    }
+
+    .modal-footer .el-button {
+        min-height: 36px;
+    }
+}
+
+/* 🔥 深色模式支持 */
+:deep(.el-input__wrapper),
+:deep(.el-textarea__wrapper) {
+    @apply dark:bg-gray-700 dark:border-gray-600;
+}
+
+:deep(.el-select .el-input__wrapper) {
+    @apply dark:bg-gray-700 dark:border-gray-600;
+}
+
+:deep(.el-input-number__decrease),
+:deep(.el-input-number__increase) {
+    @apply dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300;
+}
+</style>

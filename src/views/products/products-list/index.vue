@@ -56,7 +56,7 @@
             </div>
 
             <!-- 🔥 滚动容器（添加 ref 和 scroll 事件） -->
-            <div ref="scrollContainerRef" class="min-h-[400px]" @scroll="handleScroll">
+            <div ref="scrollContainerRef" class="min-h-[280px]" @scroll="handleScroll">
                 <!-- 3. 商品列表网格 -->
                 <div v-if="filteredProducts.length > 0"
                     class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">

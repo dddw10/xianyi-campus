@@ -15,7 +15,7 @@
 
         <!-- 🔹 统一列表区域：class 完全不变 -->
         <ProductList :list="productList" :loading="loading" :pagination="pagination"
-            :empty-text="getEmptyText(tabPosition)" @page-change="handlePageChange" class="flex-1 ml-0 md:ml-4" />
+            :empty-text="getEmptyText(tabPosition)" @page-change="handlePageChange" class="flex-1 ml-0 md:ml-4"  @refresh-list="fetchProducts"/>
     </div>
 </template>
 

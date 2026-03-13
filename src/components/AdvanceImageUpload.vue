@@ -2,21 +2,29 @@
 <template>
     <div class="image-upload-container">
 
-        <!-- 🔥 图片预览列表（横向排列） -->
+        <!-- 🔥 图片预览列表 -->
         <div class="image-list" v-if="imageList.length > 0">
             <div v-for="(img, index) in imageList" :key="img" class="image-item">
                 <!-- 图片预览 -->
-                <img :src="img" class="image-preview" @click="previewImage(img)" alt="preview" />
+                <el-image :src="img" class="image-preview" fit="cover" :preview-src-list="imageList"
+                    :initial-index="index" preview-teleported />
 
-                <!-- 删除按钮（hover 显示） -->
-                <div class="delete-overlay" @click.stop="removeImage(index)">
+                <!-- 🖥️ 桌面端：hover 显示遮罩删除按钮 -->
+                <div class="delete-overlay desktop-only" @click.stop="removeImage(index)">
                     <el-icon class="text-white text-lg">
                         <Close />
                     </el-icon>
                 </div>
 
-                <!-- 主图标记 -->
-                <div v-if="index === 0" class="main-tag">
+                <!-- 📱 移动端：右上角固定显示角标删除按钮 -->
+                <div class="delete-badge mobile-only" @click.stop="removeImage(index)">
+                    <el-icon class="text-white">
+                        <CloseBold />
+                    </el-icon>
+                </div>
+
+                <!-- 主图标记（仅大屏显示） -->
+                <div v-if="index === 0 && props.width > 100" class="main-tag">
                     <el-icon class="mr-1">
                         <Star />
                     </el-icon>
@@ -25,7 +33,7 @@
             </div>
         </div>
 
-        <!-- 🔥 上传区域（虚线框样式，横向排列） -->
+        <!-- 🔥 上传区域（虚线框样式） -->
         <el-upload v-if="imageList.length < limit" :action="uploadUrl" :headers="headers" :before-upload="beforeUpload"
             :on-success="handleSuccess" :on-error="handleError" :show-file-list="false" accept="image/*"
             class="upload-area">
@@ -33,21 +41,19 @@
                 <el-icon class="upload-icon">
                     <Plus />
                 </el-icon>
-                <span class="upload-text">添加首图</span>
+                <span class="upload-text">添加</span>
+                <span class="upload-count" v-if="imageList.length > 0">
+                    {{ imageList.length }}/{{ limit }}
+                </span>
             </div>
         </el-upload>
-
-        <!-- 预览对话框 -->
-        <el-dialog v-model="previewVisible" :width="800" class="image-preview-dialog">
-            <img :src="previewUrl" class="preview-full" alt="preview" />
-        </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Close, Star } from '@element-plus/icons-vue'
+import { Plus, Close, CloseBold, Star } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { modalBox } from "@/components/messageBox/modalBox"
 
@@ -59,14 +65,16 @@ const props = defineProps({
     limit: {
         type: Number,
         default: 3
+    },
+    width: {
+        type: Number,
+        default: 120
     }
 })
 
 const emit = defineEmits(['update:modelValue'])
 const userStore = useUserStore()
 const uploadUrl = '/api/upload/product'
-const previewVisible = ref(false)
-const previewUrl = ref('')
 
 // 🔹 本地列表（用于 UI 渲染）
 const imageList = ref<string[]>([...props.modelValue])
@@ -131,43 +139,34 @@ const removeImage = (index: number) => {
         }
     })
 }
-
-// 🔹 预览大图
-const previewImage = (url: string) => {
-    previewUrl.value = url
-    previewVisible.value = true
-}
 </script>
 
 <style scoped>
-/* 🔥 容器 */
+/* 🔥 容器 - 移动端优化 */
 .image-upload-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
+    align-items: flex-start;
+    width: 100%;
 }
 
-/* 🔥 图片列表（横向排列） */
+/* 🔥 图片列表 - 移动端允许换行 */
 .image-list {
-    display: flex;
-    gap: 12px;
-    flex-wrap: nowrap;
-    /* 不换行 */
-    overflow-x: auto;
-    /* 超出可滚动 */
-    padding-bottom: 4px;
+    display: contents;
+    /* 让图片项直接参与容器布局 */
 }
 
-/* 🔥 图片项 - 默认小屏 80px */
+/* 🔥 图片项 - 基础样式 */
 .image-item {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     flex-shrink: 0;
-    /* 不收缩 */
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    border: 2px solid var(--el-border-color-lighter);
     background: var(--el-fill-color-blank);
+    border: 2px solid var(--el-border-color);
     transition: all 0.3s ease;
 }
 
@@ -181,12 +180,12 @@ const previewImage = (url: string) => {
 .image-preview {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    display: block;
     cursor: pointer;
 }
 
-/* 🔥 删除遮罩层 */
-.delete-overlay {
+/* 🔥 删除遮罩层 - 桌面端专用 */
+.delete-overlay.desktop-only {
     position: absolute;
     top: 0;
     left: 0;
@@ -202,54 +201,107 @@ const previewImage = (url: string) => {
     z-index: 2;
 }
 
-.image-item:hover .delete-overlay {
-    opacity: 1;
+/* 桌面端：hover 时显示遮罩 */
+@media (hover: hover) and (pointer: fine) {
+    .image-item:hover .delete-overlay.desktop-only {
+        opacity: 1;
+    }
+
+    .delete-overlay.desktop-only:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    /* 桌面端隐藏移动端角标 */
+    .delete-badge.mobile-only {
+        display: none !important;
+    }
 }
 
-.delete-overlay:hover {
-    background: rgba(0, 0, 0, 0.7);
+/* 移动端：隐藏遮罩，显示角标 */
+@media (hover: none) and (pointer: coarse),
+(max-width: 767px) {
+    .delete-overlay.desktop-only {
+        display: none !important;
+    }
 }
 
-/* 🔥 主图标记（缩小版） */
+/* 🔹 移动端删除角标 */
+.delete-badge.mobile-only {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(245, 108, 108, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, background 0.2s ease;
+    border: 2px solid white;
+}
+
+@media (hover: none) and (pointer: coarse),
+(max-width: 767px) {
+    .delete-badge.mobile-only {
+        display: flex;
+    }
+}
+
+.delete-badge:active {
+    transform: scale(0.9);
+    background: rgba(220, 53, 69, 0.95);
+}
+
+.delete-badge .el-icon {
+    font-size: 13px;
+}
+
+/* 🔥 主图标记 */
 .main-tag {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 6px;
+    left: 6px;
     background: linear-gradient(135deg, var(--el-color-warning) 0%, var(--el-color-warning-light-3) 100%);
     color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 500;
     display: flex;
     align-items: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 3;
+    pointer-events: none;
 }
 
 .main-tag .el-icon {
-    font-size: 10px;
+    font-size: 11px;
     margin-right: 2px;
 }
 
-/* 🔥 上传区域（虚线框）- 默认小屏 80px */
+/* 🔥 上传区域 */
 .upload-area {
     display: inline-block;
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     flex-shrink: 0;
 }
 
 .upload-area :deep(.el-upload) {
     width: 100%;
     height: 100%;
+    display: block;
 }
 
 .upload-placeholder {
     width: 100%;
     height: 100%;
     border: 2px dashed var(--el-border-color);
-    border-radius: 8px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -258,6 +310,7 @@ const previewImage = (url: string) => {
     background: var(--el-fill-color-blank);
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .upload-placeholder:hover {
@@ -266,7 +319,7 @@ const previewImage = (url: string) => {
 }
 
 .upload-icon {
-    font-size: 20px;
+    font-size: 32px;
     color: var(--el-color-primary);
     transition: transform 0.3s ease;
 }
@@ -276,32 +329,111 @@ const previewImage = (url: string) => {
 }
 
 .upload-text {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--el-text-color-secondary);
     font-weight: 500;
     text-align: center;
-    line-height: 1.2;
 }
 
-/* 🔥 预览对话框 */
-.preview-full {
-    width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    border-radius: 8px;
+.upload-count {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    background: var(--el-color-primary);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 🔥 响应式：768px 以上改为 120px */
+/* 🔥 移动端优化（< 640px） */
+@media (max-width: 639px) {
+    .image-upload-container {
+        gap: 10px;
+    }
+
+    .image-item {
+        width: 100px !important;
+        height: 100px !important;
+        border-radius: 10px;
+    }
+
+    .image-item:active {
+        border-color: var(--el-color-primary);
+        transform: scale(0.98);
+    }
+
+    .upload-area {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    .upload-placeholder {
+        border-radius: 10px;
+        border-width: 2px;
+    }
+
+    .upload-icon {
+        font-size: 28px;
+    }
+
+    .upload-text {
+        font-size: 12px;
+    }
+
+    .delete-badge.mobile-only {
+        width: 20px;
+        height: 20px;
+        top: 4px;
+        right: 4px;
+    }
+
+    .delete-badge .el-icon {
+        font-size: 12px;
+    }
+
+    .main-tag {
+        top: 4px;
+        left: 4px;
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+
+    .main-tag .el-icon {
+        font-size: 10px;
+    }
+}
+
+/* 🔥 平板端优化（640px - 767px） */
+@media (min-width: 640px) and (max-width: 767px) {
+    .image-item {
+        width: 110px !important;
+        height: 110px !important;
+    }
+
+    .upload-area {
+        width: 110px !important;
+        height: 110px !important;
+    }
+}
+
+/* 🔥 桌面端优化（≥ 768px） */
 @media (min-width: 768px) {
+    .image-item {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+    }
 
-    .image-item,
     .upload-area {
         width: 120px;
         height: 120px;
     }
 
     .upload-icon {
-        font-size: 28px;
+        font-size: 32px;
     }
 
     .upload-text {
@@ -317,22 +449,26 @@ const previewImage = (url: string) => {
 
     .main-tag .el-icon {
         font-size: 11px;
-        margin-right: 3px;
+    }
+
+    .delete-badge {
+        width: 22px;
+        height: 22px;
+        top: 6px;
+        right: 6px;
+    }
+
+    .delete-badge .el-icon {
+        font-size: 13px;
     }
 }
-</style>
 
-<!-- ✅ 对话框全局样式 -->
-<style>
-.image-preview-dialog .el-dialog__body {
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.9);
+/* 🔥 深色模式适配 */
+:deep(.el-image__inner) {
+    border-radius: inherit;
 }
 
-.image-preview-dialog .el-dialog__header {
-    display: none;
+:deep(.el-image-viewer__wrapper) {
+    z-index: 9999;
 }
 </style>
