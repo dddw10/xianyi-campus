@@ -83,16 +83,16 @@
 
                     <!-- 🔹 底部信息 + 简化后的操作按钮 -->
                     <div
-                        class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        class="flex flex-col md:flex-row  justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <div class="flex items-center gap-3">
                             <span class="text-red-500 font-bold text-lg md:text-xl">¥{{ formatPrice(item.price)
-                            }}</span>
+                                }}</span>
                             <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(item.created_at)
-                            }}</span>
+                                }}</span>
                         </div>
 
                         <!-- 🔥 简化：只保留编辑 + 下架两个按钮 -->
-                        <div class="flex items-center gap-1.5" @click.stop>
+                        <div class="flex items-center justify-end mt-2 gap-1.5" @click.stop>
                             <!-- ✅ 通用编辑按钮：重提/修改都显示「✏️ 编辑」 -->
                             <el-button v-if="canEdit(item)" size="small" @click="handleEdit(item)"
                                 class="!rounded-full !px-3 !py-1 !text-xs !h-7" title="编辑商品">

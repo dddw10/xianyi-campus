@@ -95,7 +95,7 @@
                             </h3>
                             <div class="flex items-center justify-between">
                                 <p class="text-[var(--primary)] font-bold text-lg">¥{{ item.price }}</p>
-                                <span v-if="width < 768">
+                                <!-- <span v-if="width < 768">
                                     <button class="bg-[var(--card)] text-[var(--primary)] rounded-full 
                                        hover:scale-110 hover:bg-[var(--primary)] hover:text-white
                                        transition-all duration-300 ease-out">
@@ -104,7 +104,7 @@
                                                 d="M12 4v16m8-8H4"></path>
                                         </svg>
                                     </button>
-                                </span>
+                                </span> -->
                                 <FavoriteButton :product-id="item.id" size="small"
                                     @change="handleFavoriteChange(item.id, $event)" />
                             </div>

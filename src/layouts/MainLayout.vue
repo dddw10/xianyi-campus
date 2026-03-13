@@ -67,9 +67,8 @@
                                     <div class="flex items-center gap-2 cursor-pointer 
                             hover:bg-[var(--card-hover)] rounded-full px-2 py-1 
                             transition-colors">
-                                        <el-avatar :size="28" class="bg-gradient-to-br from-blue-400 to-cyan-300">
-                                            {{ userName?.slice(-2)?.toUpperCase() }}
-                                        </el-avatar>
+                                        <el-avatar :size="30" :src="UserStore.userInfo?.avatar || getDefaultAvatar()"
+                                            class="border-4 border-white dark:border-gray-700 " />
                                         <span class="text-sm font-medium text-[var(--text)] hidden sm:inline">
                                             {{ userName }}
                                         </span>
@@ -259,6 +258,11 @@ const handleUserCommand = (command: string) => {
             break;
     }
 };
+
+// 🔹 默认头像
+const getDefaultAvatar = () => {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(UserStore.userInfo?.nickname || '同学')}&background=random`
+}
 
 // 退出登录
 const handleLogout = () => {
