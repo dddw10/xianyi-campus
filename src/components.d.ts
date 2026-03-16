@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AdvanceImageUpload: typeof import('./components/AdvanceImageUpload.vue')['default']
+    ChangePasswordModal: typeof import('./components/ChangePasswordModal.vue')['default']
     EditProductModal: typeof import('./components/products/EditProductModal.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
@@ -61,6 +62,7 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElText: typeof import('element-plus/es')['ElText']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FavoriteButton: typeof import('./components/products/FavoriteButton.vue')['default']

@@ -33,6 +33,15 @@ const authApi = {
     // 检查用户认证状态
     checkVerificationStatus(data: any) {
         return request.get('/api/auth/verify-status')
+    },
+
+    // 修改密码
+    ChangePasswordModal(data: { oldPassword: string, newPassword: string }) {
+        return request({
+            url: '/api/password/change',
+            method: 'post',
+            data
+        })
     }
 }
 

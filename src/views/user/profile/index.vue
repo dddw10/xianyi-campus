@@ -142,13 +142,19 @@
         </div>
 
         <!-- 🔹 设置弹窗 -->
-        <el-dialog v-model="showSettings" title="账号设置" width="90%" :before-close="() => { showSettings = false }">
+        <el-dialog v-model="showSettings" title="账号设置" :before-close="() => { showSettings = false }"
+            class="w-90% md:w-20%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
             <div class="space-y-4">
                 <el-button class="w-full" @click="handleLogout">退出登录</el-button>
-                <el-button class="w-full" @click="ElMessage.info('修改密码功能开发中')">修改密码</el-button>
+                <span></span>
+                <el-button class="w-full" @click="showPasswordModal = true" type="primary">修改密码</el-button>
+                <span></span>
                 <el-button class="w-full" link type="danger" @click="showSettings = false">取消</el-button>
             </div>
         </el-dialog>
+
+        <!-- 修改密码弹窗 -->
+        <ChangePasswordModal v-model:visible="showPasswordModal"></ChangePasswordModal>
     </div>
 </template>
 
@@ -162,11 +168,16 @@ import { useUserStore } from '@/stores/modules/user'
 import { useFavoriteStore } from '@/stores/modules/favorite'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
+import orderApi from "@/api/order";
+import ChangePasswordModal from "@/components/ChangePasswordModal.vue";
+import { modalBox } from "@/components/messageBox/modalBox";
 
 const router = useRouter()
 const userStore = useUserStore()
 const favoriteStore = useFavoriteStore()
 const showSettings = ref(false)
+const showPasswordModal = ref(false)
+
 
 // 🔹 默认头像
 const getDefaultAvatar = () => {
@@ -204,18 +215,57 @@ const quickActions = computed(() => [
 ])
 
 // 🔹 我的商品标签
-const productTabs = computed(() => [
-    { key: 'published', label: '我发布的', count: undefined },  // 后续可接 API 获取真实数量
-    { key: 'bought', label: '我买到的', count: undefined },
-    { key: 'sold', label: '我卖出的', count: undefined },
+const productTabs = ref([
+    { key: 'published', label: '我发布的', count: undefined, loading: false },
+    { key: 'bought', label: '我买到的', count: undefined, loading: false },
+    { key: 'sold', label: '我卖出的', count: undefined, loading: false },
 ])
+
+interface ProductTab {
+    key: 'published' | 'bought' | 'sold'
+    label: string
+    count?: number
+    loading?: boolean
+}
+
+// 获取单个的商品数量
+const fetchTabCount = async (key: ProductTab['key'], apiFn: () => Promise<any>) => {
+    // 找到对应的tab，设置加载状态
+    const tab = productTabs.value.find(t => t.key === key)
+    if (tab) tab.loading = true
+
+    try {
+        await apiFn().then((res: any) => {
+            if (res.code === 200) {
+                const count = res.data?.pagination?.total
+                if (tab) tab.count = count
+            }
+        })
+    } finally {
+        if (tab) tab.loading = false
+    }
+}
+
+// 获取商品的数据
+const getProductData = async () => {
+    try {
+        await Promise.all([
+            fetchTabCount('published', () => orderApi.getPublishGoods()),
+            fetchTabCount('bought', () => orderApi.getBoughtGoods()),
+            fetchTabCount('sold', () => orderApi.getSoldGoods()),
+        ])
+    } catch (error) {
+        console.error('❌ 批量获取商品数量失败:', error)
+    }
+}
 
 // 🔹 退出登录
 const handleLogout = () => {
-    ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-        confirmButtonText: '退出',
-        cancelButtonText: '取消',
-        type: 'warning'
+
+    modalBox({
+        type: 'error',
+        title: '提示',
+        message: '确定要退出登录吗？'
     }).then(() => {
         userStore.logout()  // 🔥 会自动清空收藏状态 + 跳转登录页
         router.replace({ path: '/auth/login' })
@@ -223,12 +273,12 @@ const handleLogout = () => {
 }
 
 // 🔹 初始化
-onMounted(() => {
-    // 🔥 确保用户信息已加载
-    if (!userStore.userInfo?.id) {
-        // 可选：重新获取用户信息
-        // userStore.fetchUserInfo()
+onMounted(async () => {
+    // 1. 如果用户已登录，初始化收藏状态
+    if (userStore.token) {
+        await favoriteStore.initFavorites()
     }
+    getProductData()
 })
 </script>
 

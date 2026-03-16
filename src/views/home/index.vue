@@ -122,7 +122,7 @@
                 <span class="text-[var(--text-secondary)]">135-3014-7144</span>
                 <!-- 版权 -->
                 <div class="mt-2 text-[var(--text-tertiary)]">
-                    © 2024 闲易校园
+                    © 2026 闲易校园
                 </div>
             </div>
         </footer>

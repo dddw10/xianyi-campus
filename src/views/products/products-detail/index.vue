@@ -191,7 +191,7 @@
                     <span>|</span>
                     <span class="cursor-pointer hover:text-gray-600" @click="handleReport">举报</span>
                     <span>|</span>
-                    <span>© 2024 XianYI</span>
+                    <span>© 2026 XianYI</span>
                 </span>
             </div>
         </div>
