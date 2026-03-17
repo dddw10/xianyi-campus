@@ -162,7 +162,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick } from "vue";
-import adminCategoryApi from "@/api/admin/category";
+import adminCategoryApi from "@/api/category";
 import adminApi from "@/api/admin";
 import { ElMessage } from "element-plus";
 import { modalBox } from "@/components/messageBox/modalBox";

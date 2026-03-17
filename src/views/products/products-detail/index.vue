@@ -140,25 +140,39 @@
                     </div>
 
                     <!-- 操作按钮区（买家） -->
+                    <!-- 🔹 修复后的底部操作栏 -->
+                    <!-- 🔹 底部操作栏 - 4:4:1 比例布局 -->
                     <div v-if="!isSeller"
-                        class="pt-4 sticky bottom-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm -mx-4 px-4 py-3">
-                        <div class="flex gap-3">
+                        class="pt-4 sticky bottom-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm -mx-4 px-4 py-3 z-10">
+
+                        <!-- 🔥 使用 flex 容器 + gap -->
+                        <div class="flex items-center gap-3 min-w-0">
+
+                            <!-- 🔹 聊一聊 - flex: 4 -->
                             <el-button v-if="product.status === 'available'" type="warning" size="large"
-                                class="!rounded-full !px-6 flex-1 font-medium" @click="handleContact">
+                                class="!rounded-full !px-3 font-medium truncate whitespace-nowrap flex-[4] min-w-0"
+                                @click="handleContact">
                                 💬 聊一聊
                             </el-button>
+
+                            <!-- 🔹 立即购买 - flex: 4 -->
                             <el-button v-if="product.status === 'available'" type="primary" size="large"
-                                class="!rounded-full !px-6 flex-1 font-medium !bg-gray-900 !border-gray-900 hover:!bg-gray-800"
+                                class="!rounded-full !px-3 font-medium truncate whitespace-nowrap flex-[4] min-w-0 !bg-gray-900 !border-gray-900 hover:!bg-gray-800"
                                 @click="handleBuy">
                                 🛒 立即购买
                             </el-button>
+
+                            <!-- 🔹 已售出 - flex: 8 (占两个按钮的位置) -->
                             <el-button v-if="product.status === 'sold'" size="large" disabled
-                                class="!rounded-full !px-6 flex-1">
+                                class="!rounded-full !px-3 truncate whitespace-nowrap flex-[8] min-w-0">
                                 ✅ 已售出
                             </el-button>
-                            <FavoriteButton size="large" :product-id="product.id"
-                                @change="handleFavorite(product.id, $event)">
-                                ⭐
+
+                            <!-- 🔹 收藏按钮 - flex: 1 -->
+                            <FavoriteButton
+                                class="!rounded-full font-medium flex items-center justify-center flex-[1] min-w-0"
+                                size="large" :product-id="product.id" @change="handleFavorite(product.id, $event)">
+                                <span class="text-lg">⭐</span>
                             </FavoriteButton>
                         </div>
                     </div>
@@ -220,7 +234,7 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { useUserStore } from "@/stores/modules/user"
 import { Picture, Collection } from "@element-plus/icons-vue"
 import EditProductModal from "@/components/products/EditProductModal.vue"
-import adminCategoryApi from "@/api/admin/category"
+import adminCategoryApi from "@/api/category"
 import productApi from "@/api/product";
 import FavoriteButton from "@/components/products/FavoriteButton.vue";
 import { useFavoriteStore } from "@/stores/modules/favorite";

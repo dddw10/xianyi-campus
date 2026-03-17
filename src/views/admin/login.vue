@@ -117,19 +117,22 @@ const handleLogin = async () => {
         loading.value = true
 
         try {
-            const res = await authApi.adminLogin(formData)
+            authApi.adminLogin(formData).then((res: any) => {
+                if (res.code === 200) {
+                    ElMessage.success('🎉 管理员登录成功')
 
-            if ('code' in res && res.code === 200) {
-                ElMessage.success('🎉 管理员登录成功')
+                    // 🔥 关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
+                    userStore.setUserInfo(res.data)
 
-                // 🔥 关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
-                await userStore.setUserInfo(res.data)
+                    // 🔥 跳转到管理员数据看板（路由已动态添加）
+                    router.push('/admin/dashboard')
 
-                // 🔥 跳转到管理员数据看板（路由已动态添加）
-                router.push('/admin/dashboard')
-            } else {
-                ElMessage.error('登录失败')
-            }
+                    window.location.reload()
+                } else {
+                    ElMessage.error('登录失败')
+                }
+            })
+
         } catch (error: any) {
             console.error('管理员登录异常:', error)
             ElMessage.error(error?.response?.data?.msg || '登录失败，请稍后重试')

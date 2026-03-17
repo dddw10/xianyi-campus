@@ -137,7 +137,7 @@ import { ElMessage } from 'element-plus'
 import { Edit, Close, InfoFilled, WarningFilled } from '@element-plus/icons-vue'
 import productApi from '@/api/product'
 import AdvanceImageUpload from "@/components/AdvanceImageUpload.vue"
-import adminCategoryApi from "@/api/admin/category";
+import adminCategoryApi from "@/api/category";
 
 const props = defineProps<{
     product?: any

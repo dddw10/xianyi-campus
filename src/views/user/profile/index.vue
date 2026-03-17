@@ -36,7 +36,7 @@
                             </el-tag>
 
                             <el-button v-if="!userStore.userInfo?.isVerified" link size="small" class="ml-2"
-                                @click="$router.push('/verify')">
+                                @click="$router.push('/main/verify')">
                                 去认证
                             </el-button>
                         </div>

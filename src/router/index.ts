@@ -268,21 +268,23 @@ export function removeDynamicRoutes(routeNames: string[]) {
 }
 
 // 🔹 前置守卫（✅ 修复：管理员登录公开 + 精确匹配）
+// src/router/index.ts
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
   const userStore = useUserStore()
   const meta = to.meta as Record<string, any>
 
-  // 🔥【关键】管理员登录页：始终公开，使用 AuthLayout
+  // 🔥【关键】管理员登录页：始终公开
   if (to.name === 'adminLogin' || to.path === '/admin/login') {
     if (userStore.isLoggedIn && userStore.userInfo?.role === 'admin') {
-      next({ name: 'AdminDashboard' })
-      return
+      // 🔥 修复 1: 用路径跳转 + await
+      await router.replace('/admin/dashboard')  // 🔥 确保路径正确
+      return  // 🔥 跳转后返回，不调用 next()
     }
     next()
     return
   }
 
-  // 🔥 未登录时，先拦截可能的受保护路由
+  // 🔥 未登录时，拦截受保护路由
   if (!userStore.isLoggedIn) {
     const isAuthPage = to.path.startsWith('/auth')
     const isHome = to.path === '/' || to.path === '/home'
@@ -292,7 +294,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
       to.path.startsWith('/products/detail/')
 
     if (!isAuthPage && !isHome && !isPublicProduct && !meta?.public) {
-      console.log('🔐 未登录访问受保护路由，弹出提示:', to.path)
+      console.log('🔐 未登录访问受保护路由:', to.path)
       try {
         const result = await modalBox({
           type: 'question',
@@ -302,10 +304,8 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
           confirm: '去登录'
         })
         if (result === true) {
-          console.log('🔐 用户选择登录，跳转:', `/auth/login?redirect=${to.fullPath}`)
           next({ path: '/auth/login', query: { redirect: to.fullPath } })
         } else {
-          console.log('🔐 用户取消，停留在当前页')
           next(false)
         }
       } catch (error) {
@@ -316,7 +316,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     }
   }
 
-  // 🔥 /main/* 路由的处理（继承 MainLayout 的保护路由）
+  // 🔥 /main/* 路由的处理
   if (to.path.startsWith('/main')) {
     if (!userStore.isLoggedIn) {
       next({ name: 'login', query: { redirect: to.fullPath.replace('/main', '') } })
@@ -326,7 +326,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
       const userPerms = userStore.permissions?.permissions || []
       if (!userPerms.includes(meta.permission)) {
         ElMessage.error('权限不足')
-        next({ name: 'home' })
+        next({ path: '/home' })  // 🔥 修复：用路径替代 name
         return
       }
     }
@@ -334,7 +334,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 管理员后台路由（/admin/*，排除登录页）
+  // 🔥 管理员后台路由（排除登录页）
   if (to.path.startsWith('/admin') && to.name !== 'adminLogin') {
     if (!userStore.isLoggedIn) {
       next({ name: 'adminLogin', query: { redirect: to.fullPath } })
@@ -342,14 +342,14 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     }
     if (userStore.userInfo?.role !== 'admin') {
       ElMessage.error('权限不足，需要管理员账号')
-      next({ name: 'home' })
+      next({ path: '/home' })  // 🔥 修复：用路径替代 name
       return
     }
     if (meta.permission) {
       const userPerms = userStore.permissions?.permissions || []
       if (!userPerms.includes(meta.permission)) {
         ElMessage.error('权限不足，无法访问此页面')
-        next({ name: 'AdminDashboard' })
+        next({ path: '/admin/dashboard' })  // 🔥 修复：用路径替代 name
         return
       }
     }
@@ -357,13 +357,10 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 公开路由放行（放在登录检查之后）
+  // 🔥 公开路由放行（🔥 修复：移除自动跳转逻辑）
   if (publicPaths.some(path => to.path.startsWith(path)) && !meta.requiresAuth) {
-    if (to.path.startsWith('/auth') && userStore.isLoggedIn) {
-      ElMessage.warning({ message: '您已经登录了', duration: 1500 })
-      setTimeout(() => router.replace({ name: 'home' }), 1500)
-      return
-    }
+    // 🔥 修复 2: 移除 "已登录自动跳转" 逻辑，让登录组件控制跳转
+    // 🔥 原因：守卫 + 组件重复跳转会产生竞争条件
     next()
     return
   }
@@ -371,7 +368,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
   // 🔥 普通用户权限检查
   if (meta.requiresVerified && !userStore.isVerified) {
     ElMessage.warning('请先完成身份认证')
-    next({ name: 'Verification' })
+    next({ name: 'Verification' })  // 🔥 确保路由 name 正确，或用路径
     return
   }
 

@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue"
+import { ref, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from "element-plus"
@@ -89,6 +89,7 @@ import { useUserStore } from "@/stores/modules/user"
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
+const userStore = useUserStore()
 
 interface countDataType {
     studentId: string | null
@@ -134,16 +135,20 @@ const login = async () => {
         loading.value = true
 
         // 调用接口
-        const res = await authApi.login(countData.value)
+        authApi.login(countData.value).then((res: any) => {
+            if (res.code === 200) {
+                ElMessage.success('🎉 登录成功')
 
-        if ('code' in res && res.code === 200) {
-            ElMessage.success('🎉 登录成功')
-            await useUserStore().setUserInfo(res.data)
-            router.push('/')
-            // window.location.reload()
-        } else {
-            ElMessage.error('登录失败')
-        }
+                userStore.setUserInfo(res.data)
+                setTimeout(() => {
+                    router.push('/home')
+                }, 100);
+            } else {
+                ElMessage.error('登录失败')
+            }
+        })
+
+
     } catch (error: any) {
         console.error('登录异常:', error)
         if (error?.response?.data?.message) {

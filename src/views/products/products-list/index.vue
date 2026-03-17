@@ -149,7 +149,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useWindowSize } from "@vueuse/core";
-import adminCategoryApi from "@/api/admin/category";
+import adminCategoryApi from "@/api/category";
 import productApi from "@/api/product";
 import { useRouter } from "vue-router";
 import { useFavoriteStore } from "@/stores/modules/favorite";
