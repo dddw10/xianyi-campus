@@ -234,7 +234,7 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { useUserStore } from "@/stores/modules/user"
 import { Picture, Collection } from "@element-plus/icons-vue"
 import EditProductModal from "@/components/products/EditProductModal.vue"
-import adminCategoryApi from "@/api/category"
+import adminCategoryApi from "@/api/admin/category"
 import productApi from "@/api/product";
 import FavoriteButton from "@/components/products/FavoriteButton.vue";
 import { useFavoriteStore } from "@/stores/modules/favorite";

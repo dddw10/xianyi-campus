@@ -155,8 +155,8 @@
             <!-- 内容区域 -->
             <div class="flex-1 p-4 sm:p-6 overflow-auto">
                 <router-view v-slot="{ Component }">
-                    <transition name="fade" mode="out-in">
-                        <component :is="Component" :key="$route.fullPath" />
+                    <transition name="fade"> <!-- 🔥 移除 mode="out-in" -->
+                        <component :is="Component" :key="$route.name" /> <!-- 🔥 用 name 替代 fullPath -->
                     </transition>
                 </router-view>
             </div>

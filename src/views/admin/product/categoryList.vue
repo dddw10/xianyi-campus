@@ -174,7 +174,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
 import { Search, Refresh, Plus, Edit, Delete, Check } from '@element-plus/icons-vue'
-import adminCategoryApi, { type Category } from '@/api/category'
+import adminCategoryApi, { type Category } from '@/api/admin/category'
 import { useWindowSize } from "@vueuse/core";
 
 // 🔹 弹窗控制
