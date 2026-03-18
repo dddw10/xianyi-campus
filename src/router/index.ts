@@ -47,7 +47,22 @@ const routes: RouteRecordRaw[] = [
         name: 'home',
         component: () => import('@/views/home/index.vue'),
         meta: { title: '首页', public: true }
-      }
+      },
+      {
+        path: '/pay/result',
+        name: 'PayResult',
+        component: () => import('@/views/pay/result.vue'),
+        meta: { title: '支付结果', requiresAuth: false }  // 🔥 回调返回不需要登录
+      },
+
+      {
+        path: '/admin',
+        name: 'admin',
+        component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
+        meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
+        redirect: '/admin/dashboard',
+        children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
+      },
     ]
   },
 
@@ -82,15 +97,13 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // 🔥【关键修复】管理员后台：需要登录 + 管理员角色 + AdminLayout
   {
-    path: '/admin',
-    name: 'admin',
-    component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
-    meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
-    redirect: '/admin/dashboard',
-    children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
+    path: '/pay/:orderNo',
+    name: 'Pay',
+    component: () => import('@/views/pay/index.vue'),
+    meta: { title: '订单支付', requiresAuth: true }  // 🔥 需要登录，但不是管理员
   },
+
 
   // ==================== 商品相关 ====================
   {

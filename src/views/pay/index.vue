@@ -1,0 +1,112 @@
+<!-- src/views/pay/Index.vue -->
+<template>
+    <div class="min-h-screen bg-[var(--el-fill-color-light)] flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-[var(--el-bg-color)] rounded-2xl shadow-lg p-6">
+
+            <!-- 🔹 支付信息 -->
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-[var(--el-text-color-primary)]">💳 订单支付</h2>
+                <p class="text-[var(--el-text-color-secondary)] text-sm mt-2">
+                    订单号：{{ orderNo }}
+                </p>
+            </div>
+
+            <!-- 🔹 支付金额 -->
+            <div class="text-center py-6 bg-[var(--el-fill-color-light)] rounded-xl mb-6">
+                <p class="text-[var(--el-text-color-secondary)] text-sm">支付金额</p>
+                <p class="text-4xl font-bold text-[var(--el-color-primary)] mt-2">¥{{ amount }}</p>
+            </div>
+
+            <!-- 🔹 支付方式 -->
+            <div class="space-y-3 mb-6">
+                <div class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer"
+                    :class="paymentMethod === 'alipay' ? 'border-[var(--el-color-primary)] bg-[var(--el-color-primary-light-9)]' : 'border-[var(--el-border-color-light)]'"
+                    @click="paymentMethod = 'alipay'">
+                    <el-radio v-model="paymentMethod" label="alipay" />
+                    <span class="flex-1 font-medium">支付宝</span>
+                </div>
+            </div>
+
+            <!-- 🔹 支付按钮 -->
+            <el-button type="primary" size="large" class="w-full" :loading="paying" @click="handlePay">
+                {{ paying ? '跳转中...' : '立即支付' }}
+            </el-button>
+
+            <!-- 🔹 模拟支付提示 -->
+            <div v-if="isMock" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-xs text-yellow-700">
+                    🔸 开发环境：使用模拟支付，不会真实扣款
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import orderApi from '@/api/order'
+
+const route = useRoute()
+const router = useRouter()
+const orderNo = ref(route.params.orderNo as string)
+const paymentMethod = ref('alipay')
+const paying = ref(false)
+const amount = ref('0.00')
+const isMock = import.meta.env.DEV  // 🔥 开发环境检测
+
+const handlePay = async () => {
+    paying.value = true
+    try {
+        const res = await orderApi.payOrder(orderNo.value, paymentMethod.value)
+
+        if ((res as any).code === 200) {
+            amount.value = res.data.amount
+
+            // 🔥 模拟模式：提示用户并自动完成
+            if (isMock || res.data.mock) {
+                ElMessage.info('🔸 模拟支付模式，3 秒后自动完成')
+                setTimeout(() => {
+                    // 🔥 模拟支付成功，手动触发回调测试（开发用）
+                    testMockCallback(orderNo.value, amount.value)
+                }, 3000)
+                return
+            }
+
+            // 🔥 正常模式：跳转支付宝
+            window.location.href = res.data.payUrl
+        }
+    } catch (error: any) {
+        ElMessage.error(error?.response?.data?.msg || '发起支付失败')
+    } finally {
+        paying.value = false
+    }
+}
+
+// 🔥 模拟回调测试（开发环境用）
+const testMockCallback = async (orderNo: string, amount: string) => {
+    try {
+        // 🔸 调用后端测试接口（或直接触发回调逻辑）
+        await fetch('http://localhost:3000/api/payments/alipay/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                out_trade_no: orderNo,
+                trade_no: 'MOCK_' + Date.now(),
+                total_amount: amount,
+                trade_status: 'TRADE_SUCCESS'
+            })
+        })
+
+        ElMessage.success('✅ 模拟支付成功')
+        router.push(`/pay/result?orderNo=${orderNo}&status=success`)
+    } catch (error) {
+        ElMessage.error('模拟回调失败')
+    }
+}
+
+onMounted(() => {
+    if (!orderNo.value) ElMessage.error('订单号不能为空')
+})
+</script>

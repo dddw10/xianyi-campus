@@ -11,24 +11,24 @@
             </p>
         </div>
 
-        <!-- 商品列表 -->
+        <!-- 订单列表 -->
         <div>
             <el-tabs v-model="activeTab" class="order-tabs" :stretch="true" @tab-change="handleTabChange">
                 <el-tab-pane label="📤 我发布的" name="published">
                     <div class="mt-4 overflow-auto">
-                        <publish ref="publishRef" />
+                        <PublishGoods ref="publishRef" />
                     </div>
                 </el-tab-pane>
 
                 <el-tab-pane label="🛒 我买到的" name="bought">
                     <div class="mt-4">
-                        <goods ref="goodsRef" />
+                        <BoughtOrders ref="boughtRef" />
                     </div>
                 </el-tab-pane>
 
                 <el-tab-pane label="💰 我卖出的" name="sold">
                     <div class="mt-4">
-                        <sold ref="soldRef" />
+                        <SoldOrders ref="soldRef" />
                     </div>
                 </el-tab-pane>
             </el-tabs>
@@ -37,12 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import type { TabPaneName } from 'element-plus'  // 🔥 导入类型
-import publish from './modules/publish-goods/index.vue'
-import goods from './modules/bought-goods/index.vue'
-import sold from './modules/sold-goods/index.vue'
+import { ref, onMounted, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import type { TabPaneName } from 'element-plus'
+import PublishGoods from './modules/publish-goods/index.vue'
+import BoughtOrders from './modules/bought-goods/index.vue'
+import SoldOrders from './modules/sold-goods/index.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -50,9 +50,9 @@ const router = useRouter()
 type OrderTab = 'published' | 'bought' | 'sold'
 const activeTab = ref<OrderTab>('published')
 
-const publishRef = ref<InstanceType<typeof publish>>()
-const goodsRef = ref<InstanceType<typeof goods>>()
-const soldRef = ref<InstanceType<typeof sold>>()
+const publishRef = ref<InstanceType<typeof PublishGoods>>()
+const boughtRef = ref<InstanceType<typeof BoughtOrders>>()
+const soldRef = ref<InstanceType<typeof SoldOrders>>()
 
 // 🔥 类型守卫：校验 tab 名称是否合法
 const isValidTab = (name: TabPaneName): name is OrderTab => {
@@ -79,8 +79,6 @@ const handleTabChange = (name: TabPaneName) => {
         console.warn('⚠️ 非法的 tab 名称:', name)
         return
     }
-
-    // 🔥 现在 TypeScript 知道 name 是 OrderTab
     router.replace({
         query: { ...route.query, type: name }
     })

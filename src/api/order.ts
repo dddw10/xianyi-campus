@@ -44,6 +44,39 @@ export interface PublicProductsParams {
     // 🔹 不需要传状态筛选，后端自动过滤
 }
 
+export interface OrderItem {
+    id: number
+    orderNo: string
+    buyerId: number
+    sellerId: number
+    productId: number
+    productTitle: string
+    productImage: string
+    price: string
+    paymentAmount: string | null
+    status: 'pending' | 'paid' | 'trading' | 'completed' | 'cancelled' | 'refunded'
+    paymentMethod: 'alipay' | 'wechat' | 'balance'
+    paymentTime: string | null
+    deliveryAddress: string | null
+    buyerRemark: string | null
+    createdAt: string
+}
+
+export interface CreateOrderParams {
+    productId: number
+    quantity?: number
+    deliveryAddress?: string
+    buyerRemark?: string
+}
+
+export interface PayOrderResponse {
+    payUrl: string
+    orderNo: string
+    amount: string
+    mock?: boolean  // 🔥 开发环境标记
+}
+
+
 export const orderApi = {
     // 🔹 我发布的（商品状态）
     getPublishGoods(params?: {
@@ -107,6 +140,41 @@ export const orderApi = {
             url: `/api/user/orders/${orderNo}`,
             method: 'get'
         })
+    },
+
+    // 🔹 创建订单
+    createOrder(data: CreateOrderParams) {
+        return request({ url: '/api/user/orders', method: 'post', data })
+    },
+
+    // 🔹 发起支付
+    payOrder(orderNo: string, paymentMethod: string = 'alipay') {
+        return request({ url: `/api/user/orders/${orderNo}/pay`, method: 'post', data: { paymentMethod } })
+    },
+
+    // 🔹 查询支付结果
+    getPayResult(orderNo: string) {
+        return request({ url: `/api/user/orders/${orderNo}/pay-result`, method: 'get' })
+    },
+
+    // 🔹 我的订单列表（买家视角）
+    getBoughtOrders(params?: { page?: number; limit?: number; status?: string }) {
+        return request({ url: '/api/user/orders/bought', method: 'get', params: { page: 1, limit: 20, ...params } })
+    },
+
+    // 🔹 我的订单列表（卖家视角 - 卖出的）
+    getSoldOrders(params?: { page?: number; limit?: number; status?: string }) {
+        return request({ url: '/api/user/orders/sold', method: 'get', params: { page: 1, limit: 20, ...params } })
+    },
+
+    // 🔹 订单详情
+    // getOrderDetail(orderNo: string) {
+    //     return request({ url: `/api/user/orders/${orderNo}`, method: 'get' })
+    // },
+
+    // 🔹 更新订单状态（确认收货/发货等）
+    updateOrderStatus(orderNo: string, status: string) {
+        return request({ url: `/api/user/orders/${orderNo}/status`, method: 'put', data: { status } })
     }
 }
 
