@@ -23,6 +23,8 @@ const componentMap: Record<string, any> = {
   'AdminUserManagement': () => import('@/views/admin/user/index.vue'),
   'AdminProductReview': () => import('@/views/admin/product/review.vue'),
   'AdminReportManagement': () => import('@/views/admin/report/index.vue'),
+  'AdminHomePosters': () => import('@/views/admin/home/poster-management/index.vue'),
+  'AdminHomeFaqs': () => import('@/views/admin/home/faq-management/index.vue'),
 }
 
 // 🔹 公开路由（无需登录即可访问）
