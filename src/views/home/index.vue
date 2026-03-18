@@ -1,8 +1,8 @@
 <!-- src/views/home/Index.vue -->
 <template>
-    <div class="min-h-screen bg-[var(--page-bg)]">
+    <div class="min-h-screen w-full bg-[var(--page-bg)]">
         <!-- 🔹 轮播图 -->
-        <div class="w-full max-w-6xl mx-auto mt-6 px-4">
+        <div class="w-full max-w-7xl mx-auto mt-6 px-4">
             <el-carousel :type="carouselWay" :height="height" v-if="!loading.posters && posters.length > 0"
                 :interval="3000" class="rounded-2xl shadow-[var(--shadow)] overflow-hidden bg-[var(--card)]">
                 <el-carousel-item v-for="item in posters" :key="item.id">
@@ -50,35 +50,48 @@
             </div>
 
             <!-- 🔹 常见问题区域 -->
-            <el-collapse v-if="!loading.faqs && faqs.length > 0" v-model="activeNames" accordion class="faq-collapse">
-                <el-collapse-item v-for="(item, index) in faqs" :key="item.id" :name="item.id" class="faq-item">
-                    <!-- 🔹 标题区域 - 简洁设计 -->
+            <el-collapse v-if="!loading.faqs && faqs.length > 0" v-model="activeNames" accordion
+                class="!bg-transparent !border-none">
+                <el-collapse-item v-for="(item, index) in faqs" :key="item.id" :name="item.id"
+                    class="faq-item mb-2 last:mb-0 overflow-hidden rounded-lg transition-all duration-300">
+                    <!-- 🔹 标题区域 - 简洁设计 & 交互反馈 -->
                     <template #title>
-                        <div class="flex items-center gap-3 w-full py-3.5 px-4">
-                            <!-- 简约序号 -->
-                            <span class="faq-number w-6 h-6 rounded-full bg-[var(--el-fill-color-light)] 
-                     flex items-center justify-center text-xs font-medium 
-                     text-[var(--el-text-color-regular)] flex-shrink-0">
+                        <div class="flex items-center gap-3 w-full py-3.5 px-4 
+                   hover:bg-[var(--el-fill-color-light)] 
+                   active:bg-[var(--el-fill-color)] 
+                   transition-colors duration-200 
+                   cursor-pointer select-none">
+                            <!-- 简约序号 - 浅蓝色调呼应 -->
+                            <span class="faq-number w-6 h-6 rounded-full 
+                     bg-[var(--el-color-primary-light-9)] 
+                     text-[var(--el-color-primary)] 
+                     flex items-center justify-center 
+                     text-xs font-bold flex-shrink-0">
                                 {{ index + 1 }}
                             </span>
 
                             <!-- 问题文字 -->
-                            <span class="flex-1 text-[var(--el-text-color-primary)] font-medium text-sm">
+                            <span class="flex-1 text-[var(--el-text-color-primary)] 
+                     font-medium text-sm md:text-base">
                                 {{ item.question }}
                             </span>
 
                             <!-- 简约箭头 - 旋转动画 -->
                             <el-icon class="faq-arrow text-[var(--el-text-color-secondary)] 
-                        transition-transform duration-200" :class="{ 'is-active': activeNames === item.id }">
+                     transition-transform duration-300 ease-in-out"
+                                :class="activeNames === item.id ? 'rotate-90 text-[var(--el-color-primary)]' : ''">
                                 <ArrowRight />
                             </el-icon>
                         </div>
                     </template>
 
-                    <!-- 🔹 答案区域 - 简洁分隔 -->
-                    <div class="px-4 pb-4 pt-1">
-                        <div class="ml-9 pl-3 border-l border-[var(--el-border-color-light)]">
-                            <p class="text-[var(--el-text-color-secondary)] leading-6 text-sm">
+                    <!-- 🔹 答案区域 - 简洁分隔 & 左侧引导线 -->
+                    <div class="pr-4  pt-2">
+                        <div class="ml-9 pl-4 border-l-2 border-[var(--el-color-primary-light-5)] 
+                   animate-fade-in">
+                            <p class="text-[var(--el-text-color-regular)] 
+                     leading-7 text-sm md:text-base 
+                     text-justify">
                                 {{ item.answer }}
                             </p>
                         </div>
