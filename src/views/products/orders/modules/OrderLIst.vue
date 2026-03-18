@@ -1,272 +1,215 @@
-<!-- src/views/products/orders/modules/OrderList.vue -->
+<!-- src/views/products/orders/OrderLIst.vue -->
 <template>
-    <div v-loading="isLoading" element-loading-text="加载中..." class="w-full">
-
-        <!-- 🔸 空状态 -->
-        <div v-if="orderList.length === 0 && !isLoading" class="text-center p-4 z-10">
-            <div class="text-6xl mb-4 animate-bounce">📦</div>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                {{ props.emptyText || '暂无订单' }}
-            </h3>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
-                {{ getEmptySubtext(props.listType) }}
-            </p>
-            <el-button type="primary" @click="router.push('/products')" class="!rounded-full !px-6">
-                🛍️ 去逛逛
-            </el-button>
+    <div class="space-y-4">
+        <!-- 🔹 加载状态 -->
+        <div v-if="loading" class="flex justify-center py-10">
+            <el-skeleton :rows="5" animated />
         </div>
 
-        <!-- 🔸 订单列表 -->
+        <!-- 🔹 空状态 -->
+        <el-empty v-else-if="!list || list.length === 0" :description="emptyText" />
+
+        <!-- 🔹 订单列表 -->
         <div v-else class="space-y-4">
-            <div v-for="item in orderList" :key="item.orderNo || item.id"
-                class="order-card p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
-                @click="router.push(`/user/orders/${item.orderNo}`)">
-                <!-- 🔹 订单头部：订单号 + 状态 + 时间 -->
-                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-500">订单号：</span>
-                        <span class="font-mono text-sm text-gray-700 dark:text-gray-300">{{ item.orderNo }}</span>
+            <div v-for="order in list" :key="order.id"
+                class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                <!-- 顶部：订单号 + 状态 -->
+                <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-100 dark:border-gray-700">
+                    <div class="text-sm text-gray-500 flex items-center gap-2">
+                        <span>订单号：</span>
+                        <!-- 🔥 点击订单号也可以跳转详情 -->
+                        <span class="font-mono text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
+                            @click="$router.push(`/orders/${order.order_no || order.orderNo}`)">
+                            {{ order.order_no || order.orderNo || '未知' }}
+                        </span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <el-tag :type="getStatusType(item.status)" size="small" effect="light">
-                            {{ getStatusText(item.status, props.listType) }}
-                        </el-tag>
-                        <span class="text-xs text-gray-400">{{ formatDate(item.createdAt || item.created_at) }}</span>
+                    <el-tag :type="getStatusType(order.status)" size="small" round>
+                        {{ getStatusText(order.status) }}
+                    </el-tag>
+                </div>
+
+                <!-- 主体：商品信息 (点击商品区域也可跳转详情) -->
+                <div class="flex gap-4 mb-4 cursor-pointer"
+                    @click="$router.push(`/orders/${order.order_no || order.orderNo}`)">
+                    <div class="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                        <el-image :src="order.product_image || order.images?.[0]" fit="cover" class="w-full h-full">
+                            <template #error>
+                                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                    <el-icon>
+                                        <Picture />
+                                    </el-icon>
+                                </div>
+                            </template>
+                        </el-image>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between">
+                        <h3 class="text-gray-800 dark:text-gray-200 font-medium line-clamp-2">
+                            {{ order.product_title || order.title }}
+                        </h3>
+                        <div class="flex justify-between items-end">
+                            <span class="text-orange-500 font-bold">
+                                ¥{{ formatPrice(order.price || order.payment_amount || 0) }}
+                            </span>
+                            <span class="text-xs text-gray-400">x{{ order.quantity || 1 }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 🔹 商品信息 -->
-                <div class="flex gap-4 mb-3">
-                    <el-image :src="item.productImage || item.images?.[0]"
-                        class="w-20 h-20 rounded-lg object-cover bg-gray-100 dark:bg-gray-700" fit="cover" @click.stop>
-                        <template #error>
-                            <div
-                                class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                <el-icon class="text-gray-400">
-                                    <Picture />
-                                </el-icon>
-                            </div>
-                        </template>
-                    </el-image>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-medium text-gray-800 dark:text-gray-100 line-clamp-2" @click.stop>
-                            {{ item.productTitle || item.title }}
-                        </h4>
-                        <p class="text-red-500 font-bold mt-1">¥{{ formatPrice(item.price || item.totalAmount) }}</p>
-                    </div>
-                </div>
+                <!-- 底部：操作按钮区 -->
+                <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
 
-                <!-- 🔹 交易双方信息 -->
-                <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <span v-if="props.listType === 'bought'">
-                        卖家：{{ item.sellerName || '匿名' }}
-                    </span>
-                    <span v-else-if="props.listType === 'sold'">
-                        买家：{{ item.buyerName || '匿名' }}
-                    </span>
-                    <span v-if="item.deliveryAddress" class="text-gray-300">|</span>
-                    <span v-if="item.deliveryAddress" class="line-clamp-1">
-                        📍 {{ item.deliveryAddress }}
-                    </span>
-                </div>
+                    <!-- 🔹 动态操作按钮 (根据状态显示) -->
 
-                <!-- 🔹 订单操作按钮 -->
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700"
-                    @click.stop>
-                    <!-- 🔸 买家操作 -->
-                    <template v-if="props.listType === 'bought'">
-                        <el-button v-if="item.status === 'pending'" size="small" type="primary"
-                            @click.stop="router.push(`/pay/${item.orderNo}`)">
-                            💳 去支付
-                        </el-button>
-                        <el-button v-if="item.status === 'trading'" size="small" type="success"
-                            @click.stop="handleConfirmReceive(item.orderNo)">
-                            ✅ 确认收货
-                        </el-button>
-                        <el-button v-if="['pending', 'trading'].includes(item.status)" size="small" type="danger" link
-                            @click.stop="handleCancelOrder(item.orderNo)">
+                    <!-- 1. 待付款：取消 + 支付 -->
+                    <template v-if="order.status === 'pending'">
+                        <el-button size="small" type="danger" plain @click.stop="handleCancel(order)">
                             取消订单
                         </el-button>
-                    </template>
-
-                    <!-- 🔸 卖家操作 -->
-                    <template v-else-if="props.listType === 'sold'">
-                        <el-button v-if="item.status === 'pending'" size="small" type="success"
-                            @click.stop="emit('ship-order', item.orderNo)">
-                            🚚 发货
+                        <el-button size="small" type="primary"
+                            @click.stop="$router.push(`/pay/${order.order_no || order.orderNo}`)">
+                            去支付
                         </el-button>
                     </template>
 
-                    <!-- 🔸 通用操作 -->
-                    <el-button size="small" type="info" link @click.stop="router.push(`/user/orders/${item.orderNo}`)">
-                        详情
+                    <!-- 2. 待发货 (paid)：无操作，提示等待 -->
+                    <template v-else-if="order.status === 'paid'">
+                        <span class="text-xs text-gray-400 mr-2">等待卖家发货</span>
+                    </template>
+
+                    <!-- 3. 待收货 (trading)：确认收货 -->
+                    <template v-else-if="order.status === 'trading'">
+                        <el-button size="small" type="success" @click.stop="handleConfirm(order)">
+                            确认收货
+                        </el-button>
+                    </template>
+
+                    <!-- 4. 已完成/已取消/已退款：无特殊操作 -->
+                    <template v-else-if="['completed', 'cancelled', 'refunded'].includes(order.status)">
+                        <span class="text-xs text-gray-400 mr-2">交易已结束</span>
+                    </template>
+
+                    <!-- 🔥 公共按钮：查看详情 (所有状态都显示) -->
+                    <!-- 使用 .stop 防止冒泡触发上层的点击跳转 -->
+                    <el-button size="small" plain
+                        @click.stop="$router.push(`/orders/${order.order_no || order.orderNo}`)">
+                        查看详情
                     </el-button>
+
                 </div>
             </div>
-        </div>
 
-        <!-- 🔸 分页 -->
-        <div v-if="pagination.total > 0"
-            class="flex justify-center mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="pagination.total"
-                :page-sizes="[10, 20, 50]" layout="prev, pager, next, total" @current-change="handlePageChange"
-                class="!text-sm" />
+            <!-- 🔹 分页 -->
+            <div v-if="pagination.total > pagination.limit" class="flex justify-center mt-6">
+                <el-pagination v-model:current-page="currentPage" :page-size="pagination.limit"
+                    :total="pagination.total" layout="prev, pager, next" @current-change="handlePageChangeInternal" />
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
-import { Picture } from "@element-plus/icons-vue"
-import { useRouter } from "vue-router"
-import { ElMessage, ElMessageBox } from "element-plus"
-import orderApi from "@/api/order"
+import { computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Picture } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// 🔥 修复：使用 withDefaults + 可选 props
-const props = withDefaults(defineProps<{
-    list?: any[]
-    loading?: boolean
-    pagination?: { page: number; limit: number; total: number }
-    emptyText?: string
-    listType?: 'bought' | 'sold'
-}>(), {
-    list: () => [],
-    loading: false,
-    pagination: () => ({ page: 1, limit: 20, total: 0 }),
-    emptyText: '暂无订单',
-    listType: 'bought'
-})
+interface OrderItem {
+    id: number | string
+    order_no?: string
+    orderNo?: string
+    status: string
+    product_title?: string
+    title?: string
+    product_image?: string
+    images?: string[]
+    price?: string | number
+    payment_amount?: string | number
+    quantity?: number
+    [key: string]: any
+}
+
+const props = defineProps<{
+    list: OrderItem[]
+    loading: boolean
+    pagination: { page: number; limit: number; total: number }
+    emptyText: string
+    listType: string
+}>()
 
 const emit = defineEmits<{
     (e: 'page-change', page: number): void
     (e: 'refresh-list'): void
     (e: 'confirm-receive', orderNo: string): void
-    (e: 'ship-order', orderNo: string, tracking?: string): void
+    (e: 'cancel-order', orderNo: string): void
 }>()
 
-// 🔥 使用 computed 包装，提供默认值
-const orderList = computed(() => props.list || [])
-const isLoading = computed(() => props.loading || false)
-const pagination = computed(() => props.pagination || { page: 1, limit: 20, total: 0 })
-
-// 🔹 分页双向绑定
 const currentPage = computed({
-    get: () => pagination.value.page || 1,
-    set: (val) => emit('page-change', val)
+    get: () => props.pagination.page,
+    set: (val) => val
 })
-const pageSize = computed({
-    get: () => pagination.value.limit || 20,
-    set: () => { }
-})
-const handlePageChange = (page: number) => {
-    emit('page-change', page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
-// 🔹 工具函数
-const formatPrice = (price: string | number | undefined) => {
-    if (!price) return '0.00'
-    const num = typeof price === 'string' ? parseFloat(price) : price
+const formatPrice = (val: string | number) => {
+    const num = typeof val === 'string' ? parseFloat(val) : val
     return Number.isNaN(num) ? '0.00' : num.toFixed(2)
 }
 
-const formatDate = (date: string | null | undefined) => {
-    if (!date) return ''
-    return new Date(date).toLocaleDateString('zh-CN', {
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    })
-}
-
-const getStatusText = (status: string | undefined, listType?: string) => {
-    if (!status) return '未知'
-    const buyerMap: Record<string, string> = {
+const getStatusText = (status: string) => {
+    const map: Record<string, string> = {
         pending: '待付款',
         paid: '待发货',
         trading: '待收货',
         completed: '已完成',
-        cancelled: '已取消'
+        cancelled: '已取消',
+        refunded: '已退款'
     }
-    const sellerMap: Record<string, string> = {
-        pending: '待发货',
-        paid: '待发货',
-        trading: '交易中',
-        completed: '已完成',
-        cancelled: '已取消'
-    }
-    const map = listType === 'sold' ? sellerMap : buyerMap
     return map[status] || status
 }
 
-const getStatusType = (status: string | undefined): 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
-    if (!status) return 'info'
+const getStatusType = (status: string) => {
     const map: Record<string, any> = {
         pending: 'warning',
         paid: 'primary',
-        trading: 'info',
+        trading: 'primary',
         completed: 'success',
-        cancelled: 'danger'
+        cancelled: 'info',
+        refunded: 'info'
     }
     return map[status] || 'info'
 }
 
-const getEmptySubtext = (tab?: string) => {
-    const map: Record<string, string> = {
-        bought: '成功购买后，订单记录会显示在这里',
-        sold: '成功卖出后，订单记录会显示在这里'
-    }
-    return map[tab || ''] || '暂无相关订单'
+const handlePageChangeInternal = (page: number) => {
+    emit('page-change', page)
 }
 
-// 🔹 买家确认收货
-const handleConfirmReceive = async (orderNo: string) => {
-    try {
-        await ElMessageBox.confirm('确认已收到商品？确认后将无法退款', '确认收货', {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type: 'success'
-        })
-
-        const res = await orderApi.updateOrderStatus(orderNo, 'completed')
-        if ((res as any)?.code === 200) {
-            ElMessage.success('✅ 确认收货成功')
-            emit('refresh-list')
-        }
-    } catch (error: any) {
-        if (error !== 'cancel') {
-            ElMessage.error(error?.message || '操作失败')
-        }
+// 🔥 确认收货
+const handleConfirm = (order: OrderItem) => {
+    const orderNo = order.order_no || order.orderNo
+    if (!orderNo) {
+        ElMessage.error('订单数据异常')
+        return
     }
+    emit('confirm-receive', orderNo)
 }
 
-// 🔹 取消订单
-const handleCancelOrder = async (orderNo: string) => {
-    try {
-        await ElMessageBox.confirm('确定要取消此订单吗？', '取消订单', {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type: 'warning'
-        })
-
-        const res = await orderApi.updateOrderStatus(orderNo, 'cancelled')
-        if ((res as any)?.code === 200) {
-            ElMessage.success('✅ 订单已取消')
-            emit('refresh-list')
-        }
-    } catch (error: any) {
-        if (error !== 'cancel') {
-            ElMessage.error(error?.message || '操作失败')
-        }
+// 🔥 取消订单
+const handleCancel = (order: OrderItem) => {
+    const orderNo = order.order_no || order.orderNo
+    if (!orderNo) {
+        ElMessage.error('订单数据异常，请刷新')
+        return
     }
+    console.log('🚀 [Cancel Action] 准备取消订单:', orderNo)
+    emit('cancel-order', orderNo)
 }
 </script>
 
 <style scoped>
-.order-card:active {
-    @apply scale-[0.99] transition-transform;
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

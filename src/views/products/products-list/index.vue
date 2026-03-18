@@ -47,7 +47,7 @@
                         @click="activeCategory = cat.name; handleFilterChange()" :class="[
                             'px-3 py-2 my-2 rounded-2xl text-sm font-medium transition-all duration-300 ease-out border-1',
                             activeCategory === cat.name
-                                ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg shadow-[var(--primary)]/25scale-105'
+                                ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg shadow-[var(--primary)]/25 scale-105'
                                 : 'bg-[var(--card)] text-[var(--text)] border-[var(--border)] hover:border-[var(--primary)]/50 hover:bg-[var(--primary)]/5'
                         ]">
                         {{ cat.name }}
@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <!-- 🔥 滚动容器（添加 ref 和 scroll 事件） -->
+            <!-- 🔥 滚动容器 -->
             <div ref="scrollContainerRef" class="min-h-[280px]" @scroll="handleScroll">
                 <!-- 3. 商品列表网格 -->
                 <div v-if="filteredProducts.length > 0"
@@ -65,25 +65,30 @@
                                     hover:shadow-[var(--shadow-xl)] hover:-translate-y-1
                                     transition-all duration-500 ease-out
                                     border border-[var(--border)] cursor-pointer group">
-                        <!-- 商品照片 -->
+
+                        <!-- 🔥 修改开始：商品照片区域 -->
                         <div class="aspect-square overflow-hidden bg-[var(--bg)] relative"
                             @click="handleDetail(item.id)">
                             <img :src="item.img" :alt="item.name"
                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
 
-                            <!-- 快速操作按钮 -->
-                            <!-- <button v-if="width > 768" class="absolute bottom-3 right-3 bg-[var(--card)] text-[var(--primary)] p-2.5 rounded-full 
-                                       shadow-lg opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 
-                                       hover:scale-110 hover:bg-[var(--primary)] hover:text-white
-                                       transition-all duration-300 ease-out">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                            </button> -->
+                            <!-- 🔥 新增：已售出水印标签 -->
+                            <div v-if="item.product_status === 'sold'"
+                                class="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-black/10">
+                                <div
+                                    class="transform -rotate-12 border-4 border-red-600 text-red-600 font-black text-2xl md:text-3xl px-6 py-2 rounded-xl opacity-95 bg-white/90 backdrop-blur-sm shadow-2xl uppercase tracking-widest select-none flex items-center gap-2">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    卖掉了
+                                </div>
+                            </div>
+                            <!-- 🔥 修改结束 -->
 
                             <span class="absolute top-3 left-3 px-2.5 py-1 bg-[var(--card)]/90 backdrop-blur-sm 
-                                       text-xs font-medium rounded-full border border-[var(--border)]">
+                                       text-xs font-medium rounded-full border border-[var(--border)] z-20">
+                                {{ item.category }}
                             </span>
                         </div>
 
@@ -94,26 +99,20 @@
                                 {{ item.name }}
                             </h3>
                             <div class="flex items-center justify-between">
-                                <p class="text-[var(--primary)] font-bold text-lg">¥{{ item.price }}</p>
-                                <!-- <span v-if="width < 768">
-                                    <button class="bg-[var(--card)] text-[var(--primary)] rounded-full 
-                                       hover:scale-110 hover:bg-[var(--primary)] hover:text-white
-                                       transition-all duration-300 ease-out">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 4v16m8-8H4"></path>
-                                        </svg>
-                                    </button>
-                                </span> -->
+                                <!-- 已售出商品价格变灰或保留原价均可，这里保留原价但可加样式 -->
+                                <p
+                                    :class="['font-bold text-lg', item.product_status === 'sold' ? 'text-gray-400 line-through' : 'text-[var(--primary)]']">
+                                    ¥{{ item.price }}
+                                </p>
+
                                 <FavoriteButton :product-id="item.id" size="small"
                                     @change="handleFavoriteChange(item.id, $event)" />
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                <!-- 🔥 加载状态提示 -->
+                <!-- 加载状态提示 -->
                 <div v-if="loading" class="py-4 text-center text-gray-400">
                     <div class="inline-flex items-center gap-2">
                         <div
@@ -123,7 +122,7 @@
                     </div>
                 </div>
 
-                <!-- 🔥 没有更多提示 -->
+                <!-- 没有更多提示 -->
                 <div v-else-if="!hasMore && products.length > 0" class="py-4 text-center text-gray-400 text-sm">
                     ~ 没有更多了 ~
                 </div>
@@ -147,21 +146,21 @@
 </template>
 
 <script lang="ts" setup>
+// ... (Script 部分保持不变，无需修改) ...
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useWindowSize } from "@vueuse/core";
 import adminCategoryApi from "@/api/admin/category";
 import productApi from "@/api/product";
 import { useRouter } from "vue-router";
 import { useFavoriteStore } from "@/stores/modules/favorite";
-import { useUserStore } from "@/stores/modules/user";  // 🔥 新增：检查登录状态
-import FavoriteButton from "@/components/products/FavoriteButton.vue";  // 🔥 确保导入
+import { useUserStore } from "@/stores/modules/user";
+import FavoriteButton from "@/components/products/FavoriteButton.vue";
 
 const router = useRouter()
 const { width } = useWindowSize()
 const favoriteStore = useFavoriteStore()
-const userStore = useUserStore()  // 🔥 新增
+const userStore = useUserStore()
 
-// ============ 类型定义 ============
 interface categoriesType {
     id: number,
     name: string
@@ -173,11 +172,11 @@ interface ProductType {
     price: string;
     category: string;
     img: string;
+    product_status?: string; // 确保类型定义包含 status
     sold?: number;
     [key: string]: any;
 }
 
-// ============ 状态 ============
 const categories = ref<categoriesType[]>([]);
 const products = ref<ProductType[]>([]);
 const searchQuery = ref('');
@@ -189,7 +188,6 @@ const loading = ref(false);
 const scrollContainerRef = ref<HTMLElement | null>(null);
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
-// ============ 计算属性 ============
 const filteredProducts = computed(() => {
     return products.value.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.value.toLowerCase());
@@ -198,7 +196,6 @@ const filteredProducts = computed(() => {
     });
 });
 
-// ============ 获取分类 ============
 const getCategory = async () => {
     try {
         const res = await adminCategoryApi.getCategoriesEnabled().then((res: any) => {
@@ -209,13 +206,11 @@ const getCategory = async () => {
                 ];
             }
         })
-
     } catch (error) {
         console.error('获取分类失败:', error);
     }
 };
 
-// ============ 🔥 核心：加载商品 + 批量检查收藏 ============
 const loadProducts = async (isReset = false) => {
     if (loading.value || (!isReset && !hasMore.value)) return;
     loading.value = true;
@@ -240,6 +235,7 @@ const loadProducts = async (isReset = false) => {
                     price: item.price,
                     category: item.category,
                     img: item.images?.[0] || item.img || item.image_url,
+                    product_status: item.product_status, // 映射状态
                     sold: item.sold,
                     ...item
                 }));
@@ -254,13 +250,9 @@ const loadProducts = async (isReset = false) => {
                 if (list.length > 0) {
                     page.value += 1;
                 }
-
-                // 🔥 新增：数据加载成功后，批量检查收藏状态
                 await batchCheckFavorites(formattedList)
             }
         })
-
-
     } catch (error) {
         console.error('加载商品失败:', error);
     } finally {
@@ -268,39 +260,28 @@ const loadProducts = async (isReset = false) => {
     }
 };
 
-// 🔥 新增：批量检查收藏状态（仅登录用户）
 const batchCheckFavorites = async (productList: ProductType[]) => {
-    // 🔥 未登录用户不需要检查收藏状态
     if (!userStore.token || !productList?.length) return
-
     try {
-        // 🔥 提取商品 ID 数组
         const productIds = productList.map(p => p.id).filter(id => id != null)
-
         if (productIds.length > 0) {
-            // 🔥 调用 Pinia store 的批量检查方法
             await favoriteStore.batchUpdate(productIds)
-            console.log(`✅ 批量检查收藏完成: ${productIds.length} 个商品`)
         }
     } catch (error) {
         console.error('❌ 批量检查收藏失败:', error)
-        // 🔥 失败不影响页面展示，静默处理
     }
 }
 
-// 🔹 监听登录状态变化，登录后重新检查收藏
 watch(
     () => userStore.token,
     (newToken) => {
         if (newToken && products.value.length > 0) {
-            // 🔥 登录后，重新检查当前页商品的收藏状态
             batchCheckFavorites(products.value)
         }
     },
     { immediate: false }
 )
 
-// ============ 其他函数保持不变 ============
 const handleDetail = (id: number) => {
     router.push(`/products/detail/${id}`)
 }
@@ -330,7 +311,6 @@ const handleFilterChange = () => {
     loadProducts(true);
 };
 
-// ============ 生命周期 ============
 onMounted(() => {
     getCategory();
     loadProducts(true);
@@ -346,7 +326,6 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 🔹 样式部分保持不变 */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

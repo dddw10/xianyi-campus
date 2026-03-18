@@ -173,8 +173,15 @@ export const orderApi = {
     // },
 
     // 🔹 更新订单状态（确认收货/发货等）
-    updateOrderStatus(orderNo: string, status: string) {
-        return request({ url: `/api/user/orders/${orderNo}/status`, method: 'put', data: { status } })
+    updateOrderStatus(orderNo: string, status: string, proofImage?: string) {
+        return request({
+            url: `/api/user/orders/${orderNo}/status`,
+            method: 'put',
+            data: {
+                status,
+                proofImage
+            }
+        })
     }
 }
 

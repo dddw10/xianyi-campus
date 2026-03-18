@@ -15,7 +15,13 @@ const componentMap: Record<string, any> = {
   // 🛍️ 商品相关
   'ProductList': () => import('@/views/products/products-list/index.vue'),
   'CreateProduct': () => import('@/views/products/products-publish/index.vue'),
-  'Orders': () => import('@/views/products/orders/index.vue'),
+
+  // 🔥 订单相关 - 🔥 确保这些组件存在
+  'Orders': () => import('@/views/products/orders/index.vue'),           // 我的订单列表
+  'OrderConfirm': () => import('@/views/products/orders/modules/Confirm.vue'),            // 订单确认页
+  'OrderDetail': () => import('@/views/products/orders/modules/OrderDetail.vue'),
+  'Pay': () => import('@/views/pay/index.vue'),                          // 支付页面
+  'PayResult': () => import('@/views/pay/result.vue'),
 
   // 👨‍💼 管理员相关
   'AdminDashboard': () => import('@/views/admin/dashboard/index.vue'),
