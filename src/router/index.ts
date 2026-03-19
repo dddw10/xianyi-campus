@@ -11,6 +11,7 @@ const componentMap: Record<string, any> = {
   'Profile': () => import('@/views/user/profile/index.vue'),
   'Verification': () => import('@/views/user/verification/index.vue'),
   'Favorites': () => import('@/views/favorites/index.vue'),
+  'Chat': () => import('@/views/user/chat/index.vue'),
 
   // 🛍️ 商品相关
   'ProductList': () => import('@/views/products/products-list/index.vue'),

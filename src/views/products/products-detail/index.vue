@@ -151,7 +151,7 @@
                             <!-- 🔹 聊一聊 - flex: 4 -->
                             <el-button v-if="product.status === 'available'" type="warning" size="large"
                                 class="!rounded-full !px-3 font-medium truncate whitespace-nowrap flex-[4] min-w-0"
-                                @click="handleContact">
+                                @click="handleContact()">
                                 💬 聊一聊
                             </el-button>
 
@@ -445,7 +445,11 @@ const handleContact = () => {
         ElMessage.warning('请先登录')
         return
     }
-    ElMessage.info(`正在联系卖家 "${product.value?.seller_name}"...`)
+    // 跳转到消息页，并通过 query 参数告诉它自动打开谁
+    router.push({
+        path: '/main/chat',
+        query: { targetId: product.value.seller_id, type: 'product', bizId: product.value.id }
+    });
 }
 
 const handleFavorite = (productId: number, favorited: boolean): void => {

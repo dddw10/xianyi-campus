@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AdvanceImageUpload: typeof import('./components/AdvanceImageUpload.vue')['default']
     ChangePasswordModal: typeof import('./components/ChangePasswordModal.vue')['default']
+    ChatWindow: typeof import('./components/ChatWindow.vue')['default']
     EditProductModal: typeof import('./components/products/EditProductModal.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']

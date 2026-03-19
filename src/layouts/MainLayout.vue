@@ -199,7 +199,7 @@ const mobileMenuVisible = ref(false);
 const menuItems = [
     { index: '/', label: '首页', icon: HomeFilled },
     { index: '/products', label: '商品', icon: Goods },
-    { index: '/chat', label: '聊天', icon: ChatDotRound },
+    { index: '/main/chat', label: '聊天', icon: ChatDotRound },
     { index: '/products/create', label: '发布', icon: Plus },
 ];
 
