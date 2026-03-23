@@ -62,15 +62,17 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '支付结果', requiresAuth: false }  // 🔥 回调返回不需要登录
       },
 
-      {
-        path: '/admin',
-        name: 'admin',
-        component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
-        meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
-        redirect: '/admin/dashboard',
-        children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
-      },
+
     ]
+  },
+
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
+    meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
+    redirect: '/admin/dashboard',
+    children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
   },
 
   // ==================== 认证布局 ====================

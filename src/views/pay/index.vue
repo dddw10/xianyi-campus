@@ -29,7 +29,7 @@
 
             <!-- 🔹 支付按钮 -->
             <el-button type="primary" size="large" class="w-full" :loading="paying" @click="handlePay">
-                {{ paying ? '跳转中...' : '立即支付' }}
+                {{ paying ? '正在跳转...' : '立即支付' }}
             </el-button>
 
             <!-- 🔹 模拟支付提示 -->
@@ -54,41 +54,81 @@ const orderNo = ref(route.params.orderNo as string)
 const paymentMethod = ref('alipay')
 const paying = ref(false)
 const amount = ref('0.00')
-const isMock = import.meta.env.DEV  // 🔥 开发环境检测
+const isMock = import.meta.env.DEV
 
 const handlePay = async () => {
     paying.value = true
     try {
-        const res = await orderApi.payOrder(orderNo.value, paymentMethod.value)
+        const res: any = await orderApi.payOrder(orderNo.value, paymentMethod.value)
 
-        if ((res as any).code === 200) {
-            amount.value = res.data.amount
+        if (res.code === 200 || res.success) {
+            const data = res.data
+            amount.value = data.amount
 
-            // 🔥 模拟模式：提示用户并自动完成
-            if (isMock || res.data.mock) {
+            // 🔥 优先判断：开发环境 或 后端返回 mock 都走模拟
+            const shouldMock = import.meta.env.DEV || data.mock
+
+            if (shouldMock) {
                 ElMessage.info('🔸 模拟支付模式，3 秒后自动完成')
                 setTimeout(() => {
-                    // 🔥 模拟支付成功，手动触发回调测试（开发用）
                     testMockCallback(orderNo.value, amount.value)
                 }, 3000)
                 return
             }
 
-            // 🔥 正常模式：跳转支付宝
-            window.location.href = res.data.payUrl
+            // 正常支付流程...
+            if (data.payHtml) {
+                ElMessage.success('✅ 正在跳转支付宝...')
+                submitForm(data.payHtml)
+            } else if (data.payUrl) {
+                window.location.href = data.payUrl
+            } else {
+                ElMessage.error('❌ 未获取到支付表单或链接')
+            }
         }
     } catch (error: any) {
-        ElMessage.error(error?.response?.data?.msg || '发起支付失败')
+        console.error(error)
+        const msg = error?.response?.data?.msg || error?.message || '发起支付失败'
+        ElMessage.error(msg)
     } finally {
         paying.value = false
     }
 }
 
+// 🔥 核心函数：将 HTML 字符串转换为可提交的表单
+const submitForm = (htmlString: string) => {
+    // 方法 A: 直接写入当前窗口 (会覆盖当前页面，体验较好)
+    // document.open()
+    // document.write(htmlString)
+    // document.close()
+
+    // 方法 B: 打开新标签页 (推荐，防止用户误触后退丢失订单页)
+    const win = window.open('', '_blank')
+    if (win) {
+        win.document.open()
+        win.document.write(htmlString)
+        win.document.close()
+    } else {
+        // 如果浏览器拦截了弹窗，降级处理：在当前页跳转
+        ElMessage.warning('弹窗被拦截，将在当前页跳转')
+        document.open()
+        document.write(htmlString)
+        document.close()
+    }
+}
+
 // 🔥 模拟回调测试（开发环境用）
 const testMockCallback = async (orderNo: string, amount: string) => {
+    // ✅ 注释掉生产环境检查，允许线上模拟
+    // if (!import.meta.env.DEV) { ... } 
+
     try {
-        // 🔸 调用后端测试接口（或直接触发回调逻辑）
-        await fetch('http://localhost:3000/api/payments/alipay/notify', {
+        // 🔥 关键：使用动态 API 地址，不要用 localhost
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+
+        console.log('🔸 [模拟支付] 正在请求回调接口:', `${baseUrl}/api/payments/alipay/notify`);
+
+        await fetch(`${baseUrl}/api/payments/alipay/notify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -97,14 +137,15 @@ const testMockCallback = async (orderNo: string, amount: string) => {
                 total_amount: amount,
                 trade_status: 'TRADE_SUCCESS'
             })
-        })
+        });
 
-        ElMessage.success('✅ 模拟支付成功')
-        router.push(`/pay/result?orderNo=${orderNo}&status=success`)
+        ElMessage.success('✅ 模拟支付成功');
+        router.push(`/pay/result?orderNo=${orderNo}&status=success`);
     } catch (error) {
-        ElMessage.error('模拟回调失败')
+        console.error(error);
+        ElMessage.error('模拟回调失败，请检查网络或后端服务');
     }
-}
+};
 
 onMounted(() => {
     if (!orderNo.value) ElMessage.error('订单号不能为空')

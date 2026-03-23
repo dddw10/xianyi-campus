@@ -200,9 +200,9 @@
                                         <el-dropdown-item command="resetPassword" :disabled="row.role === 'admin'">
                                             🔑 重置密码
                                         </el-dropdown-item>
-                                        <el-dropdown-item command="disable" :disabled="!row.enabled" divided>
+                                        <!-- <el-dropdown-item command="disable" :disabled="!row.enabled" divided>
                                             🚫 禁用账号
-                                        </el-dropdown-item>
+                                        </el-dropdown-item> -->
                                         <el-dropdown-item command="delete" type="danger" divided>
                                             🗑️ 删除用户
                                         </el-dropdown-item>
@@ -254,7 +254,7 @@
                         <div>
                             <span class="text-[var(--el-text-color-secondary)]">手机号：</span>
                             <span class="text-[var(--el-text-color-primary)]">{{ maskPhone(currentUser.phone) || '-'
-                            }}</span>
+                                }}</span>
                         </div>
                         <div>
                             <span class="text-[var(--el-text-color-secondary)]">角色：</span>

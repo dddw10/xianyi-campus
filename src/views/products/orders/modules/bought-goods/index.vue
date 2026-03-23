@@ -32,6 +32,7 @@ import { useWindowSize } from "@vueuse/core"
 import orderApi from "@/api/order"
 // ⚠️ 确保文件名大小写完全匹配 (OrderLIst.vue)
 import OrderList from "../OrderLIst.vue"
+import { modalBox } from "@/components/messageBox/modalBox";
 
 const tabPosition = ref<'all' | 'pending' | 'trading' | 'completed' | 'cancelled' | 'paid'>('all')
 const loading = ref(false)
@@ -115,19 +116,20 @@ const handleConfirmReceive = async (orderNo: string) => {
         return
     }
     try {
-        await ElMessageBox.confirm('确认已收到商品？确认后将无法退款', '确认收货', {
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            type: 'success'
+        modalBox({
+            type: 'info',
+            title: '确认收货',
+            message: '确认已收到商品？确认后将无法退款'
+        }).then(async () => {
+            const res = await orderApi.updateOrderStatus(orderNo, 'completed')
+            if ((res as any)?.code === 200) {
+                ElMessage.success('✅ 确认收货成功')
+                fetchOrders()
+            } else {
+                ElMessage.error((res as any)?.msg || '操作失败')
+            }
         })
 
-        const res = await orderApi.updateOrderStatus(orderNo, 'completed')
-        if ((res as any)?.code === 200) {
-            ElMessage.success('✅ 确认收货成功')
-            fetchOrders()
-        } else {
-            ElMessage.error((res as any)?.msg || '操作失败')
-        }
     } catch (error: any) {
         if (error !== 'cancel') {
             ElMessage.error(error?.message || '操作失败')
@@ -145,20 +147,23 @@ const handleCancelOrder = async (orderNo: string) => {
     }
 
     try {
-        await ElMessageBox.confirm('确定要取消该订单吗？取消后无法恢复', '取消订单', {
-            confirmButtonText: '确定取消',
-            cancelButtonText: '再想想',
-            type: 'warning'
+        modalBox({
+            type: 'error',
+            title: '取消订单',
+            message: '确定要取消该订单吗？取消后无法恢复'
+        }).then(async () => {
+            const res = await orderApi.updateOrderStatus(orderNo, 'cancelled')
+
+            if ((res as any)?.code === 200) {
+                ElMessage.success('✅ 订单已取消')
+                fetchOrders()
+            } else {
+                ElMessage.error((res as any)?.msg || '取消失败')
+            }
         })
 
-        const res = await orderApi.updateOrderStatus(orderNo, 'cancelled')
 
-        if ((res as any)?.code === 200) {
-            ElMessage.success('✅ 订单已取消')
-            fetchOrders()
-        } else {
-            ElMessage.error((res as any)?.msg || '取消失败')
-        }
+        
     } catch (error: any) {
         if (error !== 'cancel') {
             ElMessage.error(error?.message || '操作失败')

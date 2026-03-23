@@ -1,4 +1,5 @@
 <template>
+    <!-- 🔥 模板部分完全保持不变 -->
     <div
         class="flex flex-col h-full w-full mx-auto bg-white rounded-xl shadow-lg border border-[var(--el-border-color-lighter)] overflow-hidden font-sans">
 
@@ -96,11 +97,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useChat, type ChatMessage } from '@/hooks/useChat';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+// import { useChat, type ChatMessage } from '@/hooks/useChat'; // 👈 注释掉，改用手动管理 Socket
 import { useUserStore } from '@/stores/modules/user';
 import { ArrowUp, Loading, ChatLineRound, ArrowLeft } from '@element-plus/icons-vue';
-import { ElIcon, ElEmpty } from 'element-plus';
+import { ElIcon } from 'element-plus';
+// 🔥 逻辑修改点 1: 引入 socket.io-client
+import { io, Socket } from 'socket.io-client';
 
 // 🔹 Props 定义
 const props = defineProps<{
@@ -110,34 +113,113 @@ const props = defineProps<{
     title?: string;
 }>();
 
+// 🔥 逻辑修改点 2: 定义 emit，包含 receive-new-message
 interface Emits {
-    (e: 'black'): void
+    (e: 'black'): void;
+    (e: 'receive-new-message', msg: any): void;
 }
-
-//
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 const userStore = useUserStore();
-const currentUserId = computed(() => userStore.userInfo?.id || 0); // 假设 userInfo 里有 id
+const currentUserId = computed(() => userStore.userInfo?.id || 0);
 
-// 🔹 使用 Hook
-const { messages, isConnected, sendMessage, error } = useChat(
-    props.businessType,
-    props.businessId,
-    props.targetUserId
-);
+// 🔥 逻辑修改点 3: 本地状态管理 (替代 useChat)
+const messages = ref<any[]>([]);
+const isConnected = ref(false);
+const error = ref('');
+let socket: Socket | null = null;
 
 const inputMsg = ref('');
 const isSending = ref(false);
 
-// 🔹 发送逻辑
+// 🔥 逻辑修改点 4: 初始化 Socket
+const initSocket = () => {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+    socket = io(apiUrl, {
+        auth: { token: userStore.token },
+        transports: ['websocket', 'polling']
+    });
+
+    socket.on('connect', () => {
+        console.log('🟢 ChatWindow Socket 已连接');
+        isConnected.value = true;
+        error.value = '';
+
+        // 加入房间
+        socket?.emit('join_room', {
+            businessType: props.businessType,
+            businessId: props.businessId,
+            targetUserId: props.targetUserId
+        });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('🔴 ChatWindow Socket 断开');
+        isConnected.value = false;
+    });
+
+    socket.on('connect_error', (err) => {
+        console.error('❌ Socket 连接错误:', err.message);
+        error.value = '连接失败';
+        isConnected.value = false;
+    });
+
+    // 👇 关键：监听服务器广播的新消息
+    socket.on('receive_message', (msg: any) => {
+        console.log('📩 ChatWindow 收到新消息:', msg);
+
+        // 1. 更新本地消息列表
+        messages.value.push(msg);
+        scrollToBottom();
+
+        // 2. 🔥 通知父组件更新左侧列表
+        emit('receive-new-message', {
+            roomId: msg.room_id,      // 确保字段名匹配后端
+            content: msg.content,
+            time: msg.created_at,
+            senderId: msg.sender_id,
+            type: msg.msg_type
+        });
+    });
+
+    // 加载历史消息
+    socket.on('history_messages', (history: any[]) => {
+        messages.value = history;
+        scrollToBottom();
+    });
+};
+
+const scrollToBottom = () => {
+    setTimeout(() => {
+        const container = document.querySelector('.chat-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }, 100);
+};
+
+// 🔥 逻辑修改点 5: 发送消息
+const sendMessage = (content: string, type: string) => {
+    if (!socket || !isConnected.value) {
+        error.value = '未连接服务器';
+        return;
+    }
+
+    socket.emit('send_message', {
+        content,
+        type,
+        extraData: null
+    });
+};
+
 const handleSend = () => {
     const content = inputMsg.value.trim();
     if (!content) return;
 
     isSending.value = true;
     sendMessage(content, 'text');
-    inputMsg.value = ''; // 清空输入框
+    inputMsg.value = '';
     isSending.value = false;
 };
 
@@ -148,19 +230,27 @@ const handleEnter = (e: KeyboardEvent) => {
     }
 };
 
-// 🔹 辅助函数
-const isMyMessage = (msg: ChatMessage) => msg.sender_id === currentUserId.value;
+const isMyMessage = (msg: any) => msg.sender_id === currentUserId.value;
 
 const formatTime = (time: string) => {
     if (!time) return '';
     return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
+
+onMounted(() => {
+    initSocket();
+});
+
+onUnmounted(() => {
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
+});
 </script>
 
-
-
 <style scoped>
-/* 自定义滚动条样式 (UnoCSS 难以覆盖伪元素，需用 CSS) */
+/* 🔥 样式部分完全保持不变 */
 .chat-container::-webkit-scrollbar {
     width: 6px;
 }

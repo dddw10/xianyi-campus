@@ -1,4 +1,4 @@
-<!-- src/views/products/orders/OrderLIst.vue -->
+<!-- src/views/products/orders/OrderList.vue -->
 <template>
     <div class="space-y-4">
         <!-- 🔹 加载状态 -->
@@ -57,7 +57,6 @@
 
                 <!-- 底部：操作按钮区 -->
                 <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-
                     <!-- 🔹 动态操作按钮 (根据状态显示) -->
 
                     <!-- 1. 待付款：取消 + 支付 -->
@@ -71,8 +70,11 @@
                         </el-button>
                     </template>
 
-                    <!-- 2. 待发货 (paid)：无操作，提示等待 -->
+                    <!-- 2. 待发货 (paid)：🔥 新增取消订单 + 等待提示 -->
                     <template v-else-if="order.status === 'paid'">
+                        <el-button size="small" type="danger" plain @click.stop="handleCancel(order)">
+                            取消订单
+                        </el-button>
                         <span class="text-xs text-gray-400 mr-2">等待卖家发货</span>
                     </template>
 
@@ -94,7 +96,6 @@
                         @click.stop="$router.push(`/orders/${order.order_no || order.orderNo}`)">
                         查看详情
                     </el-button>
-
                 </div>
             </div>
 
@@ -167,8 +168,8 @@ const getStatusText = (status: string) => {
     return map[status] || status
 }
 
-const getStatusType = (status: string) => {
-    const map: Record<string, any> = {
+const getStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
+    const map: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
         pending: 'warning',
         paid: 'primary',
         trading: 'primary',
@@ -193,14 +194,18 @@ const handleConfirm = (order: OrderItem) => {
     emit('confirm-receive', orderNo)
 }
 
-// 🔥 取消订单
+// 🔥 取消订单（支持 pending 和 paid 状态）
 const handleCancel = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
-    if (!orderNo) {
-        ElMessage.error('订单数据异常，请刷新')
+    if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
+        ElMessage.error('订单号异常，请刷新页面重试')
+        console.error('❌ [Cancel Error] 非法订单号:', orderNo)
         return
     }
-    console.log('🚀 [Cancel Action] 准备取消订单:', orderNo)
+    console.log('🚀 [Cancel Action] 准备取消订单:', {
+        orderNo,
+        status: order.status
+    })
     emit('cancel-order', orderNo)
 }
 </script>
@@ -211,5 +216,19 @@ const handleCancel = (order: OrderItem) => {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* 🔹 按钮悬停微交互（配合你的浅蓝主题） */
+:deep(.el-button--danger.is-plain:hover) {
+    --el-button-hover-bg-color: #fef2f2;
+    --el-button-hover-border-color: #fecaca;
+}
+
+:deep(.el-button--primary:hover) {
+    --el-button-hover-bg-color: #2563eb;
+}
+
+:deep(.el-button--success:hover) {
+    --el-button-hover-bg-color: #22c55e;
 }
 </style>

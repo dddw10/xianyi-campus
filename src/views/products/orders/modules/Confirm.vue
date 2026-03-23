@@ -86,7 +86,7 @@
                                         ¥{{ formatPrice(product.price) }}
                                     </div>
                                     <div class="text-xs text-gray-400">
-                                        卖家：{{ product.seller_name }}
+                                        卖家：{{ product.seller_name || product.seller_student_id }}
                                     </div>
                                 </div>
                             </div>
@@ -167,6 +167,7 @@ import { ArrowLeft, Location, Picture } from '@element-plus/icons-vue'
 import productApi from '@/api/product'
 import orderApi from '@/api/order'
 import { useUserStore } from '@/stores/modules/user'
+import { modalBox } from "@/components/messageBox/modalBox";
 
 const router = useRouter()
 const route = useRoute()
@@ -254,41 +255,43 @@ const handleSubmitOrder = async () => {
 
     // 2. 二次确认
     try {
-        await ElMessageBox.confirm(
-            `确认以 ¥${formatPrice(totalAmount.value)} 的价格购买此商品吗？`,
-            '提交订单',
-            { confirmButtonText: '确认支付', cancelButtonText: '再想想', type: 'warning' }
-        )
+        modalBox({
+            type: 'info',
+            title: '提交订单',
+            message: `确认以 ¥${formatPrice(totalAmount.value)} 的价格购买此商品吗？`,
+        }).then(async () => {
+            // 3. 调用 API
+            submitting.value = true
+            try {
+                const payload = {
+                    productId: product.value.id,
+                    quantity: 1, // 闲置物品通常为 1
+                    deliveryAddress: `${addressForm.value.name} ${addressForm.value.phone} ${addressForm.value.address}`,
+                    buyerRemark: buyerRemark.value
+                }
+
+                const res = await orderApi.createOrder(payload)
+
+                if ((res as any).code === 200) {
+                    ElMessage.success('订单创建成功')
+                    const orderNo = res.data.orderNo
+                    // 4. 跳转支付页
+                    router.push(`/pay/${orderNo}`)
+                } else {
+                    ElMessage.error((res as any).msg || '创建订单失败')
+                }
+            } catch (error: any) {
+                console.error(error)
+                ElMessage.error(error.response?.data?.msg || '网络异常，请稍后重试')
+            } finally {
+                submitting.value = false
+            }
+        })
     } catch {
         return // 用户取消
     }
 
-    // 3. 调用 API
-    submitting.value = true
-    try {
-        const payload = {
-            productId: product.value.id,
-            quantity: 1, // 闲置物品通常为 1
-            deliveryAddress: `${addressForm.value.name} ${addressForm.value.phone} ${addressForm.value.address}`,
-            buyerRemark: buyerRemark.value
-        }
 
-        const res = await orderApi.createOrder(payload)
-
-        if ((res as any).code === 200) {
-            ElMessage.success('订单创建成功')
-            const orderNo = res.data.orderNo
-            // 4. 跳转支付页
-            router.push(`/pay/${orderNo}`)
-        } else {
-            ElMessage.error((res as any).msg || '创建订单失败')
-        }
-    } catch (error: any) {
-        console.error(error)
-        ElMessage.error(error.response?.data?.msg || '网络异常，请稍后重试')
-    } finally {
-        submitting.value = false
-    }
 }
 
 const handleManageAddress = () => {

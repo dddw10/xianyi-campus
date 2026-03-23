@@ -160,7 +160,7 @@
                             </div>
                         </div>
 
-                        <!-- 🔥 新增：展示交易凭证 (如果有) -->
+                        <!-- 🔥 展示交易凭证 (如果有) -->
                         <div v-if="order.delivery_proof || order.receive_proof"
                             class="bg-[--bg-elevated] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -207,10 +207,10 @@
                                 </div>
                             </div>
 
-                            <!-- 动态操作按钮 -->
+                            <!-- 🔹 动态操作按钮 - 🔥 已修改：待发货/待收货都显示取消按钮 -->
                             <div class="space-y-3">
 
-                                <!-- 🔹 待付款 (买家) -->
+                                <!-- 1. 待付款 (买家) -->
                                 <template v-if="order.status === 'pending' && isBuyer">
                                     <el-button type="primary" size="large" class="w-full !rounded-full"
                                         @click="handlePay">
@@ -222,7 +222,7 @@
                                     </el-button>
                                 </template>
 
-                                <!-- 🔹 待发货 (卖家) -> 🔥 修改为打开弹窗 -->
+                                <!-- 2. 待发货 (卖家) -->
                                 <template v-else-if="order.status === 'paid' && isSeller">
                                     <el-button type="success" size="large" class="w-full !rounded-full"
                                         @click="showDeliverDialog = true">
@@ -233,25 +233,40 @@
                                     </div>
                                 </template>
 
-                                <!-- 🔹 待收货 (买家) -> 🔥 修改为打开弹窗 -->
+                                <!-- 🔥 2.1 待发货 (买家) - 🔥 新增：买家可以取消订单 -->
+                                <template v-else-if="order.status === 'paid' && isBuyer">
+                                    <el-button type="danger" plain size="default" class="w-full !rounded-full"
+                                        @click="handleCancelPaid">
+                                        🗑️ 取消订单
+                                    </el-button>
+                                    <div class="text-xs text-center text-gray-400 mt-2">
+                                        ⚠️ 卖家未发货，取消后款项将原路退回
+                                    </div>
+                                </template>
+
+                                <!-- 3. 待收货 (买家) -->
                                 <template v-else-if="order.status === 'trading' && isBuyer">
                                     <el-button type="success" size="large" class="w-full !rounded-full"
                                         @click="showReceiveDialog = true">
                                         ✅ 确认收货
                                     </el-button>
+                                    <el-button type="danger" plain size="default" class="w-full !rounded-full"
+                                        @click="handleCancelTrading">
+                                        🗑️ 取消订单
+                                    </el-button>
                                     <div class="text-xs text-center text-gray-400 mt-2">
-                                        ⚠️ 需上传商品实拍照片
+                                        ⚠️ 取消后款项将原路退回
                                     </div>
                                 </template>
 
-                                <!-- 🔹 已结束 -->
+                                <!-- 4. 已结束 -->
                                 <template v-else-if="['completed', 'cancelled', 'refunded'].includes(order.status)">
                                     <el-button type="info" plain size="default" class="w-full !rounded-full" disabled>
                                         交易已结束
                                     </el-button>
                                 </template>
 
-                                <!-- 🔹 其他 -->
+                                <!-- 5. 其他 -->
                                 <template v-else>
                                     <el-button type="info" plain size="default" class="w-full !rounded-full" disabled>
                                         暂无操作
@@ -281,15 +296,12 @@
                 </el-button>
             </div>
 
-            <!-- 🔥🔥🔥 新增：发货凭证上传弹窗 -->
+            <!-- 🔥 发货凭证上传弹窗 -->
             <el-dialog v-model="showDeliverDialog" title="确认发货" width="500px" :close-on-click-modal="false">
                 <div class="space-y-4">
                     <el-alert title="请上传打包或交易照片作为凭证" type="warning" :closable="false" show-icon />
-
-                    <!-- ✅ 使用高级上传组件 -->
                     <AdvancedImageUpload v-model="deliverImageList" :limit="1" :width="200"
                         upload-url="/api/upload/trade-proof" />
-
                     <p class="text-xs text-gray-500 text-center">仅支持 JPG/PNG，大小不超过 5MB</p>
                 </div>
                 <template #footer>
@@ -303,15 +315,12 @@
                 </template>
             </el-dialog>
 
-            <!-- 🔥🔥🔥 新增：收货凭证上传弹窗 -->
+            <!-- 🔥 收货凭证上传弹窗 -->
             <el-dialog v-model="showReceiveDialog" title="确认收货" width="500px" :close-on-click-modal="false">
                 <div class="space-y-4">
                     <el-alert title="请上传收到商品的实拍照片作为凭证" type="success" :closable="false" show-icon />
-
-                    <!-- ✅ 使用高级上传组件 -->
                     <AdvancedImageUpload v-model="receiveImageList" :limit="1" :width="200"
                         upload-url="/api/upload/trade-proof" />
-
                     <p class="text-xs text-gray-500 text-center">仅支持 JPG/PNG，大小不超过 5MB</p>
                 </div>
                 <template #footer>
@@ -336,8 +345,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, ShoppingCart, Location, Picture } from '@element-plus/icons-vue'
 import orderApi from '@/api/order'
 import { useUserStore } from '@/stores/modules/user'
-// 🔥 引入高级上传组件
 import AdvancedImageUpload from '@/components/AdvanceImageUpload.vue'
+import { modalBox } from "@/components/messageBox/modalBox";
 
 const route = useRoute()
 const router = useRouter()
@@ -347,7 +356,7 @@ const loading = ref(true)
 const order = ref<any>(null)
 const submitting = ref(false)
 
-// 🔥 新增：弹窗控制与图片列表
+// 🔥 弹窗控制
 const showDeliverDialog = ref(false)
 const showReceiveDialog = ref(false)
 const deliverImageList = ref<string[]>([])
@@ -406,8 +415,8 @@ const getStatusText = (status: string) => {
     return map[status] || status
 }
 
-const getStatusType = (status: string) => {
-    const map: Record<string, any> = {
+const getStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
+    const map: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
         pending: 'warning', paid: 'primary', trading: 'primary',
         completed: 'success', cancelled: 'info', refunded: 'info'
     }
@@ -452,31 +461,75 @@ const handlePay = () => {
     router.push(`/pay/${order.value.order_no || order.value.orderNo}`)
 }
 
+// 🔹 取消订单（通用，支持 pending 状态）
 const handleCancel = async () => {
     if (!order.value) return
     try {
-        await ElMessageBox.confirm('确定取消订单吗？', '提示', { type: 'warning' })
+        await modalBox({
+            type: 'error',
+            title: '提示',
+            message: '确定取消订单吗？取消后库存将自动归还，款项将原路退回。'
+        })
         const res = await orderApi.updateOrderStatus(order.value.order_no || order.value.orderNo, 'cancelled')
-        if ((res as any)?.code === 200) { ElMessage.success('订单已取消'); fetchOrderDetail() }
-    } catch (e: any) { if (e !== 'cancel') ElMessage.error(e.message || '取消失败') }
+        if ((res as any)?.code === 200) {
+            ElMessage.success('订单已取消')
+            fetchOrderDetail()
+        }
+    } catch (e: any) {
+        if (e !== 'cancel') ElMessage.error(e.message || '取消失败')
+    }
 }
 
-// 🔥 修改：打开/关闭发货弹窗
-const showDeliverDialogOpen = () => { showDeliverDialog.value = true; deliverImageList.value = [] }
-const closeDeliverDialog = () => { showDeliverDialog.value = false; deliverImageList.value = [] }
+// 🔥 新增：待发货状态下的取消订单（买家）
+const handleCancelPaid = async () => {
+    if (!order.value) return
+    try {
+        await modalBox({
+            type: 'error',
+            title: '确认取消',
+            message: '⚠️ 订单已支付但卖家未发货，取消后将：\n• 库存自动归还卖家\n• 款项原路退回您的账户\n• 交易记录保留在「已取消」\n\n确定要继续吗？'
+        })
+        const res = await orderApi.updateOrderStatus(order.value.order_no || order.value.orderNo, 'cancelled')
+        if ((res as any)?.code === 200) {
+            ElMessage.success('✅ 订单已取消，款项将在 1-3 个工作日内退回')
+            fetchOrderDetail()
+        }
+    } catch (e: any) {
+        if (e !== 'cancel') ElMessage.error(e.message || '取消失败')
+    }
+}
 
-// 🔥 修改：打开/关闭收货弹窗
-const showReceiveDialogOpen = () => { showReceiveDialog.value = true; receiveImageList.value = [] }
-const closeReceiveDialog = () => { showReceiveDialog.value = false; receiveImageList.value = [] }
+// 🔥 待收货状态下的取消订单
+const handleCancelTrading = async () => {
+    if (!order.value) return
+    try {
+        await modalBox({
+            type: 'error',
+            title: '确认取消',
+            message: '⚠️ 订单已发货，取消后将：\n• 库存自动归还卖家\n• 款项原路退回您的账户\n• 交易记录保留在「已取消」\n\n确定要继续吗？'
+        })
+        const res = await orderApi.updateOrderStatus(order.value.order_no || order.value.orderNo, 'cancelled')
+        if ((res as any)?.code === 200) {
+            ElMessage.success('✅ 订单已取消，款项将在 1-3 个工作日内退回')
+            fetchOrderDetail()
+        }
+    } catch (e: any) {
+        if (e !== 'cancel') ElMessage.error(e.message || '取消失败')
+    }
+}
 
-// 🔥 新增：提交发货 (带凭证)
+// 🔥 发货弹窗
+const closeDeliverDialog = () => {
+    showDeliverDialog.value = false
+    deliverImageList.value = []
+}
+
 const submitDeliver = async () => {
     const proofImage = deliverImageList.value[0]
     if (!proofImage) { ElMessage.warning('请先上传发货凭证'); return }
 
     submitting.value = true
     try {
-        // 🔥 传入 proofImage 参数
         const res = await orderApi.updateOrderStatus(
             order.value.order_no || order.value.orderNo,
             'trading',
@@ -494,14 +547,18 @@ const submitDeliver = async () => {
     }
 }
 
-// 🔥 新增：提交收货 (带凭证)
+// 🔥 收货弹窗
+const closeReceiveDialog = () => {
+    showReceiveDialog.value = false
+    receiveImageList.value = []
+}
+
 const submitReceive = async () => {
     const proofImage = receiveImageList.value[0]
     if (!proofImage) { ElMessage.warning('请先上传收货凭证'); return }
 
     submitting.value = true
     try {
-        // 🔥 传入 proofImage 参数
         const res = await orderApi.updateOrderStatus(
             order.value.order_no || order.value.orderNo,
             'completed',
@@ -519,10 +576,6 @@ const submitReceive = async () => {
     }
 }
 
-// 🔥 绑定点击事件到打开函数
-const handleDeliver = showDeliverDialogOpen
-const handleConfirmReceive = showReceiveDialogOpen
-
 const handleContact = () => { ElMessage.info('联系功能开发中...') }
 
 onMounted(() => { fetchOrderDetail() })
@@ -537,5 +590,10 @@ onMounted(() => { fetchOrderDetail() })
 :deep(.el-step__description) {
     font-size: 12px;
     margin-top: 4px;
+}
+
+:deep(.el-button--danger.is-plain:hover) {
+    --el-button-hover-bg-color: #fef2f2;
+    --el-button-hover-border-color: #fecaca;
 }
 </style>
