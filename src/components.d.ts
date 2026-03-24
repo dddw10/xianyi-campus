@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AdvanceImageUpload: typeof import('./components/AdvanceImageUpload.vue')['default']
+    AppealDialog: typeof import('./components/AppealDialog.vue')['default']
     ChangePasswordModal: typeof import('./components/ChangePasswordModal.vue')['default']
     ChatWindow: typeof import('./components/ChatWindow.vue')['default']
     EditProductModal: typeof import('./components/products/EditProductModal.vue')['default']
@@ -57,6 +58,7 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElText: typeof import('element-plus/es')['ElText']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FavoriteButton: typeof import('./components/products/FavoriteButton.vue')['default']
     IconCommunity: typeof import('./components/icons/IconCommunity.vue')['default']
@@ -64,6 +66,7 @@ declare module 'vue' {
     IconEcosystem: typeof import('./components/icons/IconEcosystem.vue')['default']
     IconSupport: typeof import('./components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./components/icons/IconTooling.vue')['default']
+    ImagePreviewList: typeof import('./components/ImagePreviewList.vue')['default']
     ModalMessage: typeof import('./components/messageBox/modalMessage.vue')['default']
     ProductList: typeof import('./components/products/ProductList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

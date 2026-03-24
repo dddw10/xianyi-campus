@@ -13,11 +13,11 @@
         <div v-else class="space-y-4">
             <div v-for="order in list" :key="order.id"
                 class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+
                 <!-- 顶部：订单号 + 状态 -->
                 <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-100 dark:border-gray-700">
                     <div class="text-sm text-gray-500 flex items-center gap-2">
                         <span>订单号：</span>
-                        <!-- 🔥 点击订单号也可以跳转详情 -->
                         <span class="font-mono text-blue-600 dark:text-blue-400 cursor-pointer hover:underline"
                             @click="$router.push(`/orders/${order.order_no || order.orderNo}`)">
                             {{ order.order_no || order.orderNo || '未知' }}
@@ -55,9 +55,43 @@
                     </div>
                 </div>
 
-                <!-- 底部：操作按钮区 -->
+                <!-- 🔹 底部：操作按钮区 -->
                 <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <!-- 🔹 动态操作按钮 (根据状态显示) -->
+
+                    <!-- 🔥 申诉相关逻辑（已完成订单专属） -->
+                    <template v-if="order.status === 'completed'">
+                        <!-- ✅ 未申诉：显示「去申诉」按钮 -->
+                        <el-button v-if="!order.appeal_status || order.appeal_status === 'none'" size="small"
+                            type="warning" plain @click.stop="handleAppeal(order)">
+                            去申诉
+                        </el-button>
+
+                        <!-- 🕐 申诉中：显示状态标签（不可点击） -->
+                        <el-tag v-else-if="order.appeal_status === 'pending'" size="small" type="warning"
+                            effect="plain">
+                            申诉审核中
+                        </el-tag>
+
+                        <!-- ✅ 申诉通过：显示成功标签 + 可点击重新申诉 + Tooltip 显示备注 -->
+                        <el-tooltip v-else-if="order.appeal_status === 'approved'"
+                            :content="order.admin_remark || '申诉已通过，点击可再次申诉'" placement="top">
+                            <el-tag size="small" type="success" effect="plain"
+                                class="cursor-pointer hover:opacity-80 transition" @click.stop="handleAppeal(order)">
+                                ✓ 申诉通过
+                            </el-tag>
+                        </el-tooltip>
+
+                        <!-- ❌ 申诉驳回：显示信息标签 + 可点击重新申诉 + Tooltip 显示备注 -->
+                        <el-tooltip v-else-if="order.appeal_status === 'rejected'"
+                            :content="order.admin_remark || '申诉已驳回，点击可重新申诉'" placement="top">
+                            <el-tag size="small" type="info" effect="plain"
+                                class="cursor-pointer hover:opacity-80 transition" @click.stop="handleAppeal(order)">
+                                ✗ 申诉驳回
+                            </el-tag>
+                        </el-tooltip>
+                    </template>
+
+                    <!-- 🔹 原有动态操作按钮 (保持不变) -->
 
                     <!-- 1. 待付款：取消 + 支付 -->
                     <template v-if="order.status === 'pending'">
@@ -70,7 +104,7 @@
                         </el-button>
                     </template>
 
-                    <!-- 2. 待发货 (paid)：🔥 新增取消订单 + 等待提示 -->
+                    <!-- 2. 待发货 (paid)：取消订单 + 等待提示 -->
                     <template v-else-if="order.status === 'paid'">
                         <el-button size="small" type="danger" plain @click.stop="handleCancel(order)">
                             取消订单
@@ -91,7 +125,6 @@
                     </template>
 
                     <!-- 🔥 公共按钮：查看详情 (所有状态都显示) -->
-                    <!-- 使用 .stop 防止冒泡触发上层的点击跳转 -->
                     <el-button size="small" plain
                         @click.stop="$router.push(`/orders/${order.order_no || order.orderNo}`)">
                         查看详情
@@ -110,12 +143,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import { modalBox } from "@/components/messageBox/modalBox";
 
 const router = useRouter()
 
+// ============================================================================
+// 🔥 类型定义（✅ 包含申诉相关字段）
+// ============================================================================
 interface OrderItem {
     id: number | string
     order_no?: string
@@ -128,9 +165,20 @@ interface OrderItem {
     price?: string | number
     payment_amount?: string | number
     quantity?: number
+
+    // 🔥 申诉相关字段（关键！确保后端返回这些字段）
+    appeal_status?: 'none' | 'pending' | 'approved' | 'rejected'
+    appeal_reason?: string
+    appeal_images?: string[]
+    appeal_updated_at?: string
+    admin_remark?: string
+
     [key: string]: any
 }
 
+// ============================================================================
+// 🔥 Props & Emits
+// ============================================================================
 const props = defineProps<{
     list: OrderItem[]
     loading: boolean
@@ -144,8 +192,13 @@ const emit = defineEmits<{
     (e: 'refresh-list'): void
     (e: 'confirm-receive', orderNo: string): void
     (e: 'cancel-order', orderNo: string): void
+    // 🔥 申诉事件：参数允许 undefined（兼容后端可能返回空订单号）
+    (e: 'appeal-order', orderNo: string | undefined): void
 }>()
 
+// ============================================================================
+// 🔥 计算属性 & 工具函数
+// ============================================================================
 const currentPage = computed({
     get: () => props.pagination.page,
     set: (val) => val
@@ -180,11 +233,14 @@ const getStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info
     return map[status] || 'info'
 }
 
+// ============================================================================
+// 🔥 事件处理函数
+// ============================================================================
 const handlePageChangeInternal = (page: number) => {
     emit('page-change', page)
 }
 
-// 🔥 确认收货
+// 🔹 确认收货
 const handleConfirm = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
     if (!orderNo) {
@@ -194,7 +250,7 @@ const handleConfirm = (order: OrderItem) => {
     emit('confirm-receive', orderNo)
 }
 
-// 🔥 取消订单（支持 pending 和 paid 状态）
+// 🔹 取消订单（支持 pending 和 paid 状态）
 const handleCancel = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
     if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
@@ -202,15 +258,50 @@ const handleCancel = (order: OrderItem) => {
         console.error('❌ [Cancel Error] 非法订单号:', orderNo)
         return
     }
-    console.log('🚀 [Cancel Action] 准备取消订单:', {
-        orderNo,
-        status: order.status
-    })
+    console.log('🚀 [Cancel Action] 准备取消订单:', { orderNo, status: order.status })
     emit('cancel-order', orderNo)
+}
+
+// 🔥 申诉处理（✅ 关键：提交后状态流转依赖父组件刷新列表）
+const handleAppeal = (order: OrderItem) => {
+    const orderNo = order.order_no || order.orderNo
+    const appealStatus = order.appeal_status
+
+    // 🔹 防御性校验
+    if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
+        ElMessage.error('订单号异常，请刷新页面重试')
+        return
+    }
+
+    // 🔥 场景 1: 已申诉（通过/驳回）→ 直接打开弹窗查看结果，无需确认
+    if (appealStatus && appealStatus !== 'none' && appealStatus !== 'pending') {
+        emit('appeal-order', orderNo)  // 🔥 直接发射事件，打开结果弹窗
+        return
+    }
+
+    // 🔥 场景 2: 申诉审核中 → 提示等待，无需确认
+    if (appealStatus === 'pending') {
+        ElMessage.info('🕐 申诉审核中，请耐心等待管理员处理')
+        return
+    }
+
+    // 🔥 场景 3: 未申诉 → 二次确认后打开表单提交
+    modalBox({
+        type: 'info',
+        title: '提交申诉',
+        message: '提交申诉后，平台将在 48 小时内审核。请确保申诉理由真实有效，恶意申诉可能影响账号信用。',
+    }).then(() => {
+        emit('appeal-order', orderNo)  // 🔥 打开表单提交申诉
+    }).catch((action) => {
+        if (action === 'cancel') {
+            ElMessage.info('已取消申诉')
+        }
+    })
 }
 </script>
 
 <style scoped>
+/* 🔹 文本截断 */
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -218,7 +309,7 @@ const handleCancel = (order: OrderItem) => {
     overflow: hidden;
 }
 
-/* 🔹 按钮悬停微交互（配合你的浅蓝主题） */
+/* 🔹 按钮悬停微交互（配合浅蓝主题） */
 :deep(.el-button--danger.is-plain:hover) {
     --el-button-hover-bg-color: #fef2f2;
     --el-button-hover-border-color: #fecaca;
@@ -230,5 +321,16 @@ const handleCancel = (order: OrderItem) => {
 
 :deep(.el-button--success:hover) {
     --el-button-hover-bg-color: #22c55e;
+}
+
+:deep(.el-button--warning.is-plain:hover) {
+    --el-button-hover-bg-color: #fff7ed;
+    --el-button-hover-border-color: #fdba74;
+    --el-button-hover-text-color: #c2410c;
+}
+
+/* 🔹 状态标签微调 */
+:deep(.el-tag--plain) {
+    font-weight: 500;
 }
 </style>

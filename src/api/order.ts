@@ -76,6 +76,85 @@ export interface PayOrderResponse {
     mock?: boolean  // 🔥 开发环境标记
 }
 
+export type AppealStatus = 'none' | 'pending' | 'approved' | 'rejected'
+
+/**
+ * 申诉信息对象（订单详情中返回）
+ */
+export interface AppealInfo {
+    status: AppealStatus           // 申诉状态
+    reason: string | null          // 申诉原因
+    images: string[]               // 证据图片 URL 数组
+    updated_at: string | null      // 申诉提交/更新时间
+    admin_remark: string | null    // 管理员审核备注
+}
+
+/**
+ * 扩展 OrderItem 接口，追加 appeal 字段
+ */
+export interface OrderItemWithAppeal extends OrderItem {
+    appeal?: AppealInfo            // 可选：订单的申诉信息
+    appeal_status?: AppealStatus   // 兼容：扁平字段（列表接口可能返回）
+    appeal_reason?: string | null  // 兼容：扁平字段
+}
+
+/**
+ * 提交申诉的请求参数
+ */
+export interface SubmitAppealParams {
+    reason: string                 // 申诉原因（5-300 字）
+    images: string[]               // 证据图片 URL 数组（0-3 张）
+}
+
+/**
+ * 提交申诉的响应数据
+ */
+export interface SubmitAppealResponse {
+    orderNo: string
+    appeal_status: AppealStatus
+    submitted_at: string
+}
+
+/**
+ * 管理员审核申诉的请求参数
+ */
+export interface AuditAppealParams {
+    action: 'approve' | 'reject'   // 审核动作
+    remark?: string                // 审核备注（可选）
+}
+
+/**
+ * 管理员审核申诉的响应数据
+ */
+export interface AuditAppealResponse {
+    orderNo: string
+    appeal_status: AppealStatus
+    audited_at: string
+}
+
+/**
+ * 申诉列表项（管理员视角）
+ */
+export interface AppealListItem {
+    id: number
+    order_no: string
+    product_title: string
+    product_image: string
+    buyer_name: string
+    seller_name: string
+    amount: string
+    appeal: AppealInfo
+    created_at: string
+}
+
+/**
+ * 申诉列表响应
+ */
+export interface AppealListResponse {
+    list: AppealListItem[]
+    pagination: PaginationResponse
+    pending_count: number          // 待审核数量（用于顶部标签）
+}
 
 export const orderApi = {
     // 🔹 我发布的（商品状态）
@@ -182,7 +261,64 @@ export const orderApi = {
                 proofImage
             }
         })
+    },
+
+    /**
+     * 用户提交订单申诉
+     * @param orderNo 订单号
+     * @param data 申诉内容 { reason, images }
+     */
+    submitAppeal(orderNo: string, data: SubmitAppealParams) {
+        return request<SubmitAppealResponse>({
+            // ✅ 用户申诉：/api/user/orders/:orderNo/appeal（这个原本就正确）
+            url: `/api/user/orders/${orderNo}/appeal`,
+            method: 'post',
+            data
+        })
+    },
+
+    /**
+     * 管理员审核申诉
+     * @param orderNo 订单号
+     * @param data 审核动作 { action, remark? }
+     */
+    auditAppeal(orderNo: string, data: AuditAppealParams) {
+        return request<AuditAppealResponse>({
+            // 🔥 修复：/api/user/orders/admin/orders/:orderNo/appeal
+            // ⚠️ 注意：路径中有两个 /orders，是因为：
+            // 1. 挂载点：/api/user/orders
+            // 2. 路由定义：/admin/orders/:orderNo/appeal
+            // 组合后 = /api/user/orders/admin/orders/:orderNo/appeal
+            url: `/api/user/orders/admin/orders/${orderNo}/appeal`,
+            method: 'patch',
+            data
+        })
+    },
+
+    /**
+     * 管理员获取申诉列表
+     * @param params 筛选参数
+     */
+    getAppealList(params?: {
+        page?: number
+        limit?: number
+        status?: string | undefined
+        keyword?: string
+    }) {
+        return request<AppealListResponse>({
+            // 🔥 修复：/api/user/orders/admin/appeals
+            // ⚠️ 注意：挂载点 + 路由定义 = /api/user/orders + /admin/appeals
+            url: '/api/user/orders/admin/appeals',
+            method: 'get',
+            params: {
+                page: 1,
+                limit: 20,
+                ...params
+            }
+        })
     }
+
+
 }
 
 export default orderApi
