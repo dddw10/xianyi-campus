@@ -187,7 +187,10 @@ const fetchRooms = async () => {
         const token = userStore.token;
         if (!token) {
             ElMessage.warning('请先登录');
-            router.push('/login');
+            router.push({
+                name: 'login',
+                query: { redirect: route.fullPath }
+            });
             return;
         }
         const apiUrl = import.meta.env.VITE_API_BASE_URL || '';

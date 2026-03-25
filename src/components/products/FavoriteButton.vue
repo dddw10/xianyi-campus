@@ -48,7 +48,7 @@ const handleToggle = async (): Promise<void> => {
     if (!userStore.token) {
         ElMessage.warning('请先登录')
         router.push({
-            path: '/login',
+            name: 'login',
             query: { redirect: route.fullPath }
         })
         return

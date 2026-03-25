@@ -3,7 +3,7 @@ import request from "@/utils/request";
 const productApi = {
     // 获取商品列表
     listProducts(params: any) {
-        return request.get('/api/products', params)
+        return request.get('/api/products', { params })
     },
 
     // 获取商品详情
