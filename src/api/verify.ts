@@ -9,7 +9,7 @@ export type studentMessage = {
 
 export type VerificationStatus = {
     isVerified: boolean
-    verificationStatus: 'pending' | 'approved' | 'rejected' | null
+    verificationStatus: 'unsubmitted' | 'pending' | 'approved' | 'rejected' | null
     rejectedReason: string | null
     submittedAt: string | null
     realName: string | null
@@ -69,7 +69,7 @@ const verifyApi = {
     },
 
     // 审核申请
-    reviewVerification(id: number, data: { status: 'approved' | 'rejected', reason?: string }) {
+    reviewVerification(id: number, data: { status: 'approved' | 'rejected', reason?: string, phone?: string }) {
         return request({
             url: `/api/verify/admin/${id}/review`,
             method: 'post',

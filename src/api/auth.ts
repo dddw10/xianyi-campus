@@ -1,37 +1,49 @@
 import request from "@/utils/request";
 
+type AdminLoginPayload = {
+    username: string
+    password: string
+}
+
+type UpdateProfilePayload = {
+    nickname?: string
+    avatar?: string
+    avatarUrl?: string
+    phone?: string
+}
+
 const authApi = {
-    // 用户注册
+    // User register
     register(data: any) {
         return request.post('/api/auth/register', data)
     },
 
-    // 用户登录
+    // User login
     login(data: any) {
         return request.post('/api/auth/login', data)
     },
 
-    // 🔥 新增：管理员登录
-    adminLogin(data: { username: string; password: string }) {
+    // Admin login
+    adminLogin(data: AdminLoginPayload) {
         return request({
-            url: '/api/admin/login',  // 🔥 管理员登录接口路径
+            url: '/api/admin/login',
             method: 'post',
             data
         })
     },
 
-    // 提交身份验证
+    // Submit verification
     submitVerification(data: any) {
         return request.post('/api/auth/verify', data)
     },
 
-    // 获取当前用户信息
-    getCurrentUser(data: any) {
+    // Get current user info
+    getCurrentUser(data?: any) {
         return request.get('/api/auth/me')
     },
 
-    // 更新当前用户资料（昵称/头像）
-    updateProfile(data: { nickname?: string; avatar?: string; avatarUrl?: string }) {
+    // Update current user profile
+    updateProfile(data: UpdateProfilePayload) {
         return request({
             url: '/api/auth/me',
             method: 'put',
@@ -39,12 +51,12 @@ const authApi = {
         })
     },
 
-    // 检查用户认证状态
-    checkVerificationStatus(data: any) {
+    // Check verification status
+    checkVerificationStatus(data?: any) {
         return request.get('/api/auth/verify-status')
     },
 
-    // 修改密码
+    // Change password
     ChangePasswordModal(data: { oldPassword: string, newPassword: string }) {
         return request({
             url: '/api/password/change',

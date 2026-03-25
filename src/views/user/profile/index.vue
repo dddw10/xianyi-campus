@@ -44,9 +44,8 @@
 
                             <!-- 认证状态 -->
                             <div class="mt-2">
-                                <el-tag :type="verifyTagType" size="small"
-                                    :effect="isUserVerified ? 'dark' : 'plain'">
-                                    {{ verifyTagText }}
+                                <el-tag :type="verifyTagType" size="small" :effect="isUserVerified ? 'dark' : 'plain'">
+                                    {{ verifyStatusText }}
                                 </el-tag>
                                 <el-button v-if="!isUserVerified" link size="small" class="ml-2"
                                     @click="$router.push('/main/verify')">
@@ -264,22 +263,25 @@ const creditLevel = computed(() => {
 const isUserVerified = computed(() => {
     const status = userStore.userInfo?.verificationStatus
     if (status === 'approved') return true
-    if (status === 'pending' || status === 'rejected') return false
+    if (status === 'pending' || status === 'rejected' || status === 'unsubmitted') return false
     return !!userStore.userInfo?.isVerified
 })
 
-const verifyTagType = computed<'success' | 'warning' | 'danger'>(() => {
+const verifyTagType = computed<'success' | 'warning' | 'danger' | 'info'>(() => {
     const status = userStore.userInfo?.verificationStatus
     if (status === 'rejected') return 'danger'
+    if (status === 'pending') return 'warning'
+    if (status === 'unsubmitted') return 'info'
     if (isUserVerified.value) return 'success'
-    return 'warning'
+    return 'info'
 })
 
-const verifyTagText = computed(() => {
+const verifyStatusText = computed(() => {
     const status = userStore.userInfo?.verificationStatus
     if (status === 'rejected') return '❌ 认证被拒'
     if (status === 'pending') return '⏳ 审核中'
-    return isUserVerified.value ? '✅ 已认证' : '⏳ 待认证'
+    if (status === 'unsubmitted') return '⚪ 去认证'
+    return isUserVerified.value ? '✅ 已认证' : '⚪ 去认证'
 })
 
 // ============================================================================

@@ -6,10 +6,39 @@ import { buildUserRoutes } from "@/utils/dynamicRoutes"
 import { addDynamicRoutes, removeDynamicRoutes } from "@/router"  // ✅ 从 router/index.ts 导入
 import { useFavoriteStore } from './favorite'
 
+type UserVerificationStatus = 'unsubmitted' | 'pending' | 'approved' | 'rejected' | null
+
+const normalizeUserVerification = (user: any) => {
+    const nextUser = { ...(user || {}) }
+    const status = nextUser.verificationStatus
+    const isVerified = !!nextUser.isVerified
+    const knownStatus = ['unsubmitted', 'pending', 'approved', 'rejected'].includes(status)
+    const hasVerificationProof =
+        !!nextUser.submittedAt ||
+        !!nextUser.verificationSubmittedAt ||
+        !!nextUser.studentCardUrl ||
+        !!nextUser.realName
+
+    if (!knownStatus) {
+        nextUser.verificationStatus = isVerified ? 'approved' : 'unsubmitted'
+    }
+    if (nextUser.verificationStatus === 'pending' && !isVerified && !hasVerificationProof) {
+        nextUser.verificationStatus = 'unsubmitted'
+    }
+
+    if (nextUser.verificationStatus === 'approved') {
+        nextUser.isVerified = true
+    } else if (typeof nextUser.isVerified !== 'boolean') {
+        nextUser.isVerified = false
+    }
+
+    return nextUser
+}
+
 export const useUserStore = defineStore('user', {
     state: () => ({
         token: getToken() || '',
-        userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}'),
+        userInfo: normalizeUserVerification(JSON.parse(localStorage.getItem('userInfo') || '{}')),
         routes: JSON.parse(localStorage.getItem('routes') || '[]'),
         permissions: JSON.parse(localStorage.getItem('permissions') || '{}'),
         role: localStorage.getItem('userRole') || 'user',  // 'user' | 'admin'
@@ -34,19 +63,20 @@ export const useUserStore = defineStore('user', {
         },
 
         async setUserInfo(data: any) {
+            const normalizedUser = normalizeUserVerification(data.user)
             // 1. 保存基础数据
             this.token = data.token
-            this.userInfo = data.user
+            this.userInfo = normalizedUser
             this.routes = data.routes || []
             this.permissions = data.permissions || {}
 
             // 🔥 2. 保存角色和细粒度权限（管理员专用）
-            this.role = data.user?.role || 'user'
+            this.role = normalizedUser?.role || 'user'
             this.userPermissions = data.permissions?.permissions || []
 
             // 3. 持久化到 localStorage
             setToken(data.token)
-            localStorage.setItem('userInfo', JSON.stringify(data.user))
+            localStorage.setItem('userInfo', JSON.stringify(normalizedUser))
             localStorage.setItem('routes', JSON.stringify(data.routes))
             localStorage.setItem('permissions', JSON.stringify(data.permissions))
             localStorage.setItem('userRole', this.role)  // 🔥 新增
@@ -62,12 +92,12 @@ export const useUserStore = defineStore('user', {
             avatarUrl?: string
             phone?: string
             isVerified?: boolean
-            verificationStatus?: 'pending' | 'approved' | 'rejected' | null
+            verificationStatus?: UserVerificationStatus
         }) {
-            this.userInfo = {
+            this.userInfo = normalizeUserVerification({
                 ...this.userInfo,
                 ...profile
-            }
+            })
             localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
         },
 
