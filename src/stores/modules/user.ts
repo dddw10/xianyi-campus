@@ -79,6 +79,7 @@ export const useUserStore = defineStore('user', {
         },
 
         async logout() {
+            const currentRole = this.role
             // 1. 清理动态路由
             const routeNames = (this.routes || [])
                 .map((r: any) => r?.name)
@@ -109,7 +110,7 @@ export const useUserStore = defineStore('user', {
             localStorage.removeItem('userPermissions')  // 🔥 新增
 
             // 4. 根据角色跳转到对应登录页
-            const redirectPath = this.role === 'admin' ? '/admin/login' : '/auth/login'
+            const redirectPath = currentRole === 'admin' ? '/admin/login' : '/auth/login'
             router.push({ path: redirectPath })
         },
 
