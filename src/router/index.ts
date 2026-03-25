@@ -341,6 +341,17 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     }
   }
 
+  // 未认证用户点击未挂载的受限路由时，提示并停留当前页，避免进入 404
+  const verifyRequiredPaths = ['/products/create', '/products/publish', '/products/orders', '/main/chat']
+  const hitVerifyRequiredPath = verifyRequiredPaths.some(path =>
+    to.path === path || to.path.startsWith(`${path}/`)
+  )
+  if (userStore.isLoggedIn && !userStore.isVerified && hitVerifyRequiredPath) {
+    ElMessage.warning('请先去认证，认证后可使用该功能')
+    next(false)
+    return
+  }
+
   // 🔥 /main/* 路由的处理
   if (to.path.startsWith('/main')) {
     if (!userStore.isLoggedIn) {
