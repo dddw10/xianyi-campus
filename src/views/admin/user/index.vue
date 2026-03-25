@@ -493,12 +493,11 @@ const fetchUserList = async () => {
             ...filters
         }
 
-        adminUserApi.getUserList(params).then((res: any) => {
-            if (res.code === 200 && res.data) {
-                userList.value = res.data.list || []
-                pagination.total = res.data.pagination?.total || 0
-            }
-        })
+        const res: any = await adminUserApi.getUserList(params)
+        if (res.code === 200 && res.data) {
+            userList.value = res.data.list || []
+            pagination.total = res.data.pagination?.total || 0
+        }
 
     } catch (error) {
         console.error('❌ 获取用户列表失败:', error)
@@ -631,12 +630,11 @@ const handleCommand = async (command: string, row: any) => {
         case 'disable':
             try {
                 await ElMessageBox.confirm('确定要禁用该账号吗？', '禁用账号', { type: 'warning' })
-                adminUserApi.updateUserStatus(row.id, false).then((res: any) => {
-                    if (res.code === 200) {
-                        ElMessage.success('✅ 账号已禁用')
-                        row.enabled = false
-                    }
-                })
+                const res: any = await adminUserApi.updateUserStatus(row.id, false)
+                if (res.code === 200) {
+                    ElMessage.success('✅ 账号已禁用')
+                    row.enabled = false
+                }
 
             } catch (error: any) {
                 if (error !== 'cancel') {
@@ -647,18 +645,17 @@ const handleCommand = async (command: string, row: any) => {
 
         case 'delete':
             try {
-                modalBox({
+                await modalBox({
                     type: 'info',
                     title: '删除用户',
                     message: '删除后无法恢复，确定要删除该用户吗？'
-                }).then(() => {
-                    adminUserApi.deleteUser(row.id).then((res: any) => {
-                        if (res.code === 200) {
-                            ElMessage.success('✅ 用户已删除')
-                            fetchUserList()
-                        }
-                    })
                 })
+
+                const res: any = await adminUserApi.deleteUser(row.id)
+                if (res.code === 200) {
+                    ElMessage.success('✅ 用户已删除')
+                    fetchUserList()
+                }
 
             } catch (error: any) {
                 if (error !== 'cancel') {
@@ -784,12 +781,11 @@ const handleResetPassword = async () => {
 
     try {
         submitting.value = true
-        adminUserApi.resetPassword(resetTargetId.value, resetPassword.value).then((res: any) => {
-            if (res.code === 200) {
-                ElMessage.success('✅ 密码重置成功')
-                showResetModal.value = false
-            }
-        })
+        const res: any = await adminUserApi.resetPassword(resetTargetId.value, resetPassword.value)
+        if (res.code === 200) {
+            ElMessage.success('✅ 密码重置成功')
+            showResetModal.value = false
+        }
 
 
     } catch (error: any) {

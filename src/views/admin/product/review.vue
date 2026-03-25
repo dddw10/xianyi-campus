@@ -228,28 +228,26 @@ const tableData = ref<tableDataType>({
 
 
 // 获取类型选择的options的方法
-const getEnabledCategories = () => {
+const getEnabledCategories = async () => {
     try {
-        adminCategoryApi.getCategoriesEnabled().then((res: any) => {
-            if (res.code === 200) {
-                typeOptions.value = res.data
-            }
-        })
+        const res: any = await adminCategoryApi.getCategoriesEnabled()
+        if (res.code === 200) {
+            typeOptions.value = res.data
+        }
     } catch {
         ElMessage.error('获取商品类型失败')
     }
 }
 
 // 获取待审核的商品信息
-const LoadPendingProducts = () => {
+const LoadPendingProducts = async () => {
     dataLoading.value = true
     try {
-        adminApi.getLoadPendingProducts(pagination).then((res: any) => {
-            if (res.code === 200) {
-                tableData.value = res.data
-                ElMessage.success('获取成功')
-            }
-        })
+        const res: any = await adminApi.getLoadPendingProducts(pagination)
+        if (res.code === 200) {
+            tableData.value = res.data
+            ElMessage.success('获取成功')
+        }
     } catch {
         ElMessage.error('获取待审核的商品信息失败')
     } finally {
@@ -279,20 +277,24 @@ const handleCancel = () => {
 }
 
 // 审批通过
-const handlePass = (productId: number) => {
-    modalBox({
-        type: 'info',
-        title: '提示',
-        message: '确认通过审批？'
-    }).then(() => {
-        adminApi.reviewSingleProduct(productId, 'approve').then((res: any) => {
-            if (res.code === 200) {
-                ElMessage.success('审批通过')
-                init()
-            }
+const handlePass = async (productId: number) => {
+    try {
+        await modalBox({
+            type: 'info',
+            title: '提示',
+            message: '确认通过审批？'
         })
-    })
 
+        const res: any = await adminApi.reviewSingleProduct(productId, 'approve')
+        if (res.code === 200) {
+            ElMessage.success('审批通过')
+            init()
+        }
+    } catch (error: any) {
+        if (error !== 'cancel') {
+            ElMessage.error(error?.response?.data?.msg || '审批失败')
+        }
+    }
 }
 
 // 审批拒绝理由

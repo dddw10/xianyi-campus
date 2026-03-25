@@ -216,16 +216,15 @@ const pendingList = ref<any[]>([])
 const fetchPendingList = async (): Promise<void> => {
     loading.value = true
     try {
-        verifyApi.getPendingList({
+        const res: any = await verifyApi.getPendingList({
             page: pagination.page,
             limit: pagination.limit,
             keyword: searchKeyword.value
-        }).then((res: any) => {
-            if (res.code === 200 && res.data) {
-                pendingList.value = res.data.list || []
-                pagination.total = res.data.pagination?.total || 0
-            }
         })
+        if (res.code === 200 && res.data) {
+            pendingList.value = res.data.list || []
+            pagination.total = res.data.pagination?.total || 0
+        }
 
 
     } catch (error) {
@@ -289,23 +288,21 @@ const handleApprove = async (row: any): Promise<void> => {
     if (!row) return
 
     try {
-        modalBox({
+        await modalBox({
             type: 'info',
             title: '确认通过',
             message: `确定要通过用户 "${row.realName || row.nickname}" (${row.studentId}) 的认证申请吗？`,
-        }).then(() => {
-            submitting.value = true
-            verifyApi.reviewVerification(row.id, {
-                status: 'approved'
-            }).then(async (res: any) => {
-                if (res.code === 200) {
-                    ElMessage.success('✅ 审核通过')
-                    await fetchPendingList()
-                    showReviewDialog.value = false
-                }
-            })
+        })
+
+        submitting.value = true
+        const res: any = await verifyApi.reviewVerification(row.id, {
+            status: 'approved'
+        })
+        if (res.code === 200) {
+            ElMessage.success('✅ 审核通过')
+            await fetchPendingList()
+            showReviewDialog.value = false
         }
-        )
 
     } catch (error: any) {
         if (error !== 'cancel') {
@@ -336,16 +333,15 @@ const handleReject = async (): Promise<void> => {
 
     try {
         submitting.value = true
-        verifyApi.reviewVerification(currentRecord.value.id, {
+        const res: any = await verifyApi.reviewVerification(currentRecord.value.id, {
             status: 'rejected',
             reason: rejectForm.reason
-        }).then(async (res: any) => {
-            if (res.code === 200) {
-                ElMessage.success('❌ 已拒绝申请')
-                showRejectDialog.value = false
-                await fetchPendingList()
-            }
         })
+        if (res.code === 200) {
+            ElMessage.success('❌ 已拒绝申请')
+            showRejectDialog.value = false
+            await fetchPendingList()
+        }
 
 
     } catch (error: any) {

@@ -111,35 +111,33 @@ const rules: FormRules = {
 const handleLogin = async () => {
     if (!formRef.value) return
 
-    await formRef.value.validate(async (valid) => {
-        if (!valid) return
-
+    try {
+        await formRef.value.validate()
+        if (loading.value) return
         loading.value = true
 
-        try {
-            authApi.adminLogin(formData).then((res: any) => {
-                if (res.code === 200) {
-                    ElMessage.success('🎉 管理员登录成功')
+        const res: any = await authApi.adminLogin(formData)
+        if (res.code === 200) {
+            ElMessage.success('🎉 管理员登录成功')
 
-                    // 🔥 关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
-                    userStore.setUserInfo(res.data)
+            // 🔥 关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
+            userStore.setUserInfo(res.data)
 
-                    // 🔥 跳转到管理员数据看板（路由已动态添加）
-                    router.push('/admin/dashboard')
-
-                    window.location.reload()
-                } else {
-                    ElMessage.error('登录失败')
-                }
-            })
-
-        } catch (error: any) {
-            console.error('管理员登录异常:', error)
-            ElMessage.error(error?.response?.data?.msg || '登录失败，请稍后重试')
-        } finally {
-            loading.value = false
+            // 🔥 跳转到管理员数据看板（路由已动态添加）
+            await router.push('/admin/dashboard')
+            window.location.reload()
+        } else {
+            ElMessage.error('登录失败')
         }
-    })
+    } catch (error: any) {
+        if (error?.fields) {
+            return
+        }
+        console.error('管理员登录异常:', error)
+        ElMessage.error(error?.response?.data?.msg || '登录失败，请稍后重试')
+    } finally {
+        loading.value = false
+    }
 }
 
 // 返回普通用户登录

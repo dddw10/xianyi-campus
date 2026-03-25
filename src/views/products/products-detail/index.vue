@@ -280,12 +280,11 @@ const fetchProductDetail = async () => {
     loading.value = true
     try {
         const productId = route.params.id
-        productApi.getProduct(productId).then((res: any) => {
-            if (res?.code === 200) {
-                product.value = res.data
-                currentImage.value = res.data.images?.[0]
-            }
-        })
+        const res: any = await productApi.getProduct(productId)
+        if (res?.code === 200) {
+            product.value = res.data
+            currentImage.value = res.data.images?.[0]
+        }
     } catch (error: any) {
         console.error('❌ 获取商品详情失败:', error)
         if (error?.response?.status === 404) {
@@ -301,11 +300,10 @@ const fetchProductDetail = async () => {
 // 🔹 获取分类列表
 const getEnabledCategories = async () => {
     try {
-        adminCategoryApi.getCategoriesEnabled().then((res: any) => {
-            if (res?.code === 200) {
-                typeOptions.value = res.data.list || []
-            }
-        })
+        const res: any = await adminCategoryApi.getCategoriesEnabled()
+        if (res?.code === 200) {
+            typeOptions.value = res.data.list || []
+        }
 
     } catch (error) {
         console.error('获取分类失败:', error)

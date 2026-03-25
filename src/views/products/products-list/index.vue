@@ -198,14 +198,13 @@ const filteredProducts = computed(() => {
 
 const getCategory = async () => {
     try {
-        const res = await adminCategoryApi.getCategoriesEnabled().then((res: any) => {
-            if (res.code === 200) {
-                categories.value = [
-                    { id: -1, name: '✨ 全部' },
-                    ...res.data
-                ];
-            }
-        })
+        const res: any = await adminCategoryApi.getCategoriesEnabled()
+        if (res.code === 200) {
+            categories.value = [
+                { id: -1, name: '✨ 全部' },
+                ...res.data
+            ];
+        }
     } catch (error) {
         console.error('获取分类失败:', error);
     }
@@ -221,38 +220,37 @@ const loadProducts = async (isReset = false) => {
     }
 
     try {
-        productApi.listProducts({
+        const res: any = await productApi.listProducts({
             page: page.value,
             limit: limit.value,
             category: activeCategory.value === '✨ 全部' ? '' : activeCategory.value,
             keyword: searchQuery.value.trim()
-        }).then(async (res: any) => {
-            if (res.code === 200) {
-                const list = res.data.list || res.data || [];
-                const formattedList = list.map((item: any) => ({
-                    id: item.id,
-                    name: item.title || item.name,
-                    price: item.price,
-                    category: item.category,
-                    img: item.images?.[0] || item.img || item.image_url,
-                    product_status: item.product_status, // 映射状态
-                    sold: item.sold,
-                    ...item
-                }));
-
-                if (isReset) {
-                    products.value = formattedList;
-                } else {
-                    products.value = [...products.value, ...formattedList];
-                }
-
-                hasMore.value = res.data.pagination?.hasMore ?? (list.length === limit.value);
-                if (list.length > 0) {
-                    page.value += 1;
-                }
-                await batchCheckFavorites(formattedList)
-            }
         })
+        if (res.code === 200) {
+            const list = res.data.list || res.data || [];
+            const formattedList = list.map((item: any) => ({
+                id: item.id,
+                name: item.title || item.name,
+                price: item.price,
+                category: item.category,
+                img: item.images?.[0] || item.img || item.image_url,
+                product_status: item.product_status, // 映射状态
+                sold: item.sold,
+                ...item
+            }));
+
+            if (isReset) {
+                products.value = formattedList;
+            } else {
+                products.value = [...products.value, ...formattedList];
+            }
+
+            hasMore.value = res.data.pagination?.hasMore ?? (list.length === limit.value);
+            if (list.length > 0) {
+                page.value += 1;
+            }
+            await batchCheckFavorites(formattedList)
+        }
     } catch (error) {
         console.error('加载商品失败:', error);
     } finally {

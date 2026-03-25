@@ -214,21 +214,20 @@ const canSubmit = computed((): boolean => {
 // 🔹 获取认证状态
 const fetchStatus = async (): Promise<void> => {
     try {
-        verifyApi.checkVerifyStatus().then((res: any) => {
-            if (res.code === 200 && res.data) {
-                status.value = res.data
-                // 🔥 填充表单（用于重新提交）
-                if (res.data.realName) {
-                    form.value.realName = res.data.realName
-                }
-                if (res.data.studentId) {
-                    form.value.studentId = Number(res.data.studentId)
-                }
-                if (res.data.studentCardUrl) {
-                    form.value.studentCardUrl = [res.data.studentCardUrl]
-                }
+        const res: any = await verifyApi.checkVerifyStatus()
+        if (res.code === 200 && res.data) {
+            status.value = res.data
+            // 🔥 填充表单（用于重新提交）
+            if (res.data.realName) {
+                form.value.realName = res.data.realName
             }
-        })
+            if (res.data.studentId) {
+                form.value.studentId = Number(res.data.studentId)
+            }
+            if (res.data.studentCardUrl) {
+                form.value.studentCardUrl = [res.data.studentCardUrl]
+            }
+        }
 
     } catch (error) {
         console.error('❌ 获取认证状态失败:', error)
@@ -289,13 +288,12 @@ const handleSubmit = async (): Promise<void> => {
             : verifyApi.submitVerification
 
         // 🔥 调用 API（统一用 await）
-        apiFn(submitData).then(async (res: any) => {
-            if (res.code === 200 || res.code === 201) {
-                ElMessage.success(res.msg || '提交成功')
-                showUploadDialog.value = false
-                await fetchStatus()  // 🔥 刷新状态
-            }
-        })
+        const res: any = await apiFn(submitData)
+        if (res.code === 200 || res.code === 201) {
+            ElMessage.success(res.msg || '提交成功')
+            showUploadDialog.value = false
+            await fetchStatus()  // 🔥 刷新状态
+        }
 
     } catch (error: any) {
         console.error('❌ 提交认证失败:', error)

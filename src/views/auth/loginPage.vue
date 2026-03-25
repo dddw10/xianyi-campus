@@ -135,21 +135,23 @@ const login = async () => {
         loading.value = true
 
         // 调用接口
-        authApi.login(countData.value).then((res: any) => {
-            if (res.code === 200) {
-                ElMessage.success('🎉 登录成功')
+        const res: any = await authApi.login(countData.value)
+        if (res.code === 200) {
+            ElMessage.success('🎉 登录成功')
 
-                userStore.setUserInfo(res.data)
-                setTimeout(() => {
-                    router.push('/home')
-                }, 100);
-            } else {
-                ElMessage.error('登录失败')
-            }
-        })
+            userStore.setUserInfo(res.data)
+            setTimeout(() => {
+                router.push('/home')
+            }, 100);
+        } else {
+            ElMessage.error('登录失败')
+        }
 
 
     } catch (error: any) {
+        if (error?.fields) {
+            return
+        }
         console.error('登录异常:', error)
         if (error?.response?.data?.message) {
             ElMessage.error(error.response.data.message)
