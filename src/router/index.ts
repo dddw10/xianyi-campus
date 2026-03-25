@@ -16,6 +16,7 @@ const componentMap: Record<string, any> = {
   // 🛍️ 商品相关
   'ProductList': () => import('@/views/products/products-list/index.vue'),
   'CreateProduct': () => import('@/views/products/products-publish/index.vue'),
+  'MyProducts': () => import('@/views/products/orders/index.vue'),
 
   // 🔥 订单相关 - 🔥 确保这些组件存在
   'Orders': () => import('@/views/products/orders/index.vue'),           // 我的订单列表

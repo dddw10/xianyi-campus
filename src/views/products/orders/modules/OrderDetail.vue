@@ -4,7 +4,7 @@
         <div class="max-w-4xl mx-auto px-4">
             <!-- 🔹 顶部导航 -->
             <div class="mb-6 flex items-center gap-3">
-                <el-button @click="$router.back()" circle class="!w-8 !h-8 !p-0">
+                <el-button @click="router.back()" circle class="!w-8 !h-8 !p-0">
                     <el-icon>
                         <ArrowLeft />
                     </el-icon>
@@ -373,7 +373,7 @@
             <!-- 🔹 404 状态 -->
             <div v-else-if="!loading && !order" class="text-center py-20">
                 <el-empty description="订单不存在或无权查看" />
-                <el-button @click="$router.back()" type="primary" round>返回订单列表</el-button>
+                <el-button @click="router.back()" type="primary" round>返回订单列表</el-button>
             </div>
 
             <!-- 🔥 发货凭证上传弹窗 -->
