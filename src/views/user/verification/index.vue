@@ -16,7 +16,7 @@
         <div class="max-w-2xl mx-auto px-4 space-y-4">
 
             <!-- 🟢 已认证 -->
-            <el-alert v-if="status?.isVerified" title="✅ 已完成身份认证" type="success" :closable="false" show-icon>
+            <el-alert v-if="isApproved" title="✅ 已完成身份认证" type="success" :closable="false" show-icon>
                 <template #default>
                     <div class="mt-2 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                         <p>恭喜！您已完成学生身份认证，现在可以：</p>
@@ -30,7 +30,7 @@
             </el-alert>
 
             <!-- 🟡 审核中 -->
-            <el-alert v-else-if="status?.verificationStatus === 'pending'" title="⏳ 审核中" type="warning"
+            <el-alert v-else-if="isPending" title="⏳ 审核中" type="warning"
                 :closable="false" show-icon>
                 <template #default>
                     <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -46,7 +46,7 @@
             </el-alert>
 
             <!-- 🔴 被拒绝 -->
-            <el-alert v-else-if="status?.verificationStatus === 'rejected'" title="❌ 认证未通过" type="error"
+            <el-alert v-else-if="isRejected" title="❌ 认证未通过" type="error"
                 :closable="false" show-icon>
                 <template #default>
                     <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -125,24 +125,29 @@
             <div class="space-y-4">
                 <!-- 真实姓名 -->
                 <el-form-item label="真实姓名">
-                    <el-input v-model="form.realName" placeholder="请输入学生证上的真实姓名" :disabled="!!status?.realName" />
-                    <p v-if="status?.realName" class="text-xs text-gray-400 mt-1">
-                        已认证姓名不可修改
+                    <el-input v-model="form.realName" placeholder="请输入学生证上的真实姓名" :disabled="isReadOnly" />
+                    <p v-if="isReadOnly && status?.realName" class="text-xs text-gray-400 mt-1">
+                        审核中或已认证状态不可修改
                     </p>
                 </el-form-item>
 
                 <!-- 学号 -->
                 <el-form-item label="学号">
                     <el-input v-model.number="form.studentId" placeholder="请输入 10-13 位学号"
-                        :disabled="!!status?.studentId" maxlength="13" />
-                    <p v-if="status?.studentId" class="text-xs text-gray-400 mt-1">
-                        已认证学号不可修改
+                        :disabled="isReadOnly" maxlength="13" />
+                    <p v-if="isReadOnly && status?.studentId" class="text-xs text-gray-400 mt-1">
+                        审核中或已认证状态不可修改
                     </p>
+                </el-form-item>
+
+                <!-- 手机号 -->
+                <el-form-item label="手机号">
+                    <el-input v-model.trim="form.phone" placeholder="请输入 11 位手机号" :disabled="isReadOnly" maxlength="11" />
                 </el-form-item>
 
                 <!-- 学生证上传 -->
                 <el-form-item label="学生证照片">
-                    <OssUploader ref="uploaderRef" :disabled="!!status?.studentCardUrl" :limit="1" :width="100"
+                    <OssUploader ref="uploaderRef" :disabled="isReadOnly" :limit="1" :width="100"
                         v-model="form.studentCardUrl" />
 
                     <!-- 预览：只有 previewUrl 有值时才显示 -->
@@ -168,10 +173,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Document, Check } from '@element-plus/icons-vue'
 import verifyApi, { type VerificationStatus } from '@/api/verify'
+import { useUserStore } from '@/stores/modules/user'
 
 // 🔥 替换为你的实际上传组件路径
 import OssUploader from '@/components/AdvanceImageUpload.vue'
@@ -180,6 +186,7 @@ import OssUploader from '@/components/AdvanceImageUpload.vue'
 interface FormState {
     realName: string
     studentId: number
+    phone: string
     studentCardUrl: string[]
 }
 
@@ -187,13 +194,24 @@ interface FormState {
 const status = ref<VerificationStatus | null>(null)
 const showUploadDialog = ref(false)
 const submitting = ref(false)
+const userStore = useUserStore()
 
 // 🔹 表单数据 - 🔥 明确初始值，避免 undefined
 const form = ref<FormState>({
     realName: '',
     studentId: 0,
+    phone: '',
     studentCardUrl: []
 })
+
+const isRejected = computed(() => status.value?.verificationStatus === 'rejected')
+const isPending = computed(() => status.value?.verificationStatus === 'pending')
+const isApproved = computed(() => {
+    if (status.value?.verificationStatus === 'approved') return true
+    if (status.value?.verificationStatus === 'rejected' || status.value?.verificationStatus === 'pending') return false
+    return !!status.value?.isVerified
+})
+const isReadOnly = computed(() => isPending.value || isApproved.value)
 
 // 🔹 计算属性：预览 URL（🔥 核心修复：确保永远是 string）
 const previewUrl = computed((): string => {
@@ -203,10 +221,12 @@ const previewUrl = computed((): string => {
 
 // 🔹 计算属性：是否可以提交
 const canSubmit = computed((): boolean => {
+    const phoneValid = /^1\d{10}$/.test(form.value.phone.trim())
     return (
         form.value.realName.trim().length >= 2 &&  // 姓名至少 2 字
         form.value.studentId >= 1000000000 &&       // 学号至少 10 位
         form.value.studentId <= 9999999999999 &&    // 学号最多 13 位
+        phoneValid &&
         !!previewUrl.value                          // 必须有图片
     )
 })
@@ -217,6 +237,11 @@ const fetchStatus = async (): Promise<void> => {
         const res: any = await verifyApi.checkVerifyStatus()
         if (res.code === 200 && res.data) {
             status.value = res.data
+            userStore.updateUserProfile({
+                isVerified: isApproved.value,
+                verificationStatus: res.data.verificationStatus,
+                phone: res.data.phone || form.value.phone
+            })
             // 🔥 填充表单（用于重新提交）
             if (res.data.realName) {
                 form.value.realName = res.data.realName
@@ -226,6 +251,9 @@ const fetchStatus = async (): Promise<void> => {
             }
             if (res.data.studentCardUrl) {
                 form.value.studentCardUrl = [res.data.studentCardUrl]
+            }
+            if (res.data.phone) {
+                form.value.phone = res.data.phone
             }
         }
 
@@ -249,6 +277,7 @@ const formatDate = (dateStr: string | null | undefined): string => {
 
 // 🔹 打开上传对话框
 const openUploadDialog = (): void => {
+    form.value.phone = userStore.userInfo?.phone || form.value.phone || ''
     // 🔥 如果已有认证信息，填充表单
     if (status.value) {
         if (status.value.realName) {
@@ -260,6 +289,9 @@ const openUploadDialog = (): void => {
         if (status.value.studentCardUrl) {
             form.value.studentCardUrl = [status.value.studentCardUrl]
         }
+        if (status.value.phone) {
+            form.value.phone = status.value.phone
+        }
     }
     showUploadDialog.value = true
 }
@@ -268,7 +300,7 @@ const openUploadDialog = (): void => {
 const handleSubmit = async (): Promise<void> => {
     // 🔥 二次校验
     if (!canSubmit.value) {
-        ElMessage.warning('请填写完整的认证信息')
+        ElMessage.warning('请填写完整且正确的认证信息（手机号需 11 位）')
         return
     }
 
@@ -279,6 +311,7 @@ const handleSubmit = async (): Promise<void> => {
         const submitData = {
             realName: form.value.realName.trim(),
             studentId: form.value.studentId,
+            phone: form.value.phone.trim(),
             studentCardUrl: previewUrl.value  // 🔥 使用 previewUrl，确保是 string
         }
 

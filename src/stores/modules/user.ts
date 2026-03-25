@@ -56,6 +56,21 @@ export const useUserStore = defineStore('user', {
             await this.loadDynamicRoutes()
         },
 
+        updateUserProfile(profile: {
+            nickname?: string
+            avatar?: string
+            avatarUrl?: string
+            phone?: string
+            isVerified?: boolean
+            verificationStatus?: 'pending' | 'approved' | 'rejected' | null
+        }) {
+            this.userInfo = {
+                ...this.userInfo,
+                ...profile
+            }
+            localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+        },
+
         async loadDynamicRoutes() {
             try {
                 console.log('🔄 开始加载动态路由...')

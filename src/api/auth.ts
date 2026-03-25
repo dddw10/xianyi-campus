@@ -30,6 +30,15 @@ const authApi = {
         return request.get('/api/auth/me')
     },
 
+    // 更新当前用户资料（昵称/头像）
+    updateProfile(data: { nickname?: string; avatar?: string; avatarUrl?: string }) {
+        return request({
+            url: '/api/auth/me',
+            method: 'put',
+            data
+        })
+    },
+
     // 检查用户认证状态
     checkVerificationStatus(data: any) {
         return request.get('/api/auth/verify-status')

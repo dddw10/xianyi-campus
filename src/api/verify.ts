@@ -4,6 +4,7 @@ export type studentMessage = {
     studentCardUrl: string
     realName: string
     studentId: number
+    phone?: string
 }
 
 export type VerificationStatus = {
@@ -14,6 +15,7 @@ export type VerificationStatus = {
     realName: string | null
     studentCardUrl: string | null
     studentId: string | null
+    phone?: string | null
 }
 
 const verifyApi = {

@@ -34,7 +34,7 @@
         </div>
 
         <!-- 🔥 上传区域（虚线框样式） -->
-        <el-upload v-if="imageList.length < limit" :action="uploadUrl" :headers="headers" :before-upload="beforeUpload"
+        <el-upload v-if="imageList.length < limit" :action="props.uploadUrl" :headers="headers" :before-upload="beforeUpload"
             :on-success="handleSuccess" :on-error="handleError" :show-file-list="false" accept="image/*"
             class="upload-area">
             <div class="upload-placeholder">
@@ -62,6 +62,10 @@ const props = defineProps({
         type: Array as () => string[],
         default: () => []
     },
+    uploadUrl: {
+        type: String,
+        default: '/api/upload/product'
+    },
     limit: {
         type: Number,
         default: 3
@@ -74,7 +78,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 const userStore = useUserStore()
-const uploadUrl = '/api/upload/product'
 
 // 🔹 本地列表（用于 UI 渲染）
 const imageList = ref<string[]>([...props.modelValue])

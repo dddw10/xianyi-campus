@@ -14,7 +14,14 @@
                         <div class="relative flex-shrink-0">
                             <el-avatar :size="80" :src="userStore.userInfo?.avatar || getDefaultAvatar()"
                                 class="border-4 border-white dark:border-gray-700 shadow-lg" />
-                            <el-button v-if="userStore.userInfo?.isVerified" size="small"
+                            <el-button size="small"
+                                class="absolute -top-1 -right-1 !w-6 !h-6 !rounded-full !p-0 bg-gray-600 hover:bg-gray-700"
+                                title="编辑资料" @click="openProfileDialog">
+                                <el-icon class="text-white text-xs">
+                                    <Edit />
+                                </el-icon>
+                            </el-button>
+                            <el-button v-if="isUserVerified" size="small"
                                 class="absolute -bottom-1 -right-1 !w-6 !h-6 !rounded-full !p-0 bg-blue-500 hover:bg-blue-600"
                                 title="已认证">
                                 <el-icon class="text-white text-xs">
@@ -25,20 +32,23 @@
 
                         <!-- 用户信息 -->
                         <div class="min-w-0">
-                            <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
-                                {{ userStore.userInfo?.nickname || '同学' }}
-                            </h1>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
+                                    {{ userStore.userInfo?.nickname || '同学' }}
+                                </h1>
+                                <el-button link size="small" @click="openProfileDialog">编辑资料</el-button>
+                            </div>
                             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
                                 学号：{{ userStore.userInfo?.studentId || '---' }}
                             </p>
 
                             <!-- 认证状态 -->
                             <div class="mt-2">
-                                <el-tag :type="userStore.userInfo?.isVerified ? 'success' : 'warning'" size="small"
-                                    :effect="userStore.userInfo?.isVerified ? 'dark' : 'plain'">
-                                    {{ userStore.userInfo?.isVerified ? '✅ 已认证' : '⏳ 待认证' }}
+                                <el-tag :type="verifyTagType" size="small"
+                                    :effect="isUserVerified ? 'dark' : 'plain'">
+                                    {{ verifyTagText }}
                                 </el-tag>
-                                <el-button v-if="!userStore.userInfo?.isVerified" link size="small" class="ml-2"
+                                <el-button v-if="!isUserVerified" link size="small" class="ml-2"
                                     @click="$router.push('/main/verify')">
                                     去认证
                                 </el-button>
@@ -173,12 +183,35 @@
         <el-dialog v-model="showSettings" title="账号设置" :before-close="() => { showSettings = false }"
             class="w-90% md:w-20%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
             <div class="space-y-4">
+                <el-button class="w-full" @click="openProfileDialog" type="primary">编辑资料</el-button>
+                <span></span>
                 <el-button class="w-full" @click="handleLogout">退出登录</el-button>
                 <span></span>
                 <el-button class="w-full" @click="showPasswordModal = true" type="primary">修改密码</el-button>
                 <span></span>
                 <el-button class="w-full" link type="danger" @click="showSettings = false">取消</el-button>
             </div>
+        </el-dialog>
+
+        <!-- 编辑资料弹窗 -->
+        <el-dialog v-model="showProfileDialog" title="编辑资料" width="520px" :close-on-click-modal="false">
+            <div class="space-y-4">
+                <div>
+                    <div class="mb-2 text-sm text-gray-500">头像</div>
+                    <AdvanceImageUpload v-model="profileForm.avatarList" :limit="1" upload-url="/api/upload/avatar" />
+                </div>
+                <div>
+                    <div class="mb-2 text-sm text-gray-500">昵称</div>
+                    <el-input v-model="profileForm.nickname" maxlength="20" show-word-limit placeholder="请输入昵称（2-20个字符）"
+                        clearable />
+                </div>
+            </div>
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <el-button @click="showProfileDialog = false">取消</el-button>
+                    <el-button type="primary" :loading="savingProfile" @click="handleSaveProfile">保存</el-button>
+                </div>
+            </template>
         </el-dialog>
 
         <!-- 修改密码弹窗 -->
@@ -190,14 +223,16 @@
 import { ref, computed, onMounted } from 'vue'
 import {
     Check, Setting, StarFilled, Trophy, ArrowRight,
-    Box, ShoppingBag, SoldOut, Collection
+    Box, ShoppingBag, SoldOut, Collection, Edit
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { useFavoriteStore } from '@/stores/modules/favorite'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import orderApi from "@/api/order";
+import authApi from '@/api/auth'
 import ChangePasswordModal from "@/components/ChangePasswordModal.vue";
+import AdvanceImageUpload from '@/components/AdvanceImageUpload.vue'
 import { modalBox } from "@/components/messageBox/modalBox";
 
 const router = useRouter()
@@ -205,6 +240,12 @@ const userStore = useUserStore()
 const favoriteStore = useFavoriteStore()
 const showSettings = ref(false)
 const showPasswordModal = ref(false)
+const showProfileDialog = ref(false)
+const savingProfile = ref(false)
+const profileForm = ref({
+    nickname: '',
+    avatarList: [] as string[]
+})
 
 // ============================================================================
 // 🔥 信用分相关
@@ -220,6 +261,27 @@ const creditLevel = computed(() => {
     return { label: '🔴 极低', color: '#7f1d1d', desc: '禁止交易' }
 })
 
+const isUserVerified = computed(() => {
+    const status = userStore.userInfo?.verificationStatus
+    if (status === 'approved') return true
+    if (status === 'pending' || status === 'rejected') return false
+    return !!userStore.userInfo?.isVerified
+})
+
+const verifyTagType = computed<'success' | 'warning' | 'danger'>(() => {
+    const status = userStore.userInfo?.verificationStatus
+    if (status === 'rejected') return 'danger'
+    if (isUserVerified.value) return 'success'
+    return 'warning'
+})
+
+const verifyTagText = computed(() => {
+    const status = userStore.userInfo?.verificationStatus
+    if (status === 'rejected') return '❌ 认证被拒'
+    if (status === 'pending') return '⏳ 审核中'
+    return isUserVerified.value ? '✅ 已认证' : '⏳ 待认证'
+})
+
 // ============================================================================
 // 🔥 其他逻辑
 // ============================================================================
@@ -227,6 +289,56 @@ const creditLevel = computed(() => {
 // 🔹 默认头像
 const getDefaultAvatar = () => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(userStore.userInfo?.nickname || '同学')}&background=random`
+}
+
+const openProfileDialog = () => {
+    const currentAvatar = userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || ''
+    profileForm.value.nickname = userStore.userInfo?.nickname || ''
+    profileForm.value.avatarList = currentAvatar ? [currentAvatar] : []
+    showSettings.value = false
+    showProfileDialog.value = true
+}
+
+const handleSaveProfile = async () => {
+    const nickname = profileForm.value.nickname.trim()
+    if (nickname.length < 2 || nickname.length > 20) {
+        ElMessage.warning('昵称长度需在 2-20 个字符之间')
+        return
+    }
+
+    const avatar = profileForm.value.avatarList[0] || ''
+    const currentNickname = (userStore.userInfo?.nickname || '').trim()
+    const currentAvatar = userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || ''
+
+    if (nickname === currentNickname && avatar === currentAvatar) {
+        ElMessage.info('资料没有变化')
+        return
+    }
+
+    savingProfile.value = true
+    try {
+        const res: any = await authApi.updateProfile({
+            nickname,
+            avatar,
+            avatarUrl: avatar
+        })
+
+        if (res.code === 200 || res.code === 201) {
+            userStore.updateUserProfile({
+                nickname,
+                avatar,
+                avatarUrl: avatar
+            })
+            showProfileDialog.value = false
+            ElMessage.success(res.msg || '资料更新成功')
+        } else {
+            ElMessage.error(res.msg || '资料更新失败')
+        }
+    } catch (error: any) {
+        ElMessage.error(error?.response?.data?.msg || '资料更新失败，请稍后重试')
+    } finally {
+        savingProfile.value = false
+    }
 }
 
 // 🔹 快捷入口配置
