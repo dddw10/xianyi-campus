@@ -1,6 +1,7 @@
 <!-- src/components/AppealDialog.vue -->
 <template>
-    <el-dialog v-model="visible" :title="dialogTitle" width="520px" :close-on-click-modal="false"
+    <el-dialog v-model="visible" :title="dialogTitle"
+        class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false"
         @closed="handleClosed">
         <div class="space-y-4">
             <!-- 🔹 顶部状态提示 -->

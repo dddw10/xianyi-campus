@@ -2,52 +2,80 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
-        <!-- 🔹 头部：用户信息卡片 -->
+        <!-- 🔹 头部：用户信息卡片（最终修复版） -->
         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-t-2xl">
             <div class="max-w-4xl mx-auto px-4 py-6">
-                <div class="flex items-center gap-4">
-                    <!-- 头像 -->
-                    <div class="relative">
-                        <el-avatar :size="80" :src="userStore.userInfo?.avatar || getDefaultAvatar()"
-                            class="border-4 border-white dark:border-gray-700 shadow-lg" />
-                        <el-button v-if="userStore.userInfo?.isVerified" size="small"
-                            class="absolute -bottom-1 -right-1 !w-6 !h-6 !rounded-full !p-0 bg-blue-500 hover:bg-blue-600"
-                            title="已认证">
-                            <el-icon class="text-white text-xs">
-                                <Check />
-                            </el-icon>
-                        </el-button>
-                    </div>
+                <!-- 🔥 添加专属 class 并确保允许换行 -->
+                <div class="flex items-center gap-4 flex-wrap profile-header-row">
 
-                    <!-- 用户信息 -->
-                    <div class="flex-1 min-w-0">
-                        <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
-                            {{ userStore.userInfo?.nickname || '同学' }}
-                        </h1>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                            学号：{{ userStore.userInfo?.studentId || '---' }}
-                        </p>
-
-                        <!-- 认证状态 -->
-                        <div class="mt-2">
-                            <el-tag :type="userStore.userInfo?.isVerified ? 'success' : 'warning'" size="small"
-                                :effect="userStore.userInfo?.isVerified ? 'dark' : 'plain'">
-                                {{ userStore.userInfo?.isVerified ? '✅ 已认证' : '⏳ 待认证' }}
-                            </el-tag>
-
-                            <el-button v-if="!userStore.userInfo?.isVerified" link size="small" class="ml-2"
-                                @click="$router.push('/main/verify')">
-                                去认证
+                    <!-- 🔹 左侧：头像 + 用户信息 -->
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <!-- 头像 -->
+                        <div class="relative flex-shrink-0">
+                            <el-avatar :size="80" :src="userStore.userInfo?.avatar || getDefaultAvatar()"
+                                class="border-4 border-white dark:border-gray-700 shadow-lg" />
+                            <el-button v-if="userStore.userInfo?.isVerified" size="small"
+                                class="absolute -bottom-1 -right-1 !w-6 !h-6 !rounded-full !p-0 bg-blue-500 hover:bg-blue-600"
+                                title="已认证">
+                                <el-icon class="text-white text-xs">
+                                    <Check />
+                                </el-icon>
                             </el-button>
+                        </div>
+
+                        <!-- 用户信息 -->
+                        <div class="min-w-0">
+                            <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
+                                {{ userStore.userInfo?.nickname || '同学' }}
+                            </h1>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                                学号：{{ userStore.userInfo?.studentId || '---' }}
+                            </p>
+
+                            <!-- 认证状态 -->
+                            <div class="mt-2">
+                                <el-tag :type="userStore.userInfo?.isVerified ? 'success' : 'warning'" size="small"
+                                    :effect="userStore.userInfo?.isVerified ? 'dark' : 'plain'">
+                                    {{ userStore.userInfo?.isVerified ? '✅ 已认证' : '⏳ 待认证' }}
+                                </el-tag>
+                                <el-button v-if="!userStore.userInfo?.isVerified" link size="small" class="ml-2"
+                                    @click="$router.push('/main/verify')">
+                                    去认证
+                                </el-button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 设置按钮 -->
-                    <el-button link @click="showSettings = true" class="!p-2">
+                    <!-- 🔹 右侧：信用分展示（添加专属 class） -->
+                    <div class="credit-score-container flex flex-row md:flex-col text-right">
+                        <div class="credit-score-content flex items-center justify-end gap-2">
+                            <el-icon class="text-yellow-500">
+                                <Trophy />
+                            </el-icon>
+                            <span class="font-bold text-gray-800 dark:text-gray-100">
+                                {{ userStore.userInfo?.creditScore ?? 100 }}
+                            </span>
+                            <span class="text-xs text-gray-400">/100</span>
+                        </div>
+                        <el-tag size="small" :style="{
+                            backgroundColor: creditLevel.color + '20',
+                            color: creditLevel.color,
+                            border: 'none'
+                        }" class="credit-score-tag !rounded-full mt-1">
+                            {{ creditLevel.label }}
+                        </el-tag>
+                        <p class="credit-score-desc text-xs text-gray-400 mt-1">
+                            {{ creditLevel.desc }}
+                        </p>
+                    </div>
+
+                    <!-- 🔹 最右侧：设置按钮 -->
+                    <el-button link @click="showSettings = true" class="!p-2 flex-shrink-0 settings-btn">
                         <el-icon class="text-xl text-gray-400">
                             <Setting />
                         </el-icon>
                     </el-button>
+
                 </div>
             </div>
         </div>
@@ -178,6 +206,23 @@ const favoriteStore = useFavoriteStore()
 const showSettings = ref(false)
 const showPasswordModal = ref(false)
 
+// ============================================================================
+// 🔥 信用分相关
+// ============================================================================
+
+// 信用等级计算（100 分制）
+const creditLevel = computed(() => {
+    const score = userStore.userInfo?.creditScore ?? 100
+    if (score >= 90) return { label: '🟢 优秀', color: '#22c55e', desc: '可信用户' }
+    if (score >= 70) return { label: '🔵 良好', color: '#3b82f6', desc: '正常用户' }
+    if (score >= 50) return { label: '🟡 一般', color: '#f59e0b', desc: '注意行为' }
+    if (score >= 30) return { label: '🟠 较低', color: '#ef4444', desc: '限制功能' }
+    return { label: '🔴 极低', color: '#7f1d1d', desc: '禁止交易' }
+})
+
+// ============================================================================
+// 🔥 其他逻辑
+// ============================================================================
 
 // 🔹 默认头像
 const getDefaultAvatar = () => {
@@ -191,7 +236,6 @@ const quickActions = computed(() => [
         path: '/products/orders?type=published',
         icon: Box,
         iconClass: 'text-blue-500',
-        // badge: 3  // 可选：显示未读数
     },
     {
         label: '我买到的',
@@ -215,12 +259,6 @@ const quickActions = computed(() => [
 ])
 
 // 🔹 我的商品标签
-const productTabs = ref([
-    { key: 'published', label: '我发布的', count: undefined, loading: false },
-    { key: 'bought', label: '我买到的', count: undefined, loading: false },
-    { key: 'sold', label: '我卖出的', count: undefined, loading: false },
-])
-
 interface ProductTab {
     key: 'published' | 'bought' | 'sold'
     label: string
@@ -228,9 +266,14 @@ interface ProductTab {
     loading?: boolean
 }
 
+const productTabs = ref<ProductTab[]>([
+    { key: 'published', label: '我发布的', count: undefined, loading: false },
+    { key: 'bought', label: '我买到的', count: undefined, loading: false },
+    { key: 'sold', label: '我卖出的', count: undefined, loading: false },
+])
+
 // 获取单个的商品数量
 const fetchTabCount = async (key: ProductTab['key'], apiFn: () => Promise<any>) => {
-    // 找到对应的tab，设置加载状态
     const tab = productTabs.value.find(t => t.key === key)
     if (tab) tab.loading = true
 
@@ -261,20 +304,18 @@ const getProductData = async () => {
 
 // 🔹 退出登录
 const handleLogout = () => {
-
     modalBox({
         type: 'error',
         title: '提示',
         message: '确定要退出登录吗？'
     }).then(() => {
-        userStore.logout()  // 🔥 会自动清空收藏状态 + 跳转登录页
+        userStore.logout()
         router.replace({ path: '/auth/login' })
     })
 }
 
 // 🔹 初始化
 onMounted(async () => {
-    // 1. 如果用户已登录，初始化收藏状态
     if (userStore.token) {
         await favoriteStore.initFavorites()
     }
@@ -283,19 +324,40 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 🔥 移动端优化 */
-@media (max-width: 640px) {
-    .grid.grid-cols-4 {
-        @apply grid-cols-4 gap-2;
+/* 🔥 移动端（≤767px）：换行 + 居中 + 调整顺序 */
+@media (max-width: 767px) {
+
+    /* 父容器允许换行 */
+    .profile-header-row {
+        flex-wrap: wrap !important;
+        row-gap: 12px !important;
     }
 
-    .grid.grid-cols-3 {
-        @apply grid-cols-3;
+    /* 信用分容器：全宽 + 居中 + 排到最后 */
+    .credit-score-container {
+        width: 100% !important;
+        text-align: center !important;
+        margin-top: 8px !important;
+        order: 10 !important;
+        /* 排到设置按钮后面 */
     }
-}
 
-/* 🔥 深色模式适配 */
-:global(.dark) .divide-x> :not([hidden])~ :not([hidden]) {
-    @apply border-gray-700;
+    /* 信用分内容：居中 */
+    .credit-score-content {
+        justify-content: center !important;
+    }
+
+    /* 标签和描述：居中 */
+    .credit-score-tag,
+    .credit-score-desc {
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* 设置按钮：排到信用分前面 */
+    .settings-btn {
+        order: 9 !important;
+    }
 }
 </style>

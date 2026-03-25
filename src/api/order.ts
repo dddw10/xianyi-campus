@@ -316,8 +316,35 @@ export const orderApi = {
                 ...params
             }
         })
-    }
+    },
 
+    createReview(orderNo: string, data: { rating: number }) {
+        return request({
+            url: `/api/reviews/orders/${orderNo}/reviews`,
+            method: 'post',
+            data
+        })
+    },
+
+    /**
+     * 获取订单评价列表
+     */
+    getOrderReviews(orderNo: string) {
+        return request({
+            url: `/api/reviews/orders/${orderNo}/reviews`,
+            method: 'get'
+        })
+    },
+
+    /**
+     * 获取用户平均评分
+     */
+    getUserRating(userId: string | number) {
+        return request({
+            url: `/api/reviews/users/${userId}/rating`,
+            method: 'get'
+        })
+    }
 
 }
 
