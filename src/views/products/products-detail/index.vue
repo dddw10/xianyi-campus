@@ -17,12 +17,12 @@
 
                 <div class="flex items-center gap-3">
                     <el-avatar :size="36" :src="product.seller_avatar" class="!bg-blue-100">
-                        {{ product.seller_name?.[0] || 'U' }}
+                        {{ product.seller_nickname?.[0] || 'U' }}
                     </el-avatar>
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="font-medium text-gray-800 dark:text-gray-100 text-sm">
-                                {{ product.seller_name || '匿名卖家' }}
+                                {{ product.seller_nickname || product.seller_student_id || '匿名卖家' }}
                             </span>
                             <el-tag size="small" type="success" class="!rounded-full !h-5 !text-xs">
                                 ✓ 实名
@@ -85,7 +85,7 @@
                                 {{ product.status === 'available' ? '在售' : product.status === 'sold' ? '已售出' : '已下架' }}
                             </el-tag>
                             <span v-if="product.condition" class="text-sm text-gray-500">{{ product.condition }}</span>
-                            <span class="text-sm text-gray-400 ml-auto">浏览 {{ product.view_count || 0 }}</span>
+                            <!-- <span class="text-sm text-gray-400 ml-auto">浏览 {{ product.view_count || 0 }}</span> -->
                         </div>
                     </div>
 
@@ -134,7 +134,7 @@
                                 <span class="text-gray-500">运费</span>
                                 <p class="text-gray-800 dark:text-gray-200 mt-1">{{ product.shipping_fee ?
                                     `¥${product.shipping_fee}` :
-                                    '面议' }}</p>
+                                    '线下交易' }}</p>
                             </div>
                         </div>
                     </div>

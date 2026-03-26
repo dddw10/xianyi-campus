@@ -67,10 +67,10 @@
                                     <div class="flex items-center gap-2 cursor-pointer 
                             hover:bg-[var(--card-hover)] rounded-full px-2 py-1 
                             transition-colors">
-                                        <el-avatar :size="30" :src="UserStore.userInfo?.avatar || getDefaultAvatar()"
+                                        <el-avatar :size="30" :src="UserStore.userInfo?.avatarUrl || getDefaultAvatar()"
                                             class="border-4 border-white dark:border-gray-700 " />
                                         <span class="text-sm font-medium text-[var(--text)] hidden sm:inline">
-                                            {{ userName }}
+                                            {{ UserStore.userInfo.nickname || UserStore.userInfo.studentId }}
                                         </span>
                                         <el-icon class="text-[var(--text-tertiary)]">
                                             <ArrowDown />
@@ -149,8 +149,8 @@
                     </template>
                     <template v-else>
                         <div class="flex items-center gap-3 px-2">
-                            <el-avatar :size="40" class="bg-gradient-to-br from-blue-400 to-cyan-300">
-                                {{ userName?.[0]?.toUpperCase() }}
+                            <el-avatar :size="40" :src="UserStore.userInfo?.avatarUrl || getDefaultAvatar()"
+                                class="bg-gradient-to-br from-blue-400 to-cyan-300">
                             </el-avatar>
                             <div>
                                 <div class="font-medium text-slate-400">{{ userName }}</div>

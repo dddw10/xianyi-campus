@@ -12,7 +12,7 @@
                     <div class="flex items-center gap-4 flex-1 min-w-0">
                         <!-- 头像 -->
                         <div class="relative flex-shrink-0">
-                            <el-avatar :size="80" :src="userStore.userInfo?.avatar || getDefaultAvatar()"
+                            <el-avatar :size="80" :src="userStore.userInfo?.avatarUrl || getDefaultAvatar()"
                                 class="border-4 border-white dark:border-gray-700 shadow-lg" />
                             <el-button size="small"
                                 class="absolute -top-1 -right-1 !w-6 !h-6 !rounded-full !p-0 bg-gray-600 hover:bg-gray-700"
@@ -144,7 +144,7 @@
             </div>
 
             <!-- ⭐ 信用评价（第二阶段预留） -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow opacity-60"
+            <!-- <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow opacity-60"
                 @click="ElMessage.info('信用评价功能开发中~')">
                 <div class="flex items-center gap-3">
                     <el-icon class="text-yellow-500">
@@ -156,7 +156,7 @@
                     <span class="text-sm text-gray-400">敬请期待</span>
                     <el-tag size="small" type="info">开发中</el-tag>
                 </div>
-            </div>
+            </div> -->
 
             <!-- 账号设置 -->
             <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
