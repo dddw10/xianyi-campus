@@ -319,10 +319,39 @@ export const orderApi = {
     },
 
     createReview(orderNo: string, data: { rating: number }) {
+        const normalizedOrderNo = String(orderNo || '').trim()
+        if (!normalizedOrderNo) {
+            return Promise.reject(new Error('订单号不能为空'))
+        }
+
+        const payload = {
+            ...data,
+            orderNo: normalizedOrderNo
+        }
+
+        const encodedOrderNo = encodeURIComponent(normalizedOrderNo)
         return request({
-            url: `/api/reviews/orders/${orderNo}/reviews`,
+            url: `/api/reviews/orders/${encodedOrderNo}/reviews`,
             method: 'post',
-            data
+            data: payload
+        }).catch((error: any) => {
+            const msg = String(
+                error?.response?.data?.msg ||
+                error?.response?.data?.message ||
+                error?.message ||
+                ''
+            )
+
+            // 兼容后端使用 body 接收 orderNo 的版本
+            if (!msg.includes('订单号不能为空')) {
+                throw error
+            }
+
+            return request({
+                url: '/api/reviews/orders/reviews',
+                method: 'post',
+                data: payload
+            })
         })
     },
 
@@ -330,9 +359,16 @@ export const orderApi = {
      * 获取订单评价列表
      */
     getOrderReviews(orderNo: string) {
+        const normalizedOrderNo = String(orderNo || '').trim()
+        if (!normalizedOrderNo) {
+            return Promise.reject(new Error('订单号不能为空'))
+        }
+
+        const encodedOrderNo = encodeURIComponent(normalizedOrderNo)
         return request({
-            url: `/api/reviews/orders/${orderNo}/reviews`,
-            method: 'get'
+            url: `/api/reviews/orders/${encodedOrderNo}/reviews`,
+            method: 'get',
+            params: { orderNo: normalizedOrderNo }
         })
     },
 

@@ -26,7 +26,7 @@
                 <div class="bg-[--bg-elevated] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <el-steps :active="getStepActive(order.status)" align-center finish-status="success">
                         <el-step title="下单" :description="formatDate(order.created_at || order.createdAt)" />
-                        <el-step title="付款"
+                        <el-step title="支付"
                             :description="order.payment_time || order.paymentTime ? formatDate(order.payment_time || order.paymentTime) : '待支付'" />
                         <el-step title="发货"
                             :description="['trading', 'completed'].includes(order.status) ? '已发货' : '待发货'" />
@@ -128,7 +128,7 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <span class="text-gray-500">订单编号</span>
-                                    <p class="ext-gray-800 dark:text-gray-200 font-mono mt-1 break-all truncate">
+                                    <p class="text-gray-800 dark:text-gray-200 font-mono mt-1 break-all truncate">
                                         {{
                                             order.order_no ||
                                             order.orderNo }}</p>
@@ -153,7 +153,7 @@
                             </div>
                         </div>
 
-                        <!-- 🔥 展示交易凭证 (如果有) -->
+                        <!-- 🔥 展示交易凭证（如果有） -->
                         <div v-if="order.delivery_proof || order.receive_proof"
                             class="bg-[--bg-elevated] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -168,7 +168,7 @@
                                         class="w-full h-32 rounded-lg border object-cover" />
                                 </div>
                                 <div v-if="order.receive_proof">
-                                    <p class="text-xs text-gray-500 mb-2">✅ 收货凭证</p>
+                                    <p class="text-xs text-gray-500 mb-2">📥 收货凭证</p>
                                     <el-image :src="order.receive_proof" :preview-src-list="[order.receive_proof]"
                                         class="w-full h-32 rounded-lg border object-cover" />
                                 </div>
@@ -182,7 +182,7 @@
                                 <el-icon>
                                     <Warning />
                                 </el-icon>
-                                {{ isAppealFromMe ? '我的申诉' : '对方的申诉' }}
+                                {{ isAppealFromMe ? '我的申诉' : '对方申诉' }}
                                 <el-tag :type="getAppealStatusType(order.appeal_status)" size="small" round>
                                     {{ getAppealStatusText(order.appeal_status) }}
                                 </el-tag>
@@ -247,7 +247,7 @@
                                 </div>
                                 <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                     <span>运费</span>
-                                    <span>{{ order.shipping_fee ? `¥${order.shipping_fee}` : '免运费' }}</span>
+                                    <span>{{ order.shipping_fee ? `¥${order.shipping_fee}` : '免费' }}</span>
                                 </div>
                                 <div class="flex justify-between items-center pt-3">
                                     <span class="text-gray-800 dark:text-gray-200 font-medium">实付金额</span>
@@ -259,7 +259,7 @@
 
                             <!-- 🔹 动态操作按钮 -->
                             <div class="space-y-3">
-                                <!-- 1. 待付款 (买家) -->
+                                <!-- 1. 待付款（买家） -->
                                 <template v-if="order.status === 'pending' && isBuyer">
                                     <el-button type="primary" size="large" class="w-full !rounded-full"
                                         @click="handlePay">
@@ -272,7 +272,7 @@
                                     </el-button>
                                 </template>
 
-                                <!-- 2. 待发货 (卖家) -->
+                                <!-- 2. 待发货（卖家） -->
                                 <template v-else-if="order.status === 'paid' && isSeller">
                                     <el-button type="success" size="large" class="w-full !rounded-full"
                                         @click="showDeliverDialog = true">
@@ -289,7 +289,7 @@
                                     </div>
                                 </template>
 
-                                <!-- 2.1 待发货 (买家) -->
+                                <!-- 2.1 待发货（买家） -->
                                 <template v-else-if="order.status === 'paid' && isBuyer">
                                     <el-button type="danger" plain size="default" class="w-full !rounded-full"
                                         @click="handleCancelPaid">
@@ -298,7 +298,7 @@
                                     <div class="text-xs text-center text-gray-400 mt-2">⚠️ 卖家未发货，取消后款项将原路退回</div>
                                 </template>
 
-                                <!-- 3. 待收货 (买家) -->
+                                <!-- 3. 待收货（买家） -->
                                 <template v-else-if="order.status === 'trading' && isBuyer">
                                     <el-button type="success" size="large" class="w-full !rounded-full"
                                         @click="showReceiveDialog = true">
@@ -330,16 +330,16 @@
                                     <el-tooltip v-else-if="order.appeal_status === 'approved'"
                                         :content="order.admin_remark || '申诉已通过'" placement="top">
                                         <el-tag size="small" type="success" effect="plain" class="cursor-pointer">
-                                            {{ isAppealFromMe ? '✓ 我的申诉通过' : '✓ 对方申诉通过' }}
+                                            {{ isAppealFromMe ? '✅ 我的申诉通过' : '✅ 对方申诉通过' }}
                                         </el-tag>
                                     </el-tooltip>
 
-                                    <!-- ❌ 申诉驳回：显示信息标签 + Tooltip 显示备注（仅申诉方能看到备注） -->
+                                    <!-- ℹ️ 申诉驳回：显示信息标签 + Tooltip 显示备注（仅申诉方能看到备注） -->
                                     <el-tooltip v-else-if="order.appeal_status === 'rejected'"
                                         :content="isAppealFromMe ? (order.admin_remark || '申诉已驳回') : '申诉已驳回'"
                                         placement="top">
                                         <el-tag size="small" type="info" effect="plain" class="cursor-pointer">
-                                            {{ isAppealFromMe ? '✗ 我的申诉驳回' : '✗ 对方申诉驳回' }}
+                                            {{ isAppealFromMe ? 'ℹ️ 我的申诉驳回' : 'ℹ️ 对方申诉驳回' }}
                                         </el-tag>
                                     </el-tooltip>
                                 </template>
@@ -378,7 +378,7 @@
 
             <!-- 🔥 发货凭证上传弹窗 -->
             <el-dialog v-model="showDeliverDialog" title="确认发货"
-                class="w-90% md:w-60%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false">
+                class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false">
                 <div class="space-y-4">
                     <el-alert title="请上传打包或交易照片作为凭证" type="warning" :closable="false" show-icon />
                     <AdvancedImageUpload v-model="deliverImageList" :limit="1" :width="200"
@@ -397,7 +397,8 @@
             </el-dialog>
 
             <!-- 🔥 收货凭证上传弹窗 -->
-            <el-dialog v-model="showReceiveDialog" title="确认收货" width="500px" :close-on-click-modal="false">
+            <el-dialog v-model="showReceiveDialog" title="确认收货"
+                class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false">
                 <div class="space-y-4">
                     <el-alert title="请上传收到商品的实拍照片作为凭证" type="success" :closable="false" show-icon />
                     <AdvancedImageUpload v-model="receiveImageList" :limit="1" :width="200"
@@ -441,6 +442,7 @@ const showDeliverDialog = ref(false)
 const showReceiveDialog = ref(false)
 const deliverImageList = ref<string[]>([])
 const receiveImageList = ref<string[]>([])
+const AUTO_OPEN_RECEIVE_QUERY_KEY = 'openReceiveDialog'
 
 // ============================================================================
 // 🔥 计算属性：判断角色 + 申诉相关
@@ -550,6 +552,52 @@ const getAppealStatusType = (status: string): 'warning' | 'success' | 'danger' |
     return map[status] || 'info'
 }
 
+const hasAutoOpenReceiveDialogFlag = () => {
+    const flag = route.query[AUTO_OPEN_RECEIVE_QUERY_KEY]
+    if (Array.isArray(flag)) {
+        return flag.includes('1') || flag.includes('true')
+    }
+    return flag === '1' || flag === 'true'
+}
+
+const clearAutoOpenReceiveDialogFlag = async () => {
+    if (!(AUTO_OPEN_RECEIVE_QUERY_KEY in route.query)) return
+
+    const nextQuery = { ...route.query }
+    delete nextQuery[AUTO_OPEN_RECEIVE_QUERY_KEY]
+
+    try {
+        await router.replace({
+            path: route.path,
+            query: nextQuery
+        })
+    } catch (error) {
+        console.warn('⚠️ 清理自动弹窗参数失败:', error)
+    }
+}
+
+const tryAutoOpenReceiveDialog = async () => {
+    if (!hasAutoOpenReceiveDialogFlag()) return
+
+    if (order.value?.status === 'trading' && isBuyer.value) {
+        showReceiveDialog.value = true
+    } else if (order.value?.status !== 'trading') {
+        ElMessage.warning('当前订单状态不支持确认收货')
+    } else {
+        ElMessage.warning('仅买家可确认收货')
+    }
+
+    await clearAutoOpenReceiveDialogFlag()
+}
+
+const refreshCurrentUserSafely = async () => {
+    try {
+        await userStore.refreshCurrentUser()
+    } catch (error) {
+        console.warn('[OrderDetail] refreshCurrentUser failed:', error)
+    }
+}
+
 // ============================================================================
 // 🔥 获取订单详情
 // ============================================================================
@@ -567,6 +615,7 @@ const fetchOrderDetail = async () => {
         const res = await orderApi.getOrderDetail(orderNo)
         if ((res as any)?.code === 200) {
             order.value = res.data
+            await tryAutoOpenReceiveDialog()
         } else {
             ElMessage.error((res as any)?.msg || '订单不存在')
             order.value = null
@@ -617,6 +666,7 @@ const handleCancel = async () => {
 
             if ((res as any)?.code === 200) {
                 ElMessage.success('订单已取消')
+                await refreshCurrentUserSafely()
                 fetchOrderDetail()
             } else {
                 ElMessage.error((res as any)?.msg || '取消失败')
@@ -651,6 +701,7 @@ const handleCancelPaid = async () => {
 
             if ((res as any)?.code === 200) {
                 ElMessage.success('✅ 订单已取消，款项将在 1-3 个工作日内退回')
+                await refreshCurrentUserSafely()
                 fetchOrderDetail()
             } else {
                 ElMessage.error((res as any)?.msg || '取消失败')
@@ -684,6 +735,7 @@ const handleCancelTrading = async () => {
 
             if ((res as any)?.code === 200) {
                 ElMessage.success('✅ 订单已取消，款项将在 1-3 个工作日内退回')
+                await refreshCurrentUserSafely()
                 fetchOrderDetail()
             } else {
                 ElMessage.error((res as any)?.msg || '取消失败')
@@ -723,6 +775,7 @@ const handleCancelBySeller = async () => {
 
             if ((res as any)?.code === 200) {
                 ElMessage.success('✅ 订单已取消')
+                await refreshCurrentUserSafely()
                 fetchOrderDetail()
             } else {
                 ElMessage.error((res as any)?.msg || '取消失败')
@@ -750,20 +803,19 @@ const handleAppeal = (orderItem: any) => {
     // 场景 1: 已申诉（通过/驳回）→ 直接打开弹窗查看结果
     if (appealStatus && appealStatus !== 'none' && appealStatus !== 'pending') {
         // 🔥 发射事件，通知父组件打开申诉详情弹窗
-        // 父组件需要监听 'appeal-order' 事件并处理
-        // 这里假设父组件会处理申诉详情展示
+        // 父组件需要监听 'appeal-order' 事件并处理申诉详情展示
         const emit = defineEmits<{ (e: 'appeal-order', orderNo: string): void }>()
         emit('appeal-order', orderNo)
         return
     }
 
-    // 场景 2: 申诉审核中 → 提示等待
+    // 场景 2: 申诉审核中 -> 提示等待
     if (appealStatus === 'pending') {
         ElMessage.info('🕐 申诉审核中，请耐心等待管理员处理')
         return
     }
 
-    // 场景 3: 未申诉 → 二次确认后打开表单提交
+    // 场景 3: 未申诉 -> 二次确认后打开表单提交
     const appealTitle = isBuyer.value ? '发起申诉' : '对买家申诉'
     const appealMessage = isBuyer.value
         ? '提交申诉后，平台将在 48 小时内审核。请确保申诉理由真实有效，恶意申诉可能影响账号信用。'
@@ -832,6 +884,7 @@ const submitReceive = async () => {
         )
         if ((res as any)?.code === 200) {
             ElMessage.success('收货成功，交易已完成')
+            await refreshCurrentUserSafely()
             closeReceiveDialog()
             fetchOrderDetail()
         }
@@ -873,7 +926,7 @@ const handleContact = () => {
         return
     }
 
-    // 🔹 5. 跳转到聊天页面
+    // 🔹 5. 跳转到聊天页
     router.push({
         path: '/main/chat',
         query: {

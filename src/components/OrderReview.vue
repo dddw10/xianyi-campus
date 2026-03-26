@@ -35,18 +35,24 @@ import orderApi from '@/api/order'
 
 const visible = defineModel<boolean>('visible')
 const props = defineProps<{ orderNo: string }>()
-const emit = defineEmits<{ (e: 'submitted'): void }>()
+const emit = defineEmits<{ (e: 'submitted', payload?: { orderNo: string; rating: number }): void }>()
 
 const rating = ref(5)
 const submitting = ref(false)
 
 const handleSubmit = async () => {
+    const normalizedOrderNo = String(props.orderNo || '').trim()
+    if (!normalizedOrderNo) {
+        ElMessage.error('订单号不能为空，请刷新后重试')
+        return
+    }
+
     submitting.value = true
     try {
-        await orderApi.createReview(props.orderNo, { rating: rating.value })
+        await orderApi.createReview(normalizedOrderNo, { rating: rating.value })
         ElMessage.success('评价成功')
         visible.value = false
-        emit('submitted')
+        emit('submitted', { orderNo: normalizedOrderNo, rating: rating.value })
     } catch (error: any) {
         ElMessage.error(error?.message || '评价失败')
     } finally {

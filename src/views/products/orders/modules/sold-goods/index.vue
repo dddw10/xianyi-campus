@@ -15,8 +15,11 @@
 
         <!-- 🔥 修复：传递所有必需的 props 给 OrderList -->
         <OrderList :list="orderList" :loading="loading" :pagination="pagination" :empty-text="getEmptyText(tabPosition)"
-            :list-type="'sold'" @page-change="handlePageChange" @refresh-list="fetchOrders"
-            @ship-order="handleShipOrder" class="flex-1 ml-0 md:ml-4" />
+            :list-type="'sold'" :appeal-owner-hints="appealOwnerHints" @page-change="handlePageChange" @refresh-list="fetchOrders"
+            @ship-order="handleShipOrder" @appeal-order="handleAppeal" class="flex-1 ml-0 md:ml-4" />
+
+        <AppealDialog v-model:visible="appealDialogVisible" :order-no="currentOrderNo" @submitted="handleAppealSubmitted"
+            @closed="handleAppealClosed" />
     </div>
 </template>
 
@@ -26,11 +29,45 @@ import { ElMessage, ElMessageBox } from "element-plus"
 import { useWindowSize } from "@vueuse/core"
 import orderApi from "@/api/order"
 import OrderList from "../OrderLIst.vue"
+import AppealDialog from '@/components/AppealDialog.vue'
+import { useUserStore } from '@/stores/modules/user'
 
 const tabPosition = ref<'all' | 'pending' | 'trading' | 'completed' | 'cancelled'>('all')
 const loading = ref(false)
 const orderList = ref<any[]>([])
 const { width } = useWindowSize()
+const userStore = useUserStore()
+const appealDialogVisible = ref(false)
+const currentOrderNo = ref('')
+const appealOwnerHints = ref<Record<string, 'me' | 'other'>>({})
+
+const getAppealHintStorageKey = () => {
+    const uid = String(userStore.userInfo?.id || '').trim()
+    return uid ? `appeal-owner-hints:${uid}` : 'appeal-owner-hints:anonymous'
+}
+
+const loadAppealOwnerHints = () => {
+    if (typeof window === 'undefined') return
+    try {
+        const raw = window.sessionStorage.getItem(getAppealHintStorageKey())
+        if (!raw) return
+        const parsed = JSON.parse(raw)
+        if (parsed && typeof parsed === 'object') {
+            appealOwnerHints.value = parsed
+        }
+    } catch (error) {
+        console.warn('⚠️ 读取申诉发起方缓存失败', error)
+    }
+}
+
+const saveAppealOwnerHints = () => {
+    if (typeof window === 'undefined') return
+    try {
+        window.sessionStorage.setItem(getAppealHintStorageKey(), JSON.stringify(appealOwnerHints.value))
+    } catch (error) {
+        console.warn('⚠️ 保存申诉发起方缓存失败', error)
+    }
+}
 
 const pagination = reactive({
     page: 1,
@@ -109,7 +146,35 @@ const handleShipOrder = async (orderNo: string) => {
     }
 }
 
+const handleAppeal = (orderNo: string | undefined) => {
+    if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
+        ElMessage.error('订单号异常，请刷新页面重试')
+        console.error('❌ [Appeal Error] 非法订单号:', orderNo)
+        return
+    }
+
+    currentOrderNo.value = orderNo
+    appealDialogVisible.value = true
+}
+
+const handleAppealClosed = () => {
+    console.log('🔍 [Debug] 卖家申诉弹窗已关闭')
+}
+
+const handleAppealSubmitted = (orderNo: string) => {
+    const normalizedOrderNo = String(orderNo || '').trim()
+    if (normalizedOrderNo) {
+        appealOwnerHints.value = {
+            ...appealOwnerHints.value,
+            [normalizedOrderNo]: 'me'
+        }
+        saveAppealOwnerHints()
+    }
+    fetchOrders()
+}
+
 onMounted(() => {
+    loadAppealOwnerHints()
     fetchOrders()
 })
 </script>

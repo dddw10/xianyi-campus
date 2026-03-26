@@ -5,6 +5,8 @@ import router from "@/router"
 import { buildUserRoutes } from "@/utils/dynamicRoutes"
 import { addDynamicRoutes, removeDynamicRoutes } from "@/router"  // ✅ 从 router/index.ts 导入
 import { useFavoriteStore } from './favorite'
+import authApi from "@/api/auth"
+import verifyApi from "@/api/verify"
 
 type UserVerificationStatus = 'unsubmitted' | 'pending' | 'approved' | 'rejected' | null
 
@@ -33,6 +35,21 @@ const normalizeUserVerification = (user: any) => {
     }
 
     return nextUser
+}
+
+const extractUserFromResponse = (res: any) => {
+    const payload = res?.data
+    if (!payload || typeof payload !== 'object') return null
+
+    if (payload.user && typeof payload.user === 'object') {
+        return payload.user
+    }
+
+    if ('id' in payload || 'studentId' in payload || 'creditScore' in payload) {
+        return payload
+    }
+
+    return null
 }
 
 export const useUserStore = defineStore('user', {
@@ -99,6 +116,40 @@ export const useUserStore = defineStore('user', {
                 ...profile
             })
             localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+        },
+
+        async refreshCurrentUser() {
+            if (!this.token) return null
+
+            try {
+                const [authRes, verifyRes] = await Promise.allSettled([
+                    authApi.getCurrentUser(),
+                    verifyApi.getCurrentUser()
+                ])
+
+                const authUser = authRes.status === 'fulfilled'
+                    ? extractUserFromResponse(authRes.value)
+                    : null
+                const verifyUser = verifyRes.status === 'fulfilled'
+                    ? extractUserFromResponse(verifyRes.value)
+                    : null
+
+                if (!authUser && !verifyUser) {
+                    return this.userInfo
+                }
+
+                this.userInfo = normalizeUserVerification({
+                    ...this.userInfo,
+                    ...(authUser || {}),
+                    ...(verifyUser || {})
+                })
+
+                localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+                return this.userInfo
+            } catch (error) {
+                console.error('❌ 刷新当前用户信息失败:', error)
+                return null
+            }
         },
 
         async loadDynamicRoutes() {

@@ -83,7 +83,7 @@ const props = defineProps<{
 
 const visible = defineModel<boolean>('visible')
 const emit = defineEmits<{
-    (e: 'submitted'): void
+    (e: 'submitted', orderNo: string): void
     (e: 'closed'): void
 }>()
 
@@ -237,7 +237,7 @@ const handleSubmit = async () => {
         })
 
         ElMessage.success('✅ 申诉已提交，等待管理员审核')
-        emit('submitted')
+        emit('submitted', props.orderNo)
 
         // 提交成功后立即刷新结果
         await fetchAppealResult()

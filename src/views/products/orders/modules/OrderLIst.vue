@@ -132,9 +132,15 @@
 
                     <!-- 🔥 4. 已完成：显示「去评价」按钮（仅买家可评价） -->
                     <template v-if="order.status === 'completed' && isBuyerOrder(order)">
-                        <el-button size="small" type="primary" plain @click.stop="openReviewDialog(order)">
+                        <div v-if="isOrderReviewed(order)" class="flex items-center gap-2 mr-1">
+                            <el-tag size="small" type="success" effect="plain">已评价</el-tag>
+                            <el-rate class="review-rate" :model-value="getOrderReviewRating(order)" disabled allow-half />
+                        </div>
+                        <el-button v-else-if="!isReviewStatusLoading(order)" size="small" type="primary" plain
+                            @click.stop="openReviewDialog(order)">
                             去评价
                         </el-button>
+                        <el-tag v-else size="small" type="info" effect="plain">评价信息加载中</el-tag>
                     </template>
 
                     <!-- 5. 已取消/已退款：显示状态提示 -->
@@ -164,11 +170,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { modalBox } from '@/components/messageBox/modalBox'
+import orderApi from '@/api/order'
 
 // 🔥 导入评价组件
 import OrderReview from '@/components/OrderReview.vue'
@@ -199,6 +206,19 @@ interface OrderItem {
     appeal_images?: string[]
     appeal_updated_at?: string
     admin_remark?: string
+    appeal_user_id?: string | number
+    appealUserId?: string | number
+    appeal_by_user_id?: string | number
+    appealByUserId?: string | number
+    appeal_initiator_id?: string | number
+    appealInitiatorId?: string | number
+    appeal_uid?: string | number
+    appeal_role?: string
+    appealRole?: string
+    appeal_from_role?: string
+    appealFromRole?: string
+    appeal_from?: string
+    appealFrom?: string
 
     [key: string]: any
 }
@@ -212,6 +232,7 @@ const props = defineProps<{
     pagination: { page: number; limit: number; total: number }
     emptyText: string
     listType: string  // 'bought' | 'sold' | 'published' 等
+    appealOwnerHints?: Record<string, 'me' | 'other'>
 }>()
 
 const emit = defineEmits<{
@@ -227,6 +248,10 @@ const emit = defineEmits<{
 // ============================================================================
 const showReviewDialog = ref(false)
 const currentReviewOrderNo = ref<string>('')
+type ReviewStatus = { reviewed: boolean; rating: number | null }
+const reviewStatusMap = ref<Record<string, ReviewStatus>>({})
+const reviewLoadingMap = ref<Record<string, boolean>>({})
+let reviewSyncVersion = 0
 
 // ============================================================================
 // 🔥 计算属性 & 工具函数
@@ -320,10 +345,401 @@ const isSellerOrder = (order: OrderItem) => {
 }
 
 // 🔹 判断申诉是否由当前用户发起（申诉由买家发起）
+const getAppealInitiatorUserId = (order: OrderItem): string => {
+    const idFields = [
+        'appeal_user_id',
+        'appealUserId',
+        'appeal_by_user_id',
+        'appealByUserId',
+        'appeal_initiator_id',
+        'appealInitiatorId',
+        'appeal_uid'
+    ]
+
+    
+    for (const field of idFields) {
+        const value = (order as any)[field]
+        if (value != null && String(value).trim()) {
+            return String(value).trim()
+        }
+    }
+
+    return ''
+}
+
+const normalizeAppealRole = (value: unknown): 'buyer' | 'seller' | '' => {
+    if (value == null) return ''
+
+    const role = String(value).trim().toLowerCase()
+    if (!role) return ''
+
+    if (role === 'buyer' || role === 'buy' || role === 'purchaser' || role === '\u4e70\u5bb6') return 'buyer'
+    if (role === 'seller' || role === 'sell' || role === 'merchant' || role === 'vendor' || role === '\u5356\u5bb6') return 'seller'
+    if (role.includes('buyer') || role.includes('\u4e70\u5bb6')) return 'buyer'
+    if (role.includes('seller') || role.includes('\u5356\u5bb6')) return 'seller'
+
+    return ''
+}
+
+const getAppealInitiatorRole = (order: OrderItem): 'buyer' | 'seller' | '' => {
+    const roleFields = [
+        'appeal_role',
+        'appealRole',
+        'appeal_from_role',
+        'appealFromRole',
+        'appeal_from',
+        'appealFrom'
+    ]
+
+    for (const field of roleFields) {
+        const normalizedRole = normalizeAppealRole((order as any)[field])
+        if (normalizedRole) {
+            return normalizedRole
+        }
+    }
+
+    return ''
+}
+
+type AppealOwnerDetected = 'me' | 'other' | 'unknown'
+
+const getAppealScopeObjects = (order: OrderItem): any[] => {
+    const scopes: any[] = [order]
+    const nestedFields = ['appeal', 'appeal_info', 'appealInfo', 'appeal_detail', 'appealDetail']
+    for (const field of nestedFields) {
+        const value = (order as any)[field]
+        if (value && typeof value === 'object') {
+            scopes.push(value)
+        }
+    }
+    return scopes
+}
+
+const getFieldValueByNames = (target: any, fieldNames: string[]): string => {
+    if (!target || typeof target !== 'object') return ''
+    for (const field of fieldNames) {
+        const value = target[field]
+        if (value != null && String(value).trim()) {
+            return String(value).trim()
+        }
+    }
+    return ''
+}
+
+const getFieldValueByKeyPattern = (target: any, pattern: RegExp): string => {
+    if (!target || typeof target !== 'object') return ''
+    for (const key of Object.keys(target)) {
+        if (!pattern.test(key)) continue
+        const value = target[key]
+        if (value != null && String(value).trim()) {
+            return String(value).trim()
+        }
+    }
+    return ''
+}
+
+const getResolvedAppealInitiatorUserId = (order: OrderItem): string => {
+    const scopes = getAppealScopeObjects(order)
+    for (const scope of scopes) {
+        const isRoot = scope === order
+        const exactFields = isRoot
+            ? [
+                'appeal_user_id',
+                'appealUserId',
+                'appeal_by_user_id',
+                'appealByUserId',
+                'appeal_initiator_id',
+                'appealInitiatorId',
+                'appeal_uid'
+            ]
+            : [
+                'user_id',
+                'userId',
+                'uid',
+                'from_user_id',
+                'fromUserId',
+                'initiator_id',
+                'initiatorId',
+                'creator_id',
+                'creatorId',
+                'appellant_id',
+                'appellantId',
+                'appealer_id',
+                'appealerId',
+                'apply_user_id',
+                'applyUserId',
+                'appeal_user_id',
+                'appealUserId'
+            ]
+
+        const exact = getFieldValueByNames(scope, exactFields)
+        if (exact) return exact
+
+        const fuzzy = isRoot
+            ? getFieldValueByKeyPattern(scope, /(appeal|initiator|appellant|appealer|creator).*(user|uid|member).*(id)?$/i)
+            : (
+                getFieldValueByKeyPattern(scope, /^(from_)?(user|uid|member)_?id$/i) ||
+                getFieldValueByKeyPattern(scope, /^(initiator|creator|appellant|appealer)_?id$/i) ||
+                getFieldValueByKeyPattern(scope, /(appeal).*(user|uid|member).*(id)?$/i)
+            )
+
+        if (fuzzy) return fuzzy
+    }
+    return ''
+}
+
+const getResolvedAppealInitiatorRole = (order: OrderItem): 'buyer' | 'seller' | '' => {
+    const scopes = getAppealScopeObjects(order)
+    for (const scope of scopes) {
+        const isRoot = scope === order
+        const exactFields = isRoot
+            ? [
+                'appeal_role',
+                'appealRole',
+                'appeal_from_role',
+                'appealFromRole',
+                'appeal_from',
+                'appealFrom'
+            ]
+            : [
+                'role',
+                'from_role',
+                'fromRole',
+                'initiator_role',
+                'initiatorRole',
+                'appealer_role',
+                'appealerRole',
+                'appellant_role',
+                'appellantRole',
+                'user_role',
+                'userRole',
+                'appeal_role',
+                'appealRole',
+                'party',
+                'side'
+            ]
+
+        for (const field of exactFields) {
+            const normalized = normalizeAppealRole(scope[field])
+            if (normalized) return normalized
+        }
+
+        const fuzzyRole = isRoot
+            ? normalizeAppealRole(getFieldValueByKeyPattern(scope, /(appeal|initiator|appellant|appealer|creator).*(role|from|side|party)$/i))
+            : normalizeAppealRole(getFieldValueByKeyPattern(scope, /(^role$|_role$|^from$|^from_role$|^side$|^party$)/i))
+
+        if (fuzzyRole) return fuzzyRole
+    }
+    return ''
+}
+
+const getResolvedAppealOwner = (order: OrderItem): AppealOwnerDetected => {
+    if (order.appeal_status == null || order.appeal_status === 'none') return 'unknown'
+
+    const orderNo = String(order.order_no || order.orderNo || '').trim()
+    const hintedOwner = orderNo ? props.appealOwnerHints?.[orderNo] : undefined
+    if (hintedOwner === 'me' || hintedOwner === 'other') {
+        return hintedOwner
+    }
+
+    const currentUserId = String(userStore.userInfo?.id ?? '').trim()
+    if (!currentUserId) return 'unknown'
+
+    const initiatorUserId = getResolvedAppealInitiatorUserId(order)
+    if (initiatorUserId) {
+        return initiatorUserId === currentUserId ? 'me' : 'other'
+    }
+
+    const initiatorRole = getResolvedAppealInitiatorRole(order)
+    if (initiatorRole === 'buyer') return isBuyerOrder(order) ? 'me' : 'other'
+    if (initiatorRole === 'seller') return isSellerOrder(order) ? 'me' : 'other'
+
+    return 'unknown'
+}
+
 const isAppealFromMe = (order: OrderItem) => {
-    if (!order.appeal_status || order.appeal_status === 'none') return false
+    const resolvedOwner = getResolvedAppealOwner(order)
+    if (resolvedOwner === 'me') return true
+    if (resolvedOwner === 'other') return false
+
+    if (order.appeal_status && order.appeal_status !== 'none') {
+        console.warn('⚠️ 申诉发起方字段缺失，可能存在历史脏数据', {
+            orderNo: order.order_no || order.orderNo || order.id,
+            appealStatus: order.appeal_status,
+            appealKeys: Object.keys(order).filter((key) => key.toLowerCase().includes('appeal'))
+        })
+    }
+
+    if (order.appeal_status == null || order.appeal_status === 'none') return false
+    const currentUserId = String(userStore.userInfo?.id ?? '').trim()
+    const initiatorUserId = getAppealInitiatorUserId(order)
+    if (currentUserId && initiatorUserId) {
+        return currentUserId === initiatorUserId
+    }
+
+    const initiatorRole = getAppealInitiatorRole(order)
+    if (initiatorRole === 'buyer') {
+        return isBuyerOrder(order)
+    }
+    if (initiatorRole === 'seller') {
+        return isSellerOrder(order)
+    }
+    // fallback for old payload without initiator fields
     return isBuyerOrder(order)  // 申诉由买家发起，所以判断当前用户是否是买家
 }
+
+const normalizeOrderNo = (order: OrderItem) => String(order.order_no || order.orderNo || '').trim()
+
+const normalizeRating = (value: any): number | null => {
+    const num = Number(value)
+    if (!Number.isFinite(num) || num <= 0) return null
+    return Math.max(0, Math.min(5, num))
+}
+
+const parseReviewStatusFromOrder = (order: OrderItem): ReviewStatus => {
+    const rating = normalizeRating(
+        (order as any).review_rating ??
+        (order as any).reviewRating ??
+        (order as any).rating ??
+        (order as any).score ??
+        (order as any).stars
+    )
+
+    if (rating !== null) {
+        return { reviewed: true, rating }
+    }
+
+    const reviewStatus = String((order as any).review_status ?? (order as any).reviewStatus ?? '').toLowerCase()
+    if (['reviewed', 'done', 'submitted'].includes(reviewStatus)) {
+        return { reviewed: true, rating: null }
+    }
+
+    const reviewFlagFields = ['isReviewed', 'is_reviewed', 'hasReview', 'has_review', 'reviewed']
+    for (const field of reviewFlagFields) {
+        const value = (order as any)[field]
+        if (value === true || value === 1 || value === '1' || value === 'true') {
+            return { reviewed: true, rating: null }
+        }
+    }
+
+    return { reviewed: false, rating: null }
+}
+
+const extractReviewListFromResponse = (res: any): any[] => {
+    const payload = res?.data
+    if (Array.isArray(payload)) return payload
+    if (Array.isArray(payload?.list)) return payload.list
+    if (Array.isArray(payload?.reviews)) return payload.reviews
+    if (Array.isArray(payload?.data)) return payload.data
+    return []
+}
+
+const parseReviewStatusFromApiResponse = (res: any): ReviewStatus => {
+    const reviews = extractReviewListFromResponse(res)
+    if (!reviews.length) return { reviewed: false, rating: null }
+
+    const currentUserId = String(userStore.userInfo?.id || '').trim()
+    const mine = reviews.find((review: any) => {
+        const reviewerId = String(
+            review?.reviewer_id ??
+            review?.reviewerId ??
+            review?.user_id ??
+            review?.userId ??
+            review?.buyer_id ??
+            review?.buyerId ??
+            ''
+        ).trim()
+        return currentUserId && reviewerId === currentUserId
+    }) || reviews[0]
+
+    const rating = normalizeRating(mine?.rating ?? mine?.score ?? mine?.stars)
+    return { reviewed: true, rating }
+}
+
+const getReviewStatus = (order: OrderItem): ReviewStatus => {
+    const orderNo = normalizeOrderNo(order)
+    if (orderNo && reviewStatusMap.value[orderNo]) {
+        return reviewStatusMap.value[orderNo]
+    }
+    return parseReviewStatusFromOrder(order)
+}
+
+const isOrderReviewed = (order: OrderItem) => getReviewStatus(order).reviewed
+const getOrderReviewRating = (order: OrderItem) => getReviewStatus(order).rating ?? 0
+const isReviewStatusLoading = (order: OrderItem) => {
+    const orderNo = normalizeOrderNo(order)
+    return orderNo ? !!reviewLoadingMap.value[orderNo] : false
+}
+
+const syncCompletedOrderReviews = async () => {
+    const completedBuyerOrders = props.list.filter((order) => order.status === 'completed' && isBuyerOrder(order))
+    const orderNos = Array.from(new Set(
+        completedBuyerOrders
+            .map((order) => normalizeOrderNo(order))
+            .filter((orderNo) => !!orderNo)
+    ))
+
+    const nextReviewStatusMap: Record<string, ReviewStatus> = {}
+    const orderNoToFetch: string[] = []
+
+    for (const orderNo of orderNos) {
+        const order = completedBuyerOrders.find((item) => normalizeOrderNo(item) === orderNo)
+        if (!order) continue
+
+        const fromOrder = parseReviewStatusFromOrder(order)
+        if (fromOrder.reviewed) {
+            nextReviewStatusMap[orderNo] = fromOrder
+        } else {
+            orderNoToFetch.push(orderNo)
+        }
+    }
+
+    if (!orderNoToFetch.length) {
+        reviewStatusMap.value = nextReviewStatusMap
+        reviewLoadingMap.value = {}
+        return
+    }
+
+    const loadingMap = { ...reviewLoadingMap.value }
+    for (const orderNo of orderNoToFetch) {
+        loadingMap[orderNo] = true
+    }
+    reviewLoadingMap.value = loadingMap
+
+    const currentVersion = ++reviewSyncVersion
+    const responses = await Promise.all(
+        orderNoToFetch.map(async (orderNo) => {
+            try {
+                const res = await orderApi.getOrderReviews(orderNo)
+                return { orderNo, status: parseReviewStatusFromApiResponse(res) }
+            } catch (error) {
+                console.warn('⚠️ 获取订单评价失败:', { orderNo, error })
+                return { orderNo, status: { reviewed: false, rating: null } as ReviewStatus }
+            }
+        })
+    )
+
+    if (currentVersion !== reviewSyncVersion) return
+
+    const nextLoadingMap: Record<string, boolean> = {}
+    for (const orderNo of orderNoToFetch) {
+        nextLoadingMap[orderNo] = false
+    }
+    reviewLoadingMap.value = nextLoadingMap
+
+    for (const item of responses) {
+        nextReviewStatusMap[item.orderNo] = item.status
+    }
+    reviewStatusMap.value = nextReviewStatusMap
+}
+
+watch(
+    () => props.list,
+    () => {
+        void syncCompletedOrderReviews()
+    },
+    { immediate: true, deep: true }
+)
 
 // ============================================================================
 // 🔥 事件处理函数
@@ -339,7 +755,12 @@ const handleConfirm = (order: OrderItem) => {
         ElMessage.error('订单数据异常')
         return
     }
-    emit('confirm-receive', orderNo)
+    router.push({
+        path: `/orders/${orderNo}`,
+        query: {
+            openReceiveDialog: '1'
+        }
+    })
 }
 
 // 🔹 取消订单（买家或卖家都能调用，后端会校验权限）
@@ -419,6 +840,16 @@ const handleAppeal = (order: OrderItem) => {
 
 // 🔹 打开评价弹窗（仅买家可评价）
 const openReviewDialog = (order: OrderItem) => {
+    if (isOrderReviewed(order)) {
+        ElMessage.info('该订单已评价')
+        return
+    }
+
+    if (isReviewStatusLoading(order)) {
+        ElMessage.info('正在加载评价信息，请稍后重试')
+        return
+    }
+
     const orderNo = order.order_no || order.orderNo
     if (!orderNo) {
         ElMessage.error('订单数据异常')
@@ -429,7 +860,18 @@ const openReviewDialog = (order: OrderItem) => {
 }
 
 // 🔹 评价提交成功后的回调
-const handleReviewSubmitted = () => {
+const handleReviewSubmitted = (payload?: { orderNo: string; rating: number }) => {
+    const orderNo = String(payload?.orderNo || '').trim()
+    if (orderNo) {
+        reviewStatusMap.value = {
+            ...reviewStatusMap.value,
+            [orderNo]: {
+                reviewed: true,
+                rating: normalizeRating(payload?.rating)
+            }
+        }
+    }
+
     emit('refresh-list')
     ElMessage.success('感谢您的评价！')
 }
@@ -467,5 +909,10 @@ const handleReviewSubmitted = () => {
 /* 🔹 状态标签微调 */
 :deep(.el-tag--plain) {
     font-weight: 500;
+}
+
+:deep(.review-rate .el-rate__icon) {
+    margin-right: 2px;
+    font-size: 14px;
 }
 </style>
