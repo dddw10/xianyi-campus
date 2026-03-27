@@ -1,12 +1,12 @@
 <template>
-    <!-- 🔥 模板部分完全保持不变，直接复制你原来的即可 -->
+    <!--  模板部分完全保持不变，直接复制你原来的即可 -->
     <div class="flex flex-col md:flex-row 
            h-[calc(100vh-140px)] md:h-[calc(100vh-170px)] 
            w-[90%] md:max-w-7xl md:mx-auto 
            bg-white rounded-2xl shadow-2xl border border-[var(--el-border-color-lighter)] 
            overflow-hidden my-6 md:my-12 relative">
 
-        <!-- 🔹 左侧：会话列表 -->
+        <!--  左侧：会话列表 -->
         <div class="w-full mt-4 md:w-80 flex-shrink-0 border-r border-[var(--el-border-color-lighter)] flex flex-col bg-[#fafafa] z-10 transition-all duration-300"
             :class="selectedRoom && isMobile ? 'hidden' : 'flex'">
 
@@ -91,7 +91,7 @@
 
                 <!-- 聊天内容 -->
                 <div v-if="selectedRoom" class="h-full flex flex-col overflow-hidden bg-[--bg]">
-                    <!-- 🔥 逻辑修改点：绑定 @receive-new-message 事件 -->
+                    <!--  逻辑修改点：绑定 @receive-new-message 事件 -->
                     <ChatWindow :business-type="selectedRoom.business_type" :business-id="selectedRoom.business_id"
                         :target-user-id="getTargetUserId(selectedRoom)" :title="getDisplayName(selectedRoom)"
                         :key="selectedRoom.id" @black="backToList" @receive-new-message="handleNewMessage" />
@@ -121,7 +121,7 @@ import { useUserStore } from '@/stores/modules/user';
 import { Search, ChatDotRound, Picture } from '@element-plus/icons-vue';
 import { ElIcon, ElSkeleton, ElMessage } from 'element-plus';
 import ChatWindow from '@/components/ChatWindow.vue';
-// 🔥 逻辑修改点 1: 引入 socket.io-client
+//  逻辑修改点 1: 引入 socket.io-client
 import { io, Socket } from 'socket.io-client';
 
 interface RoomItem {
@@ -153,7 +153,7 @@ const searchQuery = ref('');
 const isMobile = ref(false);
 const isCreating = ref(false);
 
-// 🔥 逻辑修改点 2: 定义 Socket 实例
+//  逻辑修改点 2: 定义 Socket 实例
 let socket: Socket | null = null;
 
 const getDisplayName = (room: RoomItem) => {
@@ -217,7 +217,7 @@ const fetchRooms = async () => {
     }
 };
 
-// 🔥 逻辑修改点 3: 新增处理新消息的函数 (更新左侧列表)
+//  逻辑修改点 3: 新增处理新消息的函数 (更新左侧列表)
 const handleNewMessage = (msg: any) => {
     console.log('📩 列表页收到新消息通知:', msg);
 
@@ -241,7 +241,7 @@ const handleNewMessage = (msg: any) => {
             room.unread_count = 0;
         }
 
-        // 4. 🔥 关键：将该房间移到数组第一位 (置顶)
+        // 4.  关键：将该房间移到数组第一位 (置顶)
         rooms.value.splice(roomIndex, 1);
         rooms.value.unshift(room);
 
@@ -253,7 +253,7 @@ const handleNewMessage = (msg: any) => {
     }
 };
 
-// 🔥 逻辑修改点 4: 初始化 Socket 连接
+//  逻辑修改点 4: 初始化 Socket 连接
 const initSocket = () => {
     if (socket) return;
 
@@ -349,7 +349,7 @@ const handleAutoOpen = async () => {
 const selectRoom = (room: RoomItem) => {
     selectedRoom.value = room;
 
-    // 🔥 逻辑修改点 5: 选中房间时，清空该房间的未读数
+    //  逻辑修改点 5: 选中房间时，清空该房间的未读数
     const roomIndex = rooms.value.findIndex(r => r.id === room.id);
     if (roomIndex !== -1) {
         (rooms as any).value[roomIndex].unread_count = 0;
@@ -405,7 +405,7 @@ onMounted(() => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // 🔥 逻辑修改点 6: 初始化 Socket
+    //  逻辑修改点 6: 初始化 Socket
     initSocket();
 
     fetchRooms().then(() => {
@@ -415,7 +415,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
-    // 🔥 逻辑修改点 7: 组件销毁时断开 Socket
+    //  逻辑修改点 7: 组件销毁时断开 Socket
     if (socket) {
         socket.disconnect();
         socket = null;
@@ -424,7 +424,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 🔥 样式部分完全保持不变 */
+/*  样式部分完全保持不变 */
 .safe-area-top {
     padding-top: env(safe-area-inset-top, 0px);
 }

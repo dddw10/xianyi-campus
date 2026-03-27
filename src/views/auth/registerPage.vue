@@ -1,9 +1,9 @@
 <!-- src/views/auth/registerPage.vue -->
 <template>
-    <!-- 🔥 页面内容（AuthLayout 已提供背景，这里只需表单） -->
+    <!--  页面内容（AuthLayout 已提供背景，这里只需表单） -->
     <div class="w-full">
 
-        <!-- 🔥 表单标题 -->
+        <!--  表单标题 -->
         <div class="text-center mb-8">
             <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 用户注册
@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <!-- 🔥 注册表单 -->
+        <!--  注册表单 -->
         <el-form ref="formRef" :model="countData" :rules="rules" class="space-y-5">
 
             <!-- 学号输入 -->
@@ -200,17 +200,17 @@ const register = async () => {
 </script>
 
 <style scoped>
-/* 🔥 输入框聚焦时的额外效果 */
+/*  输入框聚焦时的额外效果 */
 :deep(.el-input__wrapper.is-focus) {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }
 
-/* 🔥 按钮点击缩放反馈 */
+/*  按钮点击缩放反馈 */
 :deep(.el-button:active) {
     transform: scale(0.98);
 }
 
-/* 🔥 密码强度提示动画 */
+/*  密码强度提示动画 */
 .text-xs {
     transition: color 0.2s;
 }

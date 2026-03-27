@@ -5,7 +5,7 @@ import { useUserStore } from "@/stores/modules/user"
 import { ElMessage } from 'element-plus'
 import { modalBox } from "@/components/messageBox/modalBox"
 
-// 🔹 组件映射表
+//  组件映射表
 const componentMap: Record<string, any> = {
   // 👤 用户相关
   'Profile': () => import('@/views/user/profile/index.vue'),
@@ -18,7 +18,7 @@ const componentMap: Record<string, any> = {
   'CreateProduct': () => import('@/views/products/products-publish/index.vue'),
   'MyProducts': () => import('@/views/products/orders/index.vue'),
 
-  // 🔥 订单相关 - 🔥 确保这些组件存在
+  //  订单相关 -  确保这些组件存在
   'Orders': () => import('@/views/products/orders/index.vue'),           // 我的订单列表
   'OrderConfirm': () => import('@/views/products/orders/modules/Confirm.vue'),            // 订单确认页
   'OrderDetail': () => import('@/views/products/orders/modules/OrderDetail.vue'),
@@ -35,10 +35,10 @@ const componentMap: Record<string, any> = {
   'AdminHomeFaqs': () => import('@/views/admin/home/faq-management/index.vue'),
 }
 
-// 🔹 公开路由（无需登录即可访问）
+//  公开路由（无需登录即可访问）
 const publicPaths = ['/auth', '/home']
 
-// 🔹 需要继承 MainLayout 的路径前缀（用于动态路由）
+//  需要继承 MainLayout 的路径前缀（用于动态路由）
 const mainLayoutPaths = ['/verify', '/chat', '/profile', '/favorites']
 
 const routes: RouteRecordRaw[] = [
@@ -60,7 +60,7 @@ const routes: RouteRecordRaw[] = [
         path: '/pay/result',
         name: 'PayResult',
         component: () => import('@/views/pay/result.vue'),
-        meta: { title: '支付结果', requiresAuth: false }  // 🔥 回调返回不需要登录
+        meta: { title: '支付结果', requiresAuth: false }  //  回调返回不需要登录
       },
 
 
@@ -70,10 +70,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     name: 'admin',
-    component: () => import('@/layouts/AdminLayout.vue'),  // 🔥 使用后台布局
+    component: () => import('@/layouts/AdminLayout.vue'),  //  使用后台布局
     meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
     redirect: '/admin/dashboard',
-    children: []  // 🔥 动态路由通过 addDynamicRoutes 添加到这里
+    children: []  //  动态路由通过 addDynamicRoutes 添加到这里
   },
 
   // ==================== 认证布局 ====================
@@ -86,11 +86,11 @@ const routes: RouteRecordRaw[] = [
     ]
   },
 
-  // 🔥【关键修复】管理员登录页：独立路由 + AuthLayout + 公开访问
+  // 【关键修复】管理员登录页：独立路由 + AuthLayout + 公开访问
   {
     path: '/admin/login',
     name: 'adminLogin',
-    component: () => import('@/layouts/AuthLayout.vue'),  // 🔥 使用认证布局
+    component: () => import('@/layouts/AuthLayout.vue'),  //  使用认证布局
     meta: {
       title: '管理员登录',
       public: true,
@@ -99,7 +99,7 @@ const routes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: '',  // 🔥 空路径，直接渲染登录组件
+        path: '',  //  空路径，直接渲染登录组件
         name: 'adminLoginContent',
         component: () => import('@/views/admin/login.vue'),
         meta: { title: '管理员登录' }
@@ -111,7 +111,7 @@ const routes: RouteRecordRaw[] = [
     path: '/pay/:orderNo',
     name: 'Pay',
     component: () => import('@/views/pay/index.vue'),
-    meta: { title: '订单支付', requiresAuth: true }  // 🔥 需要登录，但不是管理员
+    meta: { title: '订单支付', requiresAuth: true }  //  需要登录，但不是管理员
   },
 
 
@@ -135,7 +135,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/products/products-detail/index.vue'),
         meta: { title: '商品详情', public: true }
       }
-      // 🔥 动态路由（如 /products/create）会通过 addDynamicRoutes 添加到这里
+      //  动态路由（如 /products/create）会通过 addDynamicRoutes 添加到这里
     ]
   },
 
@@ -162,7 +162,7 @@ const router = createRouter({
   routes,
 })
 
-// 🔹 添加动态路由
+//  添加动态路由
 export function addDynamicRoutes(dynamicRoutes: any[]) {
   console.log('📦 后端返回的动态路由配置:')
   console.log(JSON.stringify(dynamicRoutes.filter(r => r.name === 'user-profile'), null, 2))
@@ -274,7 +274,7 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
   }
 }
 
-// 🔹 打印路由表（调试用）
+//  打印路由表（调试用）
 console.log('\n📋 当前所有路由:')
 router.getRoutes().forEach((r: any) => {
   if (r.meta?.title || ['AdminDashboard', 'AdminUserReview', 'adminLogin'].includes(r.name)) {
@@ -282,7 +282,7 @@ router.getRoutes().forEach((r: any) => {
   }
 })
 
-// 🔹 移除动态路由
+//  移除动态路由
 export function removeDynamicRoutes(routeNames: string[]) {
   routeNames.forEach(name => {
     if (name && router.hasRoute(name)) {
@@ -292,24 +292,24 @@ export function removeDynamicRoutes(routeNames: string[]) {
   })
 }
 
-// 🔹 前置守卫（✅ 修复：管理员登录公开 + 精确匹配）
+//  前置守卫（✅ 修复：管理员登录公开 + 精确匹配）
 // src/router/index.ts
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
   const userStore = useUserStore()
   const meta = to.meta as Record<string, any>
 
-  // 🔥【关键】管理员登录页：始终公开
+  // 【关键】管理员登录页：始终公开
   if (to.name === 'adminLogin' || to.path === '/admin/login') {
     if (userStore.isLoggedIn && userStore.userInfo?.role === 'admin') {
-      // 🔥 修复 1: 用路径跳转 + await
-      await router.replace('/admin/dashboard')  // 🔥 确保路径正确
-      return  // 🔥 跳转后返回，不调用 next()
+      //  修复 1: 用路径跳转 + await
+      await router.replace('/admin/dashboard')  //  确保路径正确
+      return  //  跳转后返回，不调用 next()
     }
     next()
     return
   }
 
-  // 🔥 未登录时，拦截受保护路由
+  //  未登录时，拦截受保护路由
   if (!userStore.isLoggedIn) {
     const isAuthPage = to.path.startsWith('/auth')
     const isHome = to.path === '/' || to.path === '/home'
@@ -352,7 +352,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 /main/* 路由的处理
+  //  /main/* 路由的处理
   if (to.path.startsWith('/main')) {
     if (!userStore.isLoggedIn) {
       next({ name: 'login', query: { redirect: to.fullPath.replace('/main', '') } })
@@ -362,7 +362,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
       const userPerms = userStore.permissions?.permissions || []
       if (!userPerms.includes(meta.permission)) {
         ElMessage.error('权限不足')
-        next({ path: '/home' })  // 🔥 修复：用路径替代 name
+        next({ path: '/home' })  //  修复：用路径替代 name
         return
       }
     }
@@ -370,7 +370,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 管理员后台路由（排除登录页）
+  //  管理员后台路由（排除登录页）
   if (to.path.startsWith('/admin') && to.name !== 'adminLogin') {
     if (!userStore.isLoggedIn) {
       next({ name: 'adminLogin', query: { redirect: to.fullPath } })
@@ -378,14 +378,14 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     }
     if (userStore.userInfo?.role !== 'admin') {
       ElMessage.error('权限不足，需要管理员账号')
-      next({ path: '/home' })  // 🔥 修复：用路径替代 name
+      next({ path: '/home' })  //  修复：用路径替代 name
       return
     }
     if (meta.permission) {
       const userPerms = userStore.permissions?.permissions || []
       if (!userPerms.includes(meta.permission)) {
         ElMessage.error('权限不足，无法访问此页面')
-        next({ path: '/admin/dashboard' })  // 🔥 修复：用路径替代 name
+        next({ path: '/admin/dashboard' })  //  修复：用路径替代 name
         return
       }
     }
@@ -393,22 +393,22 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
     return
   }
 
-  // 🔥 公开路由放行（🔥 修复：移除自动跳转逻辑）
+  //  公开路由放行（ 修复：移除自动跳转逻辑）
   if (publicPaths.some(path => to.path.startsWith(path)) && !meta.requiresAuth) {
-    // 🔥 修复 2: 移除 "已登录自动跳转" 逻辑，让登录组件控制跳转
-    // 🔥 原因：守卫 + 组件重复跳转会产生竞争条件
+    //  修复 2: 移除 "已登录自动跳转" 逻辑，让登录组件控制跳转
+    //  原因：守卫 + 组件重复跳转会产生竞争条件
     next()
     return
   }
 
-  // 🔥 普通用户权限检查
+  //  普通用户权限检查
   if (meta.requiresVerified && !userStore.isVerified) {
     ElMessage.warning('请先完成身份认证')
-    next({ name: 'Verification' })  // 🔥 确保路由 name 正确，或用路径
+    next({ name: 'Verification' })  //  确保路由 name 正确，或用路径
     return
   }
 
-  // 🔥 其他情况放行
+  //  其他情况放行
   next()
 })
 

@@ -1,8 +1,8 @@
-<!-- src/views/orders/OrderDetail.vue -->
+﻿<!-- src/views/orders/OrderDetail.vue -->
 <template>
     <div class="min-h-screen bg-[--bg-color] py-8">
         <div class="max-w-4xl mx-auto px-4">
-            <!-- 🔹 顶部导航 -->
+            <!--  顶部导航 -->
             <div class="mb-6 flex items-center gap-3">
                 <el-button @click="router.back()" circle class="!w-8 !h-8 !p-0">
                     <el-icon>
@@ -15,12 +15,12 @@
                 </el-tag>
             </div>
 
-            <!-- 🔹 加载状态 -->
+            <!--  加载状态 -->
             <div v-if="loading" class="flex justify-center py-20">
                 <el-skeleton :rows="10" animated />
             </div>
 
-            <!-- 🔹 主要内容 -->
+            <!--  主要内容 -->
             <div v-else-if="order" class="space-y-6">
                 <!-- 1. 状态进度条 -->
                 <div class="bg-[--bg-elevated] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -153,7 +153,7 @@
                             </div>
                         </div>
 
-                        <!-- 🔥 展示交易凭证（如果有） -->
+                        <!--  展示交易凭证（如果有） -->
                         <div v-if="order.delivery_proof || order.receive_proof"
                             class="bg-[--bg-elevated] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -175,7 +175,7 @@
                             </div>
                         </div>
 
-                        <!-- 🔥 申诉信息展示（已完成订单 + 有申诉记录时显示） -->
+                        <!--  申诉信息展示（已完成订单 + 有申诉记录时显示） -->
                         <div v-if="order.status === 'completed' && order.appeal_status && order.appeal_status !== 'none'"
                             class="bg-[--bg-elevated] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -257,7 +257,7 @@
                                 </div>
                             </div>
 
-                            <!-- 🔹 动态操作按钮 -->
+                            <!--  动态操作按钮 -->
                             <div class="space-y-3">
                                 <!-- 1. 待付款（买家） -->
                                 <template v-if="order.status === 'pending' && isBuyer">
@@ -279,7 +279,7 @@
                                         🚚 确认发货
                                     </el-button>
                                     <span></span>
-                                    <!-- 🔥 新增：卖家取消订单按钮 -->
+                                    <!--  新增：卖家取消订单按钮 -->
                                     <el-button type="danger" plain size="default" class="w-full !rounded-full mt-2"
                                         @click="handleCancelBySeller">
                                         🗑️ 取消订单（卖家）
@@ -312,7 +312,7 @@
                                     <div class="text-xs text-center text-gray-400 mt-2">⚠️ 取消后款项将原路退回</div> -->
                                 </template>
 
-                                <!-- 🔥 申诉相关逻辑（已完成订单专属，买家或卖家都能发起） -->
+                                <!--  申诉相关逻辑（已完成订单专属，买家或卖家都能发起） -->
                                 <template v-if="order.status === 'completed'">
                                     <!-- ✅ 未申诉：显示「去申诉」按钮（双方都能点） -->
                                     <el-button v-if="!order.appeal_status || order.appeal_status === 'none'"
@@ -370,13 +370,13 @@
                 </div>
             </div>
 
-            <!-- 🔹 404 状态 -->
+            <!--  404 状态 -->
             <div v-else-if="!loading && !order" class="text-center py-20">
                 <el-empty description="订单不存在或无权查看" />
                 <el-button @click="router.back()" type="primary" round>返回订单列表</el-button>
             </div>
 
-            <!-- 🔥 发货凭证上传弹窗 -->
+            <!--  发货凭证上传弹窗 -->
             <el-dialog v-model="showDeliverDialog" title="确认发货"
                 class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false">
                 <div class="space-y-4">
@@ -396,7 +396,7 @@
                 </template>
             </el-dialog>
 
-            <!-- 🔥 收货凭证上传弹窗 -->
+            <!--  收货凭证上传弹窗 -->
             <el-dialog v-model="showReceiveDialog" title="确认收货"
                 class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false">
                 <div class="space-y-4">
@@ -437,7 +437,7 @@ const loading = ref(true)
 const order = ref<any>(null)
 const submitting = ref(false)
 
-// 🔥 弹窗控制
+//  弹窗控制
 const showDeliverDialog = ref(false)
 const showReceiveDialog = ref(false)
 const deliverImageList = ref<string[]>([])
@@ -445,24 +445,24 @@ const receiveImageList = ref<string[]>([])
 const AUTO_OPEN_RECEIVE_QUERY_KEY = 'openReceiveDialog'
 
 // ============================================================================
-// 🔥 计算属性：判断角色 + 申诉相关
+//  计算属性：判断角色 + 申诉相关
 // ============================================================================
 
-// 🔹 是否是买家
+//  是否是买家
 const isBuyer = computed(() => {
     if (!order.value || !userStore.userInfo?.id) return false
     const uid = String(userStore.userInfo.id)
     return String(order.value.buyer_id) === uid || String(order.value.buyerId) === uid
 })
 
-// 🔹 是否是卖家
+//  是否是卖家
 const isSeller = computed(() => {
     if (!order.value || !userStore.userInfo?.id) return false
     const uid = String(userStore.userInfo.id)
     return String(order.value.seller_id) === uid || String(order.value.sellerId) === uid
 })
 
-// 🔹 判断申诉是否由当前用户发起
+//  判断申诉是否由当前用户发起
 const isAppealFromMe = computed(() => {
     if (!order.value || !userStore.userInfo?.id) return false
     // 申诉由买家发起，判断当前用户是否是买家
@@ -471,7 +471,7 @@ const isAppealFromMe = computed(() => {
 })
 
 // ============================================================================
-// 🔥 工具函数
+//  工具函数
 // ============================================================================
 const formatPrice = (val: string | number | undefined) => {
     if (val === undefined || val === null) return '0.00'
@@ -532,7 +532,7 @@ const parseAddress = (addr?: string) => {
     return { name: '未知', phone: '未知', address: trimAddr }
 }
 
-// 🔹 申诉状态中文标签
+//  申诉状态中文标签
 const getAppealStatusText = (status: string) => {
     const map: Record<string, string> = {
         pending: '审核中',
@@ -542,7 +542,7 @@ const getAppealStatusText = (status: string) => {
     return map[status] || status
 }
 
-// 🔹 申诉状态标签类型
+//  申诉状态标签类型
 const getAppealStatusType = (status: string): 'warning' | 'success' | 'danger' | 'info' => {
     const map: Record<string, any> = {
         pending: 'warning',
@@ -599,7 +599,7 @@ const refreshCurrentUserSafely = async () => {
 }
 
 // ============================================================================
-// 🔥 获取订单详情
+//  获取订单详情
 // ============================================================================
 const fetchOrderDetail = async () => {
     loading.value = true
@@ -636,14 +636,14 @@ const fetchOrderDetail = async () => {
 }
 
 // ============================================================================
-// 🔥 操作处理
+//  操作处理
 // ============================================================================
 const handlePay = () => {
     if (!order.value) return
     router.push(`/pay/${order.value.order_no || order.value.orderNo}`)
 }
 
-// 🔥 取消订单（买家 - 待付款状态）
+//  取消订单（买家 - 待付款状态）
 const handleCancel = async () => {
     if (!order.value) {
         console.error('❌ [handleCancel] order.value is null')
@@ -684,7 +684,7 @@ const handleCancel = async () => {
     }
 }
 
-// 🔥 待发货状态下的取消订单（买家）
+//  待发货状态下的取消订单（买家）
 const handleCancelPaid = async () => {
     if (!order.value) return
 
@@ -718,7 +718,7 @@ const handleCancelPaid = async () => {
     }
 }
 
-// 🔥 待收货状态下的取消订单（买家）
+//  待收货状态下的取消订单（买家）
 const handleCancelTrading = async () => {
     if (!order.value) return
 
@@ -752,7 +752,7 @@ const handleCancelTrading = async () => {
     }
 }
 
-// 🔥 卖家取消订单（待发货状态）
+//  卖家取消订单（待发货状态）
 const handleCancelBySeller = async () => {
     if (!order.value) {
         console.error('❌ [handleCancelBySeller] order.value is null')
@@ -790,7 +790,7 @@ const handleCancelBySeller = async () => {
     }
 }
 
-// 🔥 申诉处理（买家或卖家都能发起）
+//  申诉处理（买家或卖家都能发起）
 const handleAppeal = (orderItem: any) => {
     const orderNo = orderItem.order_no || orderItem.orderNo
     const appealStatus = orderItem.appeal_status
@@ -802,7 +802,7 @@ const handleAppeal = (orderItem: any) => {
 
     // 场景 1: 已申诉（通过/驳回）→ 直接打开弹窗查看结果
     if (appealStatus && appealStatus !== 'none' && appealStatus !== 'pending') {
-        // 🔥 发射事件，通知父组件打开申诉详情弹窗
+        //  发射事件，通知父组件打开申诉详情弹窗
         // 父组件需要监听 'appeal-order' 事件并处理申诉详情展示
         const emit = defineEmits<{ (e: 'appeal-order', orderNo: string): void }>()
         emit('appeal-order', orderNo)
@@ -826,7 +826,7 @@ const handleAppeal = (orderItem: any) => {
         title: appealTitle,
         message: appealMessage,
     }).then(() => {
-        // 🔥 发射事件，通知父组件打开申诉表单
+        //  发射事件，通知父组件打开申诉表单
         const emit = defineEmits<{ (e: 'appeal-order', orderNo: string): void }>()
         emit('appeal-order', orderNo)
     }).catch((action) => {
@@ -836,7 +836,7 @@ const handleAppeal = (orderItem: any) => {
     })
 }
 
-// 🔥 发货弹窗
+//  发货弹窗
 const closeDeliverDialog = () => {
     showDeliverDialog.value = false
     deliverImageList.value = []
@@ -865,7 +865,7 @@ const submitDeliver = async () => {
     }
 }
 
-// 🔥 收货弹窗
+//  收货弹窗
 const closeReceiveDialog = () => {
     showReceiveDialog.value = false
     receiveImageList.value = []
@@ -896,19 +896,19 @@ const submitReceive = async () => {
 }
 
 const handleContact = () => {
-    // 🔹 1. 校验登录状态
+    //  1. 校验登录状态
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
         return
     }
 
-    // 🔹 2. 校验订单数据
+    //  2. 校验订单数据
     if (!order.value) {
         ElMessage.error('订单数据异常')
         return
     }
 
-    // 🔹 3. 确定联系对象
+    //  3. 确定联系对象
     const currentUserId = userStore.userInfo?.id
     const isBuyer = order.value.buyer_id === currentUserId || order.value.buyerId === currentUserId
 
@@ -920,13 +920,13 @@ const handleContact = () => {
         ? (order.value.sellerName || order.value.seller_name || '卖家')
         : (order.value.buyerName || order.value.buyer_name || '买家')
 
-    // 🔹 4. 校验目标用户 ID
+    //  4. 校验目标用户 ID
     if (!targetId) {
         ElMessage.error('无法获取联系对象信息')
         return
     }
 
-    // 🔹 5. 跳转到聊天页
+    //  5. 跳转到聊天页
     router.push({
         path: '/main/chat',
         query: {
@@ -938,12 +938,12 @@ const handleContact = () => {
         }
     })
 
-    // 🔹 6. 可选提示
+    //  6. 可选提示
     ElMessage.info(`正在联系 ${targetName}...`)
 }
 
 // ============================================================================
-// 🔥 生命周期
+//  生命周期
 // ============================================================================
 onMounted(() => {
     fetchOrderDetail()

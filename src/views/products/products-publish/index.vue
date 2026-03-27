@@ -2,12 +2,12 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto">
 
-        <!-- 🔥 页面容器：居中 + 内边距 + 主题背景 -->
+        <!--  页面容器：居中 + 内边距 + 主题背景 -->
         <div class="bg-$el-bg-color p-6 sm:p-8 rounded-2xl shadow-lg border border-$el-border-color-light">
 
             <div class="max-w-2xl mx-auto">
 
-                <!-- 🔥 标题区域 -->
+                <!--  标题区域 -->
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-bold text-$el-text-color-primary">
                         发闲置
@@ -78,7 +78,7 @@
                     </el-form>
                 </div>
 
-                <!-- 🔥 提交按钮区域 -->
+                <!--  提交按钮区域 -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                     <el-button @click="handleReset" size="large"
                         class="px-10 py-6 rounded-xl font-medium border-$el-border-color text-$el-text-color-regular hover:bg-$el-fill-color-light hover:-translate-y-0.5 transition-all duration-200">
@@ -98,7 +98,7 @@
 
             </div>
 
-            <!-- 🔥 底部提示 -->
+            <!--  底部提示 -->
             <p class="text-center mt-6 text-sm text-$el-text-color-secondary">
                 发布后请保持在线，方便买家联系您 🎯
             </p>
@@ -148,18 +148,18 @@ const rules: FormRules = {
     ]
 }
 
-// 🔹 提交表单（✅ 修复：移除 JSON.stringify，统一用 async/await）
+//  提交表单（✅ 修复：移除 JSON.stringify，统一用 async/await）
 const handleSubmit = async () => {
     if (!formRef.value) return
 
     try {
-        // 🔥 1. 先校验表单
+        //  1. 先校验表单
         await formRef.value.validate()
 
-        // 🔥 2. 设置提交状态
+        //  2. 设置提交状态
         submitting.value = true
 
-        // 🔥 3. 构建请求数据（✅ 直接传对象，不要 JSON.stringify！）
+        //  3. 构建请求数据（✅ 直接传对象，不要 JSON.stringify！）
         const requestData = {
             title: formData.value.title,
             price: formData.value.price,
@@ -168,13 +168,13 @@ const handleSubmit = async () => {
             images: formData.value.images
         }
 
-        // 🔥 4. 调用 API（✅ 统一用 async/await，不要混用 .then()）
+        //  4. 调用 API（✅ 统一用 async/await，不要混用 .then()）
         await productApi.createProduct(requestData).then((res: any) => {
-            // 🔥 5. 处理响应
+            //  5. 处理响应
             if (res?.code === 200) {
                 ElMessage.success('✅ 发布成功，请等待审核')
                 publishStore.resetForm()
-                // 🔥 跳转到"我发布的"列表
+                //  跳转到"我发布的"列表
                 router.push('/products/orders?tab=published')
             } else {
                 ElMessage.error(res?.msg || '发布失败')
@@ -182,23 +182,23 @@ const handleSubmit = async () => {
         })
 
     } catch (error: any) {
-        // 🔥 表单校验失败也会进入这里，但不需要提示
+        //  表单校验失败也会进入这里，但不需要提示
         if (error?.fields) {
             // 表单校验错误，Element Plus 会自动提示
             return
         }
 
-        // 🔥 网络/业务错误
+        //  网络/业务错误
         console.error('❌ 发布失败:', error)
         ElMessage.error(error?.response?.data?.msg || '发布失败，请稍后重试')
 
     } finally {
-        // 🔥 无论成功失败都结束 loading
+        //  无论成功失败都结束 loading
         submitting.value = false
     }
 }
 
-// 🔹 重置表单
+//  重置表单
 const handleReset = () => {
     formRef.value?.resetFields()
     publishStore.resetForm()

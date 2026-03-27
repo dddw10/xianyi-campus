@@ -10,7 +10,7 @@ export const favoriteApi = {
     },
 
     /**
-     * 🔹 添加收藏
+     *  添加收藏
      */
     add(productId: number) {
         return request({
@@ -21,7 +21,7 @@ export const favoriteApi = {
     },
 
     /**
-     * 🔹 取消收藏
+     *  取消收藏
      */
     remove(productId: number) {
         return request({
@@ -32,7 +32,7 @@ export const favoriteApi = {
     },
 
     /**
-     * 🔹 获取收藏列表（带分页）
+     *  获取收藏列表（带分页）
      */
     getList(params = { page: 1, limit: 20 }) {
         return request({
@@ -43,7 +43,7 @@ export const favoriteApi = {
     },
 
     /**
-     * 🔹 检查单个商品收藏状态
+     *  检查单个商品收藏状态
      */
     check(productId: number) {
         return request({
@@ -53,7 +53,7 @@ export const favoriteApi = {
     },
 
     /**
-     * 🔹 批量检查收藏状态（用于商品列表页）
+     *  批量检查收藏状态（用于商品列表页）
      */
     batchCheck(productIds: number[]) {
         return request({

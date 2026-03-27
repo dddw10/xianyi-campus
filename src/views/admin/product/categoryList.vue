@@ -2,7 +2,7 @@
 <template>
     <el-dialog v-model="categoryVisible" title="🗂️ 分类管理" :close-on-click-modal="false" width="900px"
         class="category-dialog w-90% md:w-60%" @closed="handleDialogClosed">
-        <!-- 🔹 顶部搜索栏 -->
+        <!--  顶部搜索栏 -->
         <div class="filter-bar mb-4">
             <el-form :inline="true" :model="filters" class="demo-form-inline">
                 <el-row :gutter="12">
@@ -33,7 +33,7 @@
             </el-form>
         </div>
 
-        <!-- 🔹 操作按钮 -->
+        <!--  操作按钮 -->
         <div class="mb-4 flex justify-between items-center">
             <el-button type="success" :icon="Plus" @click="handleAdd">
                 新增分类
@@ -43,7 +43,7 @@
             </span>
         </div>
 
-        <!-- 🔹 分类表格 -->
+        <!--  分类表格 -->
         <el-table v-loading="loading" :data="categoryList" border stripe class="category-table"
             :header-cell-style="{ background: '#f5f7fa', fontWeight: '600' }" max-width="100%">
             <!-- 序号 -->
@@ -115,14 +115,14 @@
             </template>
         </el-table>
 
-        <!-- 🔹 分页 -->
+        <!--  分页 -->
         <div class="mt-4 flex justify-end">
             <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.limit" :total="total"
                 :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" />
         </div>
 
-        <!-- 🔹 新增/编辑表单对话框 -->
+        <!--  新增/编辑表单对话框 -->
         <el-dialog v-model="formVisible" :title="isEdit ? '✏️ 编辑分类' : '➕ 新增分类'" width="500px"
             :close-on-click-modal="false" append-to-body>
             <el-form ref="formRef" :model="formData" :rules="formRules" label-position="top" class="mt-2">
@@ -177,7 +177,7 @@ import { Search, Refresh, Plus, Edit, Delete, Check } from '@element-plus/icons-
 import adminCategoryApi, { type Category } from '@/api/admin/category'
 import { useWindowSize } from "@vueuse/core";
 
-// 🔹 弹窗控制
+//  弹窗控制
 const categoryVisible = ref(false)
 const formVisible = ref(false)
 const isEdit = ref(false)
@@ -187,10 +187,10 @@ const submitting = ref(false)
 // 宽度检测
 const { width } = useWindowSize()
 
-// 🔹 表单引用
+//  表单引用
 const formRef = ref<FormInstance>()
 
-// 🔹 筛选条件
+//  筛选条件
 const filters = reactive({
     keyword: '',
     status: '' as 'enabled' | 'disabled' | '',
@@ -198,20 +198,20 @@ const filters = reactive({
     limit: 20
 })
 
-// 🔹 分页
+//  分页
 const pagination = reactive({
     page: 1,
     limit: 20
 })
 
-// 🔹 数据
+//  数据
 const categoryList = ref<Category[]>([])
 const total = ref(0)
 
 // 临时存储每行的 loading 状态（用于 switch / 操作按钮）
 const statusLoadingMap = reactive<Record<number, boolean>>({})
 
-// 🔹 表单数据
+//  表单数据
 const formData = reactive<Category>({
     id: 0,
     name: '',
@@ -223,7 +223,7 @@ const formData = reactive<Category>({
     updated_at: ''
 })
 
-// 🔹 表单验证规则
+//  表单验证规则
 const formRules: Record<string, any> = {
     name: [
         { required: true, message: '请输入分类名称', trigger: 'blur' },
@@ -240,13 +240,13 @@ const formRules: Record<string, any> = {
     ]
 }
 
-// 🔹 格式化日期
+//  格式化日期
 const formatDate = (dateString: string) => {
     if (!dateString) return '-'
     return dateString.slice(0, 10)
 }
 
-// 🔹 加载分类列表
+//  加载分类列表
 const loadCategories = async () => {
     loading.value = true
     try {
@@ -270,13 +270,13 @@ const loadCategories = async () => {
     }
 }
 
-// 🔹 搜索
+//  搜索
 const handleSearch = () => {
     filters.page = 1
     loadCategories()
 }
 
-// 🔹 重置
+//  重置
 const handleReset = () => {
     filters.keyword = ''
     filters.status = ''
@@ -284,7 +284,7 @@ const handleReset = () => {
     loadCategories()
 }
 
-// 🔹 分页变化
+//  分页变化
 const handleSizeChange = (val: number) => {
     filters.limit = val
     filters.page = 1
@@ -296,14 +296,14 @@ const handleCurrentChange = (val: number) => {
     loadCategories()
 }
 
-// 🔹 新增分类
+//  新增分类
 const handleAdd = () => {
     isEdit.value = false
     resetForm()
     formVisible.value = true
 }
 
-// 🔹 编辑分类
+//  编辑分类
 const handleEdit = (row: Category) => {
     isEdit.value = true
     // 复制数据到表单（避免直接引用）
@@ -311,7 +311,7 @@ const handleEdit = (row: Category) => {
     formVisible.value = true
 }
 
-// 🔹 重置表单
+//  重置表单
 const resetForm = () => {
     formData.id = 0
     formData.name = ''
@@ -322,7 +322,7 @@ const resetForm = () => {
     formRef.value?.clearValidate()
 }
 
-// 🔹 提交表单
+//  提交表单
 const handleSubmit = async () => {
     if (!formRef.value) return
 
@@ -366,7 +366,7 @@ const handleSubmit = async () => {
     }
 }
 
-// 🔹 切换状态（启用/禁用）
+//  切换状态（启用/禁用）
 const handleStatusChange = async (row: Category) => {
     try {
         statusLoadingMap[row.id] = true  // 添加临时 loading 状态
@@ -383,7 +383,7 @@ const handleStatusChange = async (row: Category) => {
     }
 }
 
-// 🔹 快捷切换状态按钮
+//  快捷切换状态按钮
 const handleToggleStatus = (row: Category) => {
     const action = row.status === 'enabled' ? '禁用' : '启用'
     ElMessageBox.confirm(`确定要${action}「${row.name}」分类吗？`, '提示', {
@@ -398,7 +398,7 @@ const handleToggleStatus = (row: Category) => {
         .catch(() => { })
 }
 
-// 🔹 删除分类
+//  删除分类
 const handleDelete = (row: Category) => {
     ElMessageBox.confirm(`确定要删除「${row.name}」分类吗？\n\n⚠️ 如果该分类下有商品，将无法删除。`, '确认删除', {
         confirmButtonText: '删除',
@@ -423,23 +423,23 @@ const handleDelete = (row: Category) => {
         .catch(() => { })
 }
 
-// 🔹 对话框关闭
+//  对话框关闭
 const handleDialogClosed = () => {
     // 重置筛选条件（可选）
     // filters.keyword = ''
     // filters.status = ''
 }
 
-// 🔹 打开弹窗
+//  打开弹窗
 const openCategoryModal = () => {
     categoryVisible.value = true
     loadCategories()
 }
 
-// 🔹 暴露方法
+//  暴露方法
 defineExpose({ openCategoryModal })
 
-// 🔹 初始化
+//  初始化
 onMounted(() => {
     // 如果需要自动加载，取消下面注释
     // loadCategories()
@@ -447,7 +447,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 🔹 对话框样式 */
+/*  对话框样式 */
 .category-dialog {
     :deep(.el-dialog__header) {
         @apply py-4 px-6 border-b border-gray-100;
@@ -466,7 +466,7 @@ onMounted(() => {
     }
 }
 
-/* 🔹 表格样式 */
+/*  表格样式 */
 .category-table {
 
     :deep(.el-table__row) {
@@ -482,12 +482,12 @@ onMounted(() => {
     }
 }
 
-/* 🔹 图标渐变背景 */
+/*  图标渐变背景 */
 :deep(.bg-gradient-to-br) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-/* 🔹 响应式适配 */
+/*  响应式适配 */
 @media (max-width: 768px) {
     .category-dialog {
         :deep(.el-dialog) {

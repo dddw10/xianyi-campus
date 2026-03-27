@@ -2,7 +2,7 @@
 <template>
     <div class="flex flex-col p-4 sm:p-6 space-y-6 h-full">
 
-        <!-- 🔹 页面头部 -->
+        <!--  页面头部 -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-$el-text-color-primary">商品审核</h2>
@@ -31,7 +31,7 @@
                     <el-col :xs="24" :md="12" :lg="4">
                         <div class="w-full">
                             <el-row class="w-full">
-                                <!-- 🔹 搜索按钮（主按钮 + 图标） -->
+                                <!--  搜索按钮（主按钮 + 图标） -->
                                 <el-col :span="11">
                                     <el-button type="primary" class="w-full" @click="LoadPendingProducts">
                                         搜索
@@ -40,7 +40,7 @@
 
                                 <el-col :span="2"></el-col>
 
-                                <!-- 🔹 重置按钮（次要按钮 + 图标） -->
+                                <!--  重置按钮（次要按钮 + 图标） -->
                                 <el-col :span="11">
                                     <el-button class="w-full" @click="handleCancel">
                                         重置
@@ -86,7 +86,7 @@
                     </template>
                 </el-table-column>
 
-                <!-- 🔹 空状态 -->
+                <!--  空状态 -->
                 <template #empty>
                     <el-empty description="暂无待审核商品" :image-size="100">
                         <el-button type="primary" @click="LoadPendingProducts()">刷新试试</el-button>
@@ -103,10 +103,10 @@
     <!-- 审批拒绝弹窗 -->
     <el-dialog v-model="approvalModal" append-to-body title="📋 审批拒绝" @close="handleCloseApprovalModal"
         :close-on-click-modal="false" width="500px" class="rounded-2xl p-6">
-        <!-- 🔹 提示信息 -->
+        <!--  提示信息 -->
         <el-alert title="拒绝后商品将不会上架，用户会收到通知" type="warning" :closable="false" show-icon class="mb-4" />
 
-        <!-- 🔹 输入方式选择 -->
+        <!--  输入方式选择 -->
         <el-form label-position="top">
             <el-form-item label="选择输入方式">
                 <el-radio-group v-model="reasonType" @change="rejectionReason = ''" class="w-full">
@@ -123,7 +123,7 @@
                 </el-radio-group>
             </el-form-item>
 
-            <!-- 🔹 快捷回复 -->
+            <!--  快捷回复 -->
             <el-form-item v-show="reasonType === 'select'" label="常用拒绝理由" class="mt-4">
                 <el-select v-model="rejectionReason" placeholder="请选择拒绝理由" class="w-full" filterable allow-create
                     default-first-option>
@@ -134,7 +134,7 @@
                 </el-select>
             </el-form-item>
 
-            <!-- 🔹 手动输入 -->
+            <!--  手动输入 -->
             <el-form-item v-show="reasonType === 'input'" label="自定义拒绝原因" class="mt-4">
                 <el-input v-model="rejectionReason" type="textarea" :rows="4"
                     placeholder="请输入拒绝原因，将反馈给用户（如：图片不清晰、描述不符、违规内容等）" maxlength="200" show-word-limit resize="none"
@@ -142,7 +142,7 @@
             </el-form-item>
         </el-form>
 
-        <!-- 🔹 底部按钮 -->
+        <!--  底部按钮 -->
         <template #footer>
             <div class="dialog-footer">
                 <el-button @click="handleCloseApprovalModal" class="w-24">

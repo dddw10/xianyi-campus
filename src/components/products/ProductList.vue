@@ -35,7 +35,7 @@
             <div v-for="item in props.list" :key="item.id" @click="handleCardClick(item)"
                 class="product-card relative flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
 
-                <!-- 🔹 商品图片区域 -->
+                <!--  商品图片区域 -->
                 <div class="relative flex-shrink-0 overflow-visible">
                     <el-image :src="item.images?.[0] || getDefaultImage(getDisplayStatus(item))"
                         class="product-image w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600"
@@ -50,14 +50,14 @@
                         </template>
                     </el-image>
 
-                    <!-- 🔹 状态角标 -->
+                    <!--  状态角标 -->
                     <el-tag :type="getStatusType(item)" size="small"
                         class="absolute -top-2.5 -right-2.5 !rounded-full shadow-sm !z-20 !text-xs !px-2 !py-0.5">
                         {{ getStatusText(item) }}
                     </el-tag>
                 </div>
 
-                <!-- 🔹 商品信息 -->
+                <!--  商品信息 -->
                 <div class="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
                         <h4
@@ -68,7 +68,7 @@
                             {{ item.description || '暂无描述' }}
                         </p>
 
-                        <!-- 🔹 审核拒绝理由 -->
+                        <!--  审核拒绝理由 -->
                         <div v-if="item.review_status === 'rejected' && item.review_reason"
                             class="mt-2 p-2 bg-red-50/80 dark:bg-red-900/30 rounded-lg border border-red-200/50 dark:border-red-800/50 backdrop-blur-sm">
                             <p class="text-xs text-red-600 dark:text-red-300 flex items-center gap-1.5">
@@ -81,7 +81,7 @@
                         </div>
                     </div>
 
-                    <!-- 🔹 底部信息 + 简化后的操作按钮 -->
+                    <!--  底部信息 + 简化后的操作按钮 -->
                     <div
                         class="flex flex-col md:flex-row  justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <div class="flex items-center gap-3">
@@ -91,7 +91,7 @@
                                 }}</span>
                         </div>
 
-                        <!-- 🔥 简化：只保留编辑 + 下架两个按钮 -->
+                        <!--  简化：只保留编辑 + 下架两个按钮 -->
                         <div class="flex items-center justify-end mt-2 gap-1.5" @click.stop>
                             <!-- ✅ 通用编辑按钮：重提/修改都显示「✏️ 编辑」 -->
                             <el-button v-if="canEdit(item)" size="small" @click="handleEdit(item)"
@@ -119,7 +119,7 @@
         </div>
     </div>
 
-    <!-- 🔹 编辑弹窗（统一入口，根据 mode 显示不同状态） -->
+    <!--  编辑弹窗（统一入口，根据 mode 显示不同状态） -->
     <EditProductModal v-if="showEditModal" :product="editingProduct" :mode="editMode" @close="showEditModal = false"
         @success="handleEditSuccess" />
 </template>
@@ -130,13 +130,13 @@ import { Picture, Warning } from "@element-plus/icons-vue"
 import EditProductModal from "@/components/products/EditProductModal.vue"
 import { useRouter } from "vue-router"
 import { ElMessage, ElMessageBox } from "element-plus"
-import productApi from "@/api/product"  // 🔥 用于下架接口
+import productApi from "@/api/product"  //  用于下架接口
 import { modalBox } from "@/components/messageBox/modalBox";
 
 const router = useRouter()
 const showEditModal = ref(false)
 const editingProduct = ref<any>(null)
-const editMode = ref<'edit' | 'resubmit' | 'view'>('edit')  // 🔥 弹窗模式
+const editMode = ref<'edit' | 'resubmit' | 'view'>('edit')  //  弹窗模式
 
 const props = defineProps<{
     list: any[]
@@ -153,7 +153,7 @@ const emit = defineEmits<{
     (e: 'navigate-products'): void;
 }>()
 
-// 🔹 分页双向绑定（保持不变）
+//  分页双向绑定（保持不变）
 const currentPage = computed({
     get: () => props.pagination?.page || 1,
     set: (val) => emit('page-change', val)
@@ -167,7 +167,7 @@ const handlePageChange = (page: number) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 🔥 准备商品数据（确保弹窗能正常显示）
+//  准备商品数据（确保弹窗能正常显示）
 const prepareProductData = (item: any) => {
     const data = { ...item }
 
@@ -188,31 +188,31 @@ const prepareProductData = (item: any) => {
     return data
 }
 
-// 🔥 统一编辑入口：内部自动判断是「重提」还是「修改」
+//  统一编辑入口：内部自动判断是「重提」还是「修改」
 const handleEdit = (item: any) => {
-    // 🔥 自动判断模式：审核拒绝 → 重提，其他 → 编辑
+    //  自动判断模式：审核拒绝 → 重提，其他 → 编辑
     const mode = item.review_status === 'rejected' ? 'resubmit' : 'edit'
     openEditModal(item, mode)
 }
 
-// 🔥 弹窗标题/按钮文案根据 mode 自动变化（在 EditProductModal 中处理）
+//  弹窗标题/按钮文案根据 mode 自动变化（在 EditProductModal 中处理）
 const openEditModal = (item: any, mode: 'edit' | 'resubmit' | 'view') => {
     editingProduct.value = prepareProductData(item)
     editMode.value = mode
     showEditModal.value = true
 }
 
-// 🔥 查看详情（只读模式）
+//  查看详情（只读模式）
 const handleViewDetail = (item: any) => {
     openEditModal(item, 'view')
 }
 
-// 🔥 卡片点击：跳转到详情页（买家视角）
+//  卡片点击：跳转到详情页（买家视角）
 const handleCardClick = (item: any) => {
     router.push(`/products/detail/${item.id}`)
 }
 
-// 🔥 下架：本地更新状态 + 调用接口
+//  下架：本地更新状态 + 调用接口
 const handleDelete = async (item: any) => {
     try {
         await modalBox({
@@ -220,21 +220,21 @@ const handleDelete = async (item: any) => {
             title: '下架商品',
             message: '确定要下架此商品吗？下架后将不在公共列表显示'
         }).then(async () => {
-            // 🔥 调用接口下架
+            //  调用接口下架
             await productApi.updateProduct(item.id, {
                 title: item.title,  // 后端需要完整数据
                 description: item.description,
                 price: item.price,
                 category: item.category,
                 images: item.images,
-                action: 'delete'  // 🔥 关键：告诉后端执行下架
+                action: 'delete'  //  关键：告诉后端执行下架
             })
         })
 
-        // 🔥 本地更新状态（避免重新请求列表，体验更流畅）
+        //  本地更新状态（避免重新请求列表，体验更流畅）
         const index = props.list.findIndex(p => p.id === item.id)
         if (index !== -1) {
-            // 🔥 用展开运算符保持响应式
+            //  用展开运算符保持响应式
             props.list[index] = {
                 ...props.list[index],
                 status: 'deleted',
@@ -250,11 +250,11 @@ const handleDelete = async (item: any) => {
     }
 }
 
-// 🔥 编辑成功回调
+//  编辑成功回调
 const handleEditSuccess = (updatedProduct?: any) => {
     showEditModal.value = false
 
-    // 🔥 只通知父组件刷新，不操作 props.list
+    //  只通知父组件刷新，不操作 props.list
     emit('refresh-list')
 
     ElMessage.success(editMode.value === 'resubmit' ? '已重新提交审核' : '商品已更新')
@@ -264,18 +264,18 @@ const handleEditSuccess = (updatedProduct?: any) => {
     // }, 100)
 }
 
-// 🔹 判断是否可编辑（修复版）
+//  判断是否可编辑（修复版）
 const canEdit = (item: any): boolean => {
     if (props.listType !== 'published') return false
 
-    // 🔥 安全获取状态值（处理大小写/空格/undefined）
+    //  安全获取状态值（处理大小写/空格/undefined）
     const reviewStatus = String(item.review_status ?? '').trim().toLowerCase()
     const status = String(item.status ?? '').trim().toLowerCase()
 
     // 审核拒绝 → 可重提
     if (reviewStatus === 'rejected') return true
 
-    // 🔥 审核通过 + (在售 或 已下架) → 可编辑
+    //  审核通过 + (在售 或 已下架) → 可编辑
     if (reviewStatus === 'approved' &&
         (status === 'available' || status === 'deleted')) {
         return true
@@ -287,14 +287,14 @@ const canEdit = (item: any): boolean => {
     return false
 }
 
-// 🔹 判断是否可下架
+//  判断是否可下架
 const canDelete = (item: any) => {
     if (props.listType !== 'published') return false
     // 只有「审核通过 + 在售」的商品才能下架
     return item.review_status === 'approved' && item.status === 'available'
 }
 
-// 🔹 工具函数（保持不变）
+//  工具函数（保持不变）
 const formatPrice = (price: string | number) => {
     const num = typeof price === 'string' ? parseFloat(price) : price
     return Number.isNaN(num) ? '0.00' : num.toFixed(2)

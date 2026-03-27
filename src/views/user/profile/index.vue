@@ -2,13 +2,13 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
-        <!-- 🔹 头部：用户信息卡片（最终修复版） -->
+        <!--  头部：用户信息卡片（最终修复版） -->
         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-t-2xl">
             <div class="max-w-4xl mx-auto px-4 py-6">
-                <!-- 🔥 添加专属 class 并确保允许换行 -->
+                <!--  添加专属 class 并确保允许换行 -->
                 <div class="flex items-center gap-4 flex-wrap profile-header-row">
 
-                    <!-- 🔹 左侧：头像 + 用户信息 -->
+                    <!--  左侧：头像 + 用户信息 -->
                     <div class="flex items-center gap-4 flex-1 min-w-0">
                         <!-- 头像 -->
                         <div class="relative flex-shrink-0">
@@ -55,7 +55,7 @@
                         </div>
                     </div>
 
-                    <!-- 🔹 右侧：信用分展示（添加专属 class） -->
+                    <!--  右侧：信用分展示（添加专属 class） -->
                     <div class="credit-score-container flex flex-row md:flex-col text-right">
                         <div class="credit-score-content flex items-center justify-end gap-2">
                             <el-icon class="text-yellow-500">
@@ -78,7 +78,7 @@
                         </p>
                     </div>
 
-                    <!-- 🔹 最右侧：设置按钮 -->
+                    <!--  最右侧：设置按钮 -->
                     <el-button link @click="showSettings = true" class="!p-2 flex-shrink-0 settings-btn">
                         <el-icon class="text-xl text-gray-400">
                             <Setting />
@@ -89,7 +89,7 @@
             </div>
         </div>
 
-        <!-- 🔹 快捷入口 -->
+        <!--  快捷入口 -->
         <div class="max-w-4xl mx-auto px-4 py-4">
             <div class="grid grid-cols-4 gap-3">
                 <div v-for="item in quickActions" :key="item.path"
@@ -107,7 +107,7 @@
             </div>
         </div>
 
-        <!-- 🔹 功能模块列表 -->
+        <!--  功能模块列表 -->
         <div class="max-w-4xl mx-auto px-4 py-2 space-y-3">
 
             <!-- 我的商品 -->
@@ -178,7 +178,7 @@
             </el-button>
         </div>
 
-        <!-- 🔹 设置弹窗 -->
+        <!--  设置弹窗 -->
         <el-dialog v-model="showSettings" title="账号设置" :before-close="() => { showSettings = false }"
             class="w-90% md:w-20%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
             <div class="space-y-4">
@@ -247,7 +247,7 @@ const profileForm = ref({
 })
 
 // ============================================================================
-// 🔥 信用分相关
+//  信用分相关
 // ============================================================================
 
 // 信用等级计算（100 分制）
@@ -285,10 +285,10 @@ const verifyStatusText = computed(() => {
 })
 
 // ============================================================================
-// 🔥 其他逻辑
+//  其他逻辑
 // ============================================================================
 
-// 🔹 默认头像
+//  默认头像
 const getDefaultAvatar = () => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(userStore.userInfo?.nickname || '同学')}&background=random`
 }
@@ -343,7 +343,7 @@ const handleSaveProfile = async () => {
     }
 }
 
-// 🔹 快捷入口配置
+//  快捷入口配置
 const quickActions = computed(() => [
     {
         label: '我发布的',
@@ -372,7 +372,7 @@ const quickActions = computed(() => [
     },
 ])
 
-// 🔹 我的商品标签
+//  我的商品标签
 interface ProductTab {
     key: 'published' | 'bought' | 'sold'
     label: string
@@ -416,7 +416,7 @@ const getProductData = async () => {
     }
 }
 
-// 🔹 退出登录
+//  退出登录
 const handleLogout = () => {
     modalBox({
         type: 'error',
@@ -428,7 +428,7 @@ const handleLogout = () => {
     })
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(async () => {
     if (userStore.token) {
         await favoriteStore.initFavorites()
@@ -438,7 +438,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 🔥 移动端（≤767px）：换行 + 居中 + 调整顺序 */
+/*  移动端（≤767px）：换行 + 居中 + 调整顺序 */
 @media (max-width: 767px) {
 
     /* 父容器允许换行 */

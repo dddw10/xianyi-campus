@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-[--bg-color] py-8">
         <div class="max-w-4xl mx-auto px-4">
 
-            <!-- 🔹 顶部标题 -->
+            <!--  顶部标题 -->
             <div class="mb-6 flex items-center gap-3">
                 <el-button @click="router.back()" circle class="!w-8 !h-8 !p-0">
                     <el-icon>
@@ -12,7 +12,7 @@
                 <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100">确认订单</h1>
             </div>
 
-            <!-- 🔹 加载状态 -->
+            <!--  加载状态 -->
             <div v-if="loading" class="flex justify-center py-20">
                 <el-skeleton :rows="8" animated />
             </div>
@@ -31,9 +31,9 @@
                                     <Location />
                                 </el-icon> 收货地址
                             </h2>
-                            <el-button link type="primary" size="small" @click="handleManageAddress">
+                            <!-- <el-button link type="primary" size="small" @click="handleManageAddress">
                                 管理地址
-                            </el-button>
+                            </el-button> -->
                         </div>
 
                         <!-- 模拟地址选择 -->
@@ -76,7 +76,7 @@
                                     </h3>
                                     <div class="flex items-center gap-2 text-xs text-gray-500">
                                         <el-tag size="small" type="info">{{ getCategoryName(product.category)
-                                        }}</el-tag>
+                                            }}</el-tag>
                                         <span>{{ product.condition || '二手' }}</span>
                                     </div>
                                 </div>
@@ -147,7 +147,7 @@
 
             </div>
 
-            <!-- 🔹 错误状态 -->
+            <!--  错误状态 -->
             <div v-else-if="!loading && !product" class="text-center py-20">
                 <el-empty description="商品信息加载失败或已不存在" />
                 <el-button @click="router.push('/products')" type="primary" round>
@@ -173,7 +173,7 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
-// 🔹 状态定义
+//  状态定义
 const loading = ref(true)
 const submitting = ref(false)
 const product = ref<any>(null)
@@ -186,7 +186,7 @@ const addressForm = ref({
 })
 const buyerRemark = ref('')
 
-// 🔹 计算属性
+//  计算属性
 const totalAmount = computed(() => {
     if (!product.value) return 0
     const price = parseFloat(product.value.price) || 0
@@ -194,7 +194,7 @@ const totalAmount = computed(() => {
     return price + shipping
 })
 
-// 🔹 工具函数
+//  工具函数
 const formatPrice = (val: string | number) => {
     const num = typeof val === 'string' ? parseFloat(val) : val
     return Number.isNaN(num) ? '0.00' : num.toFixed(2)
@@ -207,7 +207,7 @@ const getCategoryName = (cat?: string) => {
     return map[cat || ''] || cat || '未知分类'
 }
 
-// 🔹 获取商品详情 (只读，用于确认)
+//  获取商品详情 (只读，用于确认)
 const fetchProduct = async () => {
     const productId = route.query.product_id
     if (!productId) {
@@ -236,7 +236,7 @@ const fetchProduct = async () => {
     }
 }
 
-// 🔹 提交订单
+//  提交订单
 const handleSubmitOrder = async () => {
     // 1. 基础校验
     if (!userStore.isLoggedIn) {

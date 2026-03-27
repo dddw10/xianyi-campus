@@ -30,7 +30,7 @@ export default defineConfig({
   },
 
   server: {
-    host: '0.0.0.0',  // 🔥 关键：监听所有网卡
+    host: '0.0.0.0',  //  关键：监听所有网卡
     port: 5173,
     proxy: {
       '/api': {

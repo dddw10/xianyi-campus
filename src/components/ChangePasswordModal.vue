@@ -4,14 +4,14 @@
         class="w-90% md:w-20%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="space-y-4"
             @submit.prevent="handleSubmit">
-            <!-- 🔹 当前密码 -->
+            <!--  当前密码 -->
             <el-form-item label="当前密码" prop="oldPassword">
                 <el-input v-model="form.oldPassword" type="password" placeholder="请输入当前登录密码" show-password
                     class="rounded-xl !bg-$el-fill-color-blank" :size="isMobile ? 'large' : 'default'"
                     @keyup.enter="handleSubmit" />
             </el-form-item>
 
-            <!-- 🔹 新密码 + 强度条 -->
+            <!--  新密码 + 强度条 -->
             <el-form-item label="新密码" prop="newPassword">
                 <el-input v-model="form.newPassword" type="password" placeholder="6-20位字母/数字/符号组合" show-password
                     class="rounded-xl" :size="isMobile ? 'large' : 'default'" @keyup.enter="handleSubmit" />
@@ -25,14 +25,14 @@
                 </el-text>
             </el-form-item>
 
-            <!-- 🔹 确认新密码 -->
+            <!--  确认新密码 -->
             <el-form-item label="确认新密码" prop="confirmNewPassword">
                 <el-input v-model="form.confirmNewPassword" type="password" placeholder="请再次输入新密码" show-password
                     class="rounded-xl" :size="isMobile ? 'large' : 'default'" @keyup.enter="handleSubmit" />
             </el-form-item>
         </el-form>
 
-        <!-- 🔹 底部按钮 -->
+        <!--  底部按钮 -->
         <template #footer>
             <div class="flex justify-end gap-3 pt-2">
                 <el-button @click="visible = false" class="rounded-full">
@@ -52,12 +52,12 @@ import { ElMessage } from 'element-plus'
 import authApi from "@/api/auth";
 import { useUserStore } from "@/stores/modules/user";
 
-// 🔹 Props & Emits
+//  Props & Emits
 const visible = defineModel('visible', { type: Boolean, default: false })
 const emit = defineEmits(['success'])
 const userStore = useUserStore()
 
-// 🔹 表单引用 & 状态
+//  表单引用 & 状态
 const formRef = ref()
 const submitting = ref(false)
 const form = ref({
@@ -66,13 +66,13 @@ const form = ref({
     confirmNewPassword: ''
 })
 
-// 🔹 移动端检测（640px 为分界）
+//  移动端检测（640px 为分界）
 const isMobile = computed(() => {
     if (typeof window === 'undefined') return false
     return window.innerWidth < 640
 })
 
-// 🔹 表单校验规则
+//  表单校验规则
 const rules = {
     oldPassword: [
         { required: true, message: '请输入当前密码', trigger: 'blur' }
@@ -96,7 +96,7 @@ const rules = {
     ]
 }
 
-// 🔹 密码强度计算
+//  密码强度计算
 const strengthType = computed(() => {
     const score = getStrengthScore()
     if (score <= 1) return 'danger'
@@ -133,13 +133,13 @@ const getStrengthScore = () => {
     return score
 }
 
-// 🔹 安全：错误次数限制（防暴力破解）
+//  安全：错误次数限制（防暴力破解）
 const errorCount = ref(0)
 const MAX_ERRORS = 5
 const LOCK_TIME = 15 * 60 * 1000  // 15分钟
 const lastErrorTime = ref(0)
 
-// 🔹 提交修改密码
+//  提交修改密码
 const handleSubmit = async () => {
     const now = Date.now()
 
@@ -192,14 +192,14 @@ const handleSubmit = async () => {
     }
 }
 
-// 🔹 组件卸载时清理表单
+//  组件卸载时清理表单
 onUnmounted(() => {
     formRef.value?.resetFields()
 })
 </script>
 
 <style scoped>
-/* 🔥 密码强度条动画优化 */
+/*  密码强度条动画优化 */
 :deep(.el-input__wrapper) {
     transition: box-shadow 0.3s ease;
 }
@@ -208,7 +208,7 @@ onUnmounted(() => {
     box-shadow: 0 0 0 2px rgba(var(--el-color-primary-rgb), 0.2) !important;
 }
 
-/* 🔥 小屏输入框字体优化 */
+/*  小屏输入框字体优化 */
 @media (max-width: 640px) {
 
     :deep(.el-input__inner),

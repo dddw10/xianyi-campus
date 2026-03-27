@@ -1,15 +1,15 @@
 <!-- src/views/products/orders/OrderList.vue -->
 <template>
     <div class="space-y-4">
-        <!-- 🔹 加载状态 -->
+        <!--  加载状态 -->
         <div v-if="loading" class="flex justify-center py-10">
             <el-skeleton :rows="5" animated />
         </div>
 
-        <!-- 🔹 空状态 -->
+        <!--  空状态 -->
         <el-empty v-else-if="!list || list.length === 0" :description="emptyText" />
 
-        <!-- 🔹 订单列表 -->
+        <!--  订单列表 -->
         <div v-else class="space-y-4">
             <div v-for="order in list" :key="order.id"
                 class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
@@ -54,10 +54,10 @@
                     </div>
                 </div>
 
-                <!-- 🔹 底部：操作按钮区 -->
+                <!--  底部：操作按钮区 -->
                 <div class="flex justify-end items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
 
-                    <!-- 🔥 申诉相关逻辑（已完成订单专属，买家/卖家都能看到） -->
+                    <!--  申诉相关逻辑（已完成订单专属，买家/卖家都能看到） -->
                     <template v-if="order.status === 'completed'">
                         <!-- ✅ 未申诉：显示「去申诉」按钮（双方都能点） -->
                         <el-button v-if="!order.appeal_status || order.appeal_status === 'none'" size="small"
@@ -91,7 +91,7 @@
                         </el-tooltip>
                     </template>
 
-                    <!-- 🔹 动态操作按钮（根据状态和角色显示） -->
+                    <!--  动态操作按钮（根据状态和角色显示） -->
 
                     <!-- 1. 待付款 (pending)：买家可取消 + 支付 -->
                     <template v-if="order.status === 'pending' && isBuyerOrder(order)">
@@ -106,7 +106,7 @@
 
                     <!-- 2. 待发货 (paid)：买家可取消 / 卖家可取消或发货 -->
                     <template v-else-if="order.status === 'paid'">
-                        <!-- 🔥 买家：显示取消订单 -->
+                        <!--  买家：显示取消订单 -->
                         <template v-if="isBuyerOrder(order)">
                             <el-button size="small" type="danger" plain @click.stop="handleCancel(order)">
                                 取消订单
@@ -114,7 +114,7 @@
                             <span class="text-xs text-gray-400 mr-2">等待卖家发货</span>
                         </template>
 
-                        <!-- 🔥 卖家：显示取消订单 + 等待提示 -->
+                        <!--  卖家：显示取消订单 + 等待提示 -->
                         <template v-else-if="isSellerOrder(order)">
                             <el-button size="small" type="danger" plain @click.stop="handleCancel(order)">
                                 取消订单（卖家）
@@ -130,11 +130,12 @@
                         </el-button>
                     </template>
 
-                    <!-- 🔥 4. 已完成：显示「去评价」按钮（仅买家可评价） -->
+                    <!--  4. 已完成：显示「去评价」按钮（仅买家可评价） -->
                     <template v-if="order.status === 'completed' && isBuyerOrder(order)">
                         <div v-if="isOrderReviewed(order)" class="flex items-center gap-2 mr-1">
                             <el-tag size="small" type="success" effect="plain">已评价</el-tag>
-                            <el-rate class="review-rate" :model-value="getOrderReviewRating(order)" disabled allow-half />
+                            <el-rate class="review-rate" :model-value="getOrderReviewRating(order)" disabled
+                                allow-half />
                         </div>
                         <el-button v-else-if="!isReviewStatusLoading(order)" size="small" type="primary" plain
                             @click.stop="openReviewDialog(order)">
@@ -148,7 +149,7 @@
                         <span class="text-xs text-gray-400 mr-2">交易已结束</span>
                     </template>
 
-                    <!-- 🔥 公共按钮：查看详情（所有状态都显示） -->
+                    <!--  公共按钮：查看详情（所有状态都显示） -->
                     <el-button size="small" plain
                         @click.stop="$router.push(`/orders/${order.order_no || order.orderNo}`)">
                         查看详情
@@ -156,14 +157,14 @@
                 </div>
             </div>
 
-            <!-- 🔹 分页 -->
+            <!--  分页 -->
             <div v-if="pagination.total > pagination.limit" class="flex justify-center mt-6">
                 <el-pagination v-model:current-page="currentPage" :page-size="pagination.limit"
                     :total="pagination.total" layout="prev, pager, next" @current-change="handlePageChangeInternal" />
             </div>
         </div>
 
-        <!-- 🔥 评价订单弹窗（新增） -->
+        <!--  评价订单弹窗（新增） -->
         <OrderReview v-model:visible="showReviewDialog" :order-no="currentReviewOrderNo"
             @submitted="handleReviewSubmitted" />
     </div>
@@ -177,7 +178,7 @@ import { useRouter } from 'vue-router'
 import { modalBox } from '@/components/messageBox/modalBox'
 import orderApi from '@/api/order'
 
-// 🔥 导入评价组件
+//  导入评价组件
 import OrderReview from '@/components/OrderReview.vue'
 import { useUserStore } from '@/stores/modules/user'
 
@@ -185,7 +186,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 // ============================================================================
-// 🔥 类型定义
+//  类型定义
 // ============================================================================
 interface OrderItem {
     id: number | string
@@ -200,7 +201,7 @@ interface OrderItem {
     payment_amount?: string | number
     quantity?: number
 
-    // 🔥 申诉相关字段
+    //  申诉相关字段
     appeal_status?: 'none' | 'pending' | 'approved' | 'rejected'
     appeal_reason?: string
     appeal_images?: string[]
@@ -224,7 +225,7 @@ interface OrderItem {
 }
 
 // ============================================================================
-// 🔥 Props & Emits
+//  Props & Emits
 // ============================================================================
 const props = defineProps<{
     list: OrderItem[]
@@ -244,7 +245,7 @@ const emit = defineEmits<{
 }>()
 
 // ============================================================================
-// 🔥 响应式数据（评价相关）
+//  响应式数据（评价相关）
 // ============================================================================
 const showReviewDialog = ref(false)
 const currentReviewOrderNo = ref<string>('')
@@ -254,7 +255,7 @@ const reviewLoadingMap = ref<Record<string, boolean>>({})
 let reviewSyncVersion = 0
 
 // ============================================================================
-// 🔥 计算属性 & 工具函数
+//  计算属性 & 工具函数
 // ============================================================================
 const currentPage = computed({
     get: () => props.pagination.page,
@@ -291,23 +292,23 @@ const getStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info
 }
 
 // ============================================================================
-// 🔥 角色判断函数（关键修复：根据 listType 推断角色）
+//  角色判断函数（关键修复：根据 listType 推断角色）
 // ============================================================================
 
-// 🔹 判断当前订单是否是"我买的"
+//  判断当前订单是否是"我买的"
 const isBuyerOrder = (order: OrderItem) => {
-    // 🔥 如果当前页面是「我买到的」，直接认为当前用户是买家
+    //  如果当前页面是「我买到的」，直接认为当前用户是买家
     if (props.listType === 'bought') {
         return true
     }
 
-    // 🔥 否则从订单数据判断
+    //  否则从订单数据判断
     const uid = userStore.userInfo?.id
     if (!uid) return false
 
     const userIdStr = String(uid).trim()
 
-    // 🔥 尝试获取买家 ID（兼容多种字段名）
+    //  尝试获取买家 ID（兼容多种字段名）
     const buyerFields = ['buyer_id', 'buyerId', 'buyer', 'buyerID']
     for (const field of buyerFields) {
         const value = (order as any)[field]
@@ -319,20 +320,20 @@ const isBuyerOrder = (order: OrderItem) => {
     return false
 }
 
-// 🔹 判断当前订单是否是"我卖的"
+//  判断当前订单是否是"我卖的"
 const isSellerOrder = (order: OrderItem) => {
-    // 🔥 如果当前页面是「我卖出的」，直接认为当前用户是卖家
+    //  如果当前页面是「我卖出的」，直接认为当前用户是卖家
     if (props.listType === 'sold') {
         return true
     }
 
-    // 🔥 否则从订单数据判断
+    //  否则从订单数据判断
     const uid = userStore.userInfo?.id
     if (!uid) return false
 
     const userIdStr = String(uid).trim()
 
-    // 🔥 尝试获取卖家 ID（兼容多种字段名）
+    //  尝试获取卖家 ID（兼容多种字段名）
     const sellerFields = ['seller_id', 'sellerId', 'seller', 'sellerID']
     for (const field of sellerFields) {
         const value = (order as any)[field]
@@ -344,7 +345,7 @@ const isSellerOrder = (order: OrderItem) => {
     return false
 }
 
-// 🔹 判断申诉是否由当前用户发起（申诉由买家发起）
+//  判断申诉是否由当前用户发起（申诉由买家发起）
 const getAppealInitiatorUserId = (order: OrderItem): string => {
     const idFields = [
         'appeal_user_id',
@@ -356,7 +357,7 @@ const getAppealInitiatorUserId = (order: OrderItem): string => {
         'appeal_uid'
     ]
 
-    
+
     for (const field of idFields) {
         const value = (order as any)[field]
         if (value != null && String(value).trim()) {
@@ -742,13 +743,13 @@ watch(
 )
 
 // ============================================================================
-// 🔥 事件处理函数
+//  事件处理函数
 // ============================================================================
 const handlePageChangeInternal = (page: number) => {
     emit('page-change', page)
 }
 
-// 🔹 确认收货
+//  确认收货
 const handleConfirm = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
     if (!orderNo) {
@@ -763,7 +764,7 @@ const handleConfirm = (order: OrderItem) => {
     })
 }
 
-// 🔹 取消订单（买家或卖家都能调用，后端会校验权限）
+//  取消订单（买家或卖家都能调用，后端会校验权限）
 const handleCancel = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
     if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
@@ -772,7 +773,7 @@ const handleCancel = (order: OrderItem) => {
         return
     }
 
-    // 🔥 根据角色显示不同提示
+    //  根据角色显示不同提示
     const isBuyer = isBuyerOrder(order)
     const confirmMessage = isBuyer
         ? '确定取消订单吗？取消后库存将自动归还，款项将原路退回。'
@@ -792,7 +793,7 @@ const handleCancel = (order: OrderItem) => {
     })
 }
 
-// 🔥 申诉处理（买家或卖家都能发起）
+//  申诉处理（买家或卖家都能发起）
 const handleAppeal = (order: OrderItem) => {
     const orderNo = order.order_no || order.orderNo
     const appealStatus = order.appeal_status
@@ -835,10 +836,10 @@ const handleAppeal = (order: OrderItem) => {
 }
 
 // ============================================================================
-// 🔥 评价相关函数
+//  评价相关函数
 // ============================================================================
 
-// 🔹 打开评价弹窗（仅买家可评价）
+//  打开评价弹窗（仅买家可评价）
 const openReviewDialog = (order: OrderItem) => {
     if (isOrderReviewed(order)) {
         ElMessage.info('该订单已评价')
@@ -859,7 +860,7 @@ const openReviewDialog = (order: OrderItem) => {
     showReviewDialog.value = true
 }
 
-// 🔹 评价提交成功后的回调
+//  评价提交成功后的回调
 const handleReviewSubmitted = (payload?: { orderNo: string; rating: number }) => {
     const orderNo = String(payload?.orderNo || '').trim()
     if (orderNo) {
@@ -878,7 +879,7 @@ const handleReviewSubmitted = (payload?: { orderNo: string; rating: number }) =>
 </script>
 
 <style scoped>
-/* 🔹 文本截断 */
+/*  文本截断 */
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -886,7 +887,7 @@ const handleReviewSubmitted = (payload?: { orderNo: string; rating: number }) =>
     overflow: hidden;
 }
 
-/* 🔹 按钮悬停微交互 */
+/*  按钮悬停微交互 */
 :deep(.el-button--danger.is-plain:hover) {
     --el-button-hover-bg-color: #fef2f2;
     --el-button-hover-border-color: #fecaca;
@@ -906,7 +907,7 @@ const handleReviewSubmitted = (payload?: { orderNo: string; rating: number }) =>
     --el-button-hover-text-color: #c2410c;
 }
 
-/* 🔹 状态标签微调 */
+/*  状态标签微调 */
 :deep(.el-tag--plain) {
     font-weight: 500;
 }

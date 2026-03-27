@@ -2,7 +2,7 @@
 <template>
     <div class="image-upload-container">
 
-        <!-- 🔥 图片预览列表 -->
+        <!--  图片预览列表 -->
         <div class="image-list" v-if="imageList.length > 0">
             <div v-for="(img, index) in imageList" :key="img" class="image-item">
                 <!-- 图片预览 -->
@@ -33,10 +33,10 @@
             </div>
         </div>
 
-        <!-- 🔥 上传区域（虚线框样式） -->
-        <el-upload v-if="imageList.length < limit" :action="props.uploadUrl" :headers="headers" :before-upload="beforeUpload"
-            :on-success="handleSuccess" :on-error="handleError" :show-file-list="false" accept="image/*"
-            class="upload-area">
+        <!--  上传区域（虚线框样式） -->
+        <el-upload v-if="imageList.length < limit" :action="props.uploadUrl" :headers="headers"
+            :before-upload="beforeUpload" :on-success="handleSuccess" :on-error="handleError" :show-file-list="false"
+            accept="image/*" class="upload-area">
             <div class="upload-placeholder">
                 <el-icon class="upload-icon">
                     <Plus />
@@ -79,22 +79,22 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const userStore = useUserStore()
 
-// 🔹 本地列表（用于 UI 渲染）
+//  本地列表（用于 UI 渲染）
 const imageList = ref<string[]>([...props.modelValue])
 
-// 🔹 响应式 headers
+//  响应式 headers
 const headers = computed(() => ({
     Authorization: `Bearer ${userStore.token}`
 }))
 
-// 🔹 监听 props 变化
+//  监听 props 变化
 watch(() => props.modelValue, (newVal) => {
     if (JSON.stringify(newVal) !== JSON.stringify(imageList.value)) {
         imageList.value = [...newVal]
     }
 }, { deep: true })
 
-// 🔹 上传校验
+//  上传校验
 const beforeUpload = (file: File) => {
     const isValid = file.type.startsWith('image/')
     const isLt5M = file.size / 1024 / 1024 < 5
@@ -103,7 +103,7 @@ const beforeUpload = (file: File) => {
     return isValid && isLt5M
 }
 
-// 🔹 上传成功
+//  上传成功
 const handleSuccess = (response: any) => {
     if (response?.code === 200) {
         const rawUrl = response?.data?.url || response?.url
@@ -121,12 +121,12 @@ const handleSuccess = (response: any) => {
     }
 }
 
-// 🔹 上传失败
+//  上传失败
 const handleError = () => {
     ElMessage.error('上传失败，请检查网络')
 }
 
-// 🔹 删除图片
+//  删除图片
 const removeImage = (index: number) => {
     modalBox({
         type: 'info',
@@ -145,7 +145,7 @@ const removeImage = (index: number) => {
 </script>
 
 <style scoped>
-/* 🔥 容器 - 移动端优化 */
+/*  容器 - 移动端优化 */
 .image-upload-container {
     display: flex;
     flex-wrap: wrap;
@@ -154,13 +154,13 @@ const removeImage = (index: number) => {
     width: 100%;
 }
 
-/* 🔥 图片列表 - 移动端允许换行 */
+/*  图片列表 - 移动端允许换行 */
 .image-list {
     display: contents;
     /* 让图片项直接参与容器布局 */
 }
 
-/* 🔥 图片项 - 基础样式 */
+/*  图片项 - 基础样式 */
 .image-item {
     position: relative;
     width: 120px;
@@ -179,7 +179,7 @@ const removeImage = (index: number) => {
     transform: translateY(-2px);
 }
 
-/* 🔥 图片预览 */
+/*  图片预览 */
 .image-preview {
     width: 100%;
     height: 100%;
@@ -187,7 +187,7 @@ const removeImage = (index: number) => {
     cursor: pointer;
 }
 
-/* 🔥 删除遮罩层 - 桌面端专用 */
+/*  删除遮罩层 - 桌面端专用 */
 .delete-overlay.desktop-only {
     position: absolute;
     top: 0;
@@ -228,7 +228,7 @@ const removeImage = (index: number) => {
     }
 }
 
-/* 🔹 移动端删除角标 */
+/*  移动端删除角标 */
 .delete-badge.mobile-only {
     position: absolute;
     top: 6px;
@@ -263,7 +263,7 @@ const removeImage = (index: number) => {
     font-size: 13px;
 }
 
-/* 🔥 主图标记 */
+/*  主图标记 */
 .main-tag {
     position: absolute;
     top: 6px;
@@ -286,7 +286,7 @@ const removeImage = (index: number) => {
     margin-right: 2px;
 }
 
-/* 🔥 上传区域 */
+/*  上传区域 */
 .upload-area {
     display: inline-block;
     width: 120px;
@@ -351,7 +351,7 @@ const removeImage = (index: number) => {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 🔥 移动端优化（< 640px） */
+/*  移动端优化（< 640px） */
 @media (max-width: 639px) {
     .image-upload-container {
         gap: 10px;
@@ -409,7 +409,7 @@ const removeImage = (index: number) => {
     }
 }
 
-/* 🔥 平板端优化（640px - 767px） */
+/*  平板端优化（640px - 767px） */
 @media (min-width: 640px) and (max-width: 767px) {
     .image-item {
         width: 110px !important;
@@ -422,7 +422,7 @@ const removeImage = (index: number) => {
     }
 }
 
-/* 🔥 桌面端优化（≥ 768px） */
+/*  桌面端优化（≥ 768px） */
 @media (min-width: 768px) {
     .image-item {
         width: 120px;
@@ -466,7 +466,7 @@ const removeImage = (index: number) => {
     }
 }
 
-/* 🔥 深色模式适配 */
+/*  深色模式适配 */
 :deep(.el-image__inner) {
     border-radius: inherit;
 }

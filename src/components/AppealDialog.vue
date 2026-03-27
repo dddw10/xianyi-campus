@@ -4,10 +4,10 @@
         class="w-90% md:w-30%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false"
         @closed="handleClosed">
         <div class="space-y-4">
-            <!-- 🔹 顶部状态提示 -->
+            <!--  顶部状态提示 -->
             <el-alert :title="alertTitle" :type="alertType" :closable="false" show-icon />
 
-            <!-- 🔹 信息展示区域（申诉已处理时显示） -->
+            <!--  信息展示区域（申诉已处理时显示） -->
             <div v-show="showInfo" class="space-y-3 text-sm bg-gray-50 rounded-lg p-3">
                 <!-- 申诉原因（用户提交的） -->
                 <div class="flex gap-2">
@@ -15,7 +15,7 @@
                     <span class="flex-1 text-gray-700">{{ appealResult?.reason || '无' }}</span>
                 </div>
 
-                <!-- 🔥 审核结果：优先显示管理员备注，否则显示默认文案 -->
+                <!--  审核结果：优先显示管理员备注，否则显示默认文案 -->
                 <div class="flex gap-2">
                     <span class="w-16 font-medium text-gray-500 flex-shrink-0">
                         {{ appealResult?.status === 'approved' ? '通过理由' : '驳回理由' }}
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <!-- 🔹 表单区域（未申诉时显示） -->
+            <!--  表单区域（未申诉时显示） -->
             <el-form v-show="!showInfo" ref="formRef" :model="form" :rules="rules" label-position="top"
                 class="space-y-3">
                 <el-form-item label="问题描述 *" prop="reason">
@@ -49,7 +49,7 @@
             </el-form>
         </div>
 
-        <!-- 🔹 底部按钮 -->
+        <!--  底部按钮 -->
         <template #footer>
             <el-button @click="visible = false">
                 {{ showInfo ? '关闭' : '取消' }}
@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// 🔥 确认文件名：根据你的实际文件调整（AdvanceImageUpload 或 AdvancedImageUpload）
+//  确认文件名：根据你的实际文件调整（AdvanceImageUpload 或 AdvancedImageUpload）
 import AdvancedImageUpload from '@/components/AdvanceImageUpload.vue'
 import orderApi from '@/api/order'
 import { modalBox } from "@/components/messageBox/modalBox";
@@ -97,12 +97,12 @@ const form = ref({
 })
 const submitting = ref(false)
 
-// 🔥 申诉结果（兼容后端可能返回 admin_remark）
+//  申诉结果（兼容后端可能返回 admin_remark）
 const appealResult = ref<{
     status: 'none' | 'pending' | 'approved' | 'rejected'
     reason: string | null
     updated_at: string | undefined
-    admin_remark?: string | null  // 🔥 可选：后端可能动态返回
+    admin_remark?: string | null  //  可选：后端可能动态返回
 } | null>(null)
 
 // ============================================================================
@@ -116,7 +116,7 @@ const rules = {
 }
 
 // ============================================================================
-// 🔥 计算属性（所有逻辑预处理，避免模板复杂表达式）
+//  计算属性（所有逻辑预处理，避免模板复杂表达式）
 // ============================================================================
 
 // 是否显示已处理信息
@@ -124,7 +124,7 @@ const showInfo = computed(() => {
     return appealResult.value?.status && appealResult.value.status !== 'none'
 })
 
-// 🔥 是否有管理员备注（用于样式区分）
+//  是否有管理员备注（用于样式区分）
 const hasRemark = computed(() => {
     return !!appealResult.value?.admin_remark?.trim()
 })
@@ -151,7 +151,7 @@ const alertType = computed(() => {
 const dialogTitle = computed(() => alertTitle.value)
 
 // ============================================================================
-// 🔥 工具函数
+//  工具函数
 // ============================================================================
 
 // 格式化日期
@@ -166,9 +166,9 @@ const formatDate = (dateStr?: string) => {
     })
 }
 
-// 🔥 核心：获取审核结果文案（优先显示管理员备注）
+//  核心：获取审核结果文案（优先显示管理员备注）
 const getAppealResultText = (status?: string, remark?: string | null) => {
-    // 🔥 优先显示管理员填写的备注
+    //  优先显示管理员填写的备注
     if (remark && remark.trim()) {
         return remark.trim()
     }
@@ -183,7 +183,7 @@ const getAppealResultText = (status?: string, remark?: string | null) => {
 }
 
 // ============================================================================
-// 🔥 核心方法
+//  核心方法
 // ============================================================================
 
 // 加载申诉结果
@@ -196,7 +196,7 @@ const fetchAppealResult = async () => {
         console.log('🔍 [Debug] 申诉详情响应:', {
             status: appeal?.status,
             reason: appeal?.reason,
-            admin_remark: appeal?.admin_remark,  // 🔥 确认这个字段有值
+            admin_remark: appeal?.admin_remark,  //  确认这个字段有值
             updated_at: appeal?.updated_at
         })
 
@@ -205,7 +205,7 @@ const fetchAppealResult = async () => {
                 status: appeal.status,
                 reason: appeal.reason,
                 updated_at: appeal.updated_at,
-                // 🔥 兼容：如果后端返回了 admin_remark 就用，否则为 undefined
+                //  兼容：如果后端返回了 admin_remark 就用，否则为 undefined
                 admin_remark: appeal.admin_remark
             }
         } else {
@@ -289,24 +289,24 @@ watch(() => visible.value, async (val) => {
 </script>
 
 <style scoped>
-/* 🔹 表单标签样式 */
+/*  表单标签样式 */
 :deep(.el-form-item__label) {
     font-weight: 500;
     color: var(--el-text-color-primary);
     padding: 0;
 }
 
-/* 🔹 信息区域排版 */
+/*  信息区域排版 */
 :deep(.flex.gap-2) {
     align-items: flex-start;
 }
 
-/* 🔹 提示文字样式 */
+/*  提示文字样式 */
 :deep(.el-alert__description) {
     font-size: 13px;
 }
 
-/* 🔹 无备注时的斜体提示 */
+/*  无备注时的斜体提示 */
 :deep(.text-gray-400.italic) {
     font-style: italic;
 }

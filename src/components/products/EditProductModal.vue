@@ -6,7 +6,7 @@
 
             <div class="modal-container bg-white dark:bg-gray-800 w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:animate-fade-in"
                 :class="{ 'h-full': isMobile }">
-                <!-- 🔹 头部 -->
+                <!--  头部 -->
                 <div
                     class="modal-header flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <div class="flex items-center gap-2 flex-1 min-w-0">
@@ -25,7 +25,7 @@
                     </el-button>
                 </div>
 
-                <!-- 🔹 表单内容 -->
+                <!--  表单内容 -->
                 <div class="modal-body flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
                     <!-- 商品标题 -->
@@ -69,7 +69,7 @@
                         </el-select>
                     </div>
 
-                    <!-- 🔥 商品图片 -->
+                    <!--  商品图片 -->
                     <div class="form-item space-y-3">
                         <label class="form-label block text-sm font-semibold text-gray-700 dark:text-gray-200">
                             <span class="text-red-500 mr-1">*</span>商品图片
@@ -111,7 +111,7 @@
                     </div>
                 </div>
 
-                <!-- 🔹 底部操作按钮 -->
+                <!--  底部操作按钮 -->
                 <div
                     class="modal-footer px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
                     <div class="flex gap-3" :class="isMobile ? 'flex-col' : 'flex-row justify-end'">
@@ -288,7 +288,7 @@ const handleClose = () => {
 </script>
 
 <style scoped>
-/* 🔥 动画 */
+/*  动画 */
 @keyframes slide-up {
     from {
         transform: translateY(100%);
@@ -319,7 +319,7 @@ const handleClose = () => {
     animation: fade-in 0.2s ease-out;
 }
 
-/* 🔥 图片上传容器优化 */
+/*  图片上传容器优化 */
 .image-upload-container {
     width: 100%;
     display: flex;
@@ -327,7 +327,7 @@ const handleClose = () => {
     gap: 12px;
 }
 
-/* 🔥 移动端优化 */
+/*  移动端优化 */
 @media (max-width: 639px) {
     .modal-container {
         border-radius: 1rem 1rem 0 0;
@@ -409,7 +409,7 @@ const handleClose = () => {
     }
 }
 
-/* 🔥 桌面端优化 */
+/*  桌面端优化 */
 @media (min-width: 640px) {
     .modal-container {
         max-height: 85vh;
@@ -420,7 +420,7 @@ const handleClose = () => {
     }
 }
 
-/* 🔥 深色模式支持 */
+/*  深色模式支持 */
 :deep(.el-input__wrapper),
 :deep(.el-textarea__wrapper) {
     @apply dark:bg-gray-700 dark:border-gray-600;

@@ -56,7 +56,7 @@ const handleToggle = async (): Promise<void> => {
 
     loading.value = true
     try {
-        // 🔥 关键修复：等待 toggle 完成，使用后端返回的真实状态
+        //  关键修复：等待 toggle 完成，使用后端返回的真实状态
         const { favorited } = await favoriteStore.toggleWithResponse(props.productId)
         emit('change', favorited)
     } catch (error) {

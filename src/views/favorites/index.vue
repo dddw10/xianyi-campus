@@ -2,7 +2,7 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
-        <!-- 🔹 头部导航 -->
+        <!--  头部导航 -->
         <div
             class="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 rounded-t-2xl">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -22,14 +22,14 @@
             </div>
         </div>
 
-        <!-- 🔹 内容区域 -->
+        <!--  内容区域 -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
-            <!-- 🔸 加载状态 - 🔥 用纯 CSS 替代 el-spinner -->
+            <!-- 🔸 加载状态 -  用纯 CSS 替代 el-spinner -->
             <div v-if="favoriteStore.loading && favoriteStore.list.length === 0"
                 class="flex flex-col items-center justify-center py-20">
 
-                <!-- 🔥 纯 CSS Loading 动画 -->
+                <!--  纯 CSS Loading 动画 -->
                 <div class="loading-spinner mb-4" aria-label="加载中"></div>
 
                 <p class="text-gray-500">加载中...</p>
@@ -60,7 +60,7 @@
                     class="favorite-item flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                     @click="handleCardClick(item)">
 
-                    <!-- 🔹 商品图片 -->
+                    <!--  商品图片 -->
                     <div class="relative flex-shrink-0">
                         <el-image :src="item.images?.[0] || getDefaultImage()"
                             class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover bg-gray-100 dark:bg-gray-700"
@@ -82,7 +82,7 @@
                         </el-tag>
                     </div>
 
-                    <!-- 🔹 商品信息 -->
+                    <!--  商品信息 -->
                     <div class="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
                             <h3
@@ -104,7 +104,7 @@
                             </div>
                         </div>
 
-                        <!-- 🔹 底部：价格 + 操作 -->
+                        <!--  底部：价格 + 操作 -->
                         <div
                             class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <div class="flex items-center gap-2">
@@ -203,13 +203,13 @@ const handlePageChange = (page: number): void => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 🔥 修复：使用后端返回的真实状态，而不是取反
+//  修复：使用后端返回的真实状态，而不是取反
 const handleFavoriteChange = (productId: number, favorited: boolean): void => {
     if (favorited) {
         // ✅ 刚收藏：确保商品在列表中（如果不在，重新加载列表）
         const exists = favoriteStore.list.some(item => String(item.id) === String(productId))
         if (!exists) {
-            // 🔥 可选：重新加载列表确保数据一致
+            //  可选：重新加载列表确保数据一致
             loadFavorites(currentPage.value)
         }
     } else {
@@ -228,7 +228,7 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-/* 🔥 纯 CSS Loading 动画 - 替代 el-spinner */
+/*  纯 CSS Loading 动画 - 替代 el-spinner */
 .loading-spinner {
     width: 40px;
     height: 40px;
@@ -252,7 +252,7 @@ onMounted((): void => {
     }
 }
 
-/* 🔥 可选：添加脉冲效果增强视觉反馈 */
+/*  可选：添加脉冲效果增强视觉反馈 */
 .loading-spinner::after {
     content: '';
     position: absolute;
@@ -284,7 +284,7 @@ onMounted((): void => {
     }
 }
 
-/* 🔥 移动端优化 */
+/*  移动端优化 */
 @media (max-width: 640px) {
     .favorite-item {
         @apply p-3 gap-3;
@@ -295,7 +295,7 @@ onMounted((): void => {
     }
 }
 
-/* 🔥 深色模式适配分页 */
+/*  深色模式适配分页 */
 :deep(.el-pagination) {
     @apply dark:text-gray-300;
 }

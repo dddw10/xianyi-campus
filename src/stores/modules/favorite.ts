@@ -51,10 +51,10 @@ export const useFavoriteStore = defineStore('favorite', () => {
         }
     }
 
-    // 🔥 新增：返回完整响应的 toggle 方法
+    //  新增：返回完整响应的 toggle 方法
     const toggleWithResponse = async (
         productId: number
-    ): Promise<{ favorited: boolean }> => {  // 🔥 只返回 data 部分
+    ): Promise<{ favorited: boolean }> => {  //  只返回 data 部分
         const numericId = Number(productId)
         const wasFavorited = favoritedIds.value.has(numericId)
 
@@ -69,7 +69,7 @@ export const useFavoriteStore = defineStore('favorite', () => {
                 ElMessage.success('✅ 已取消收藏')
             }
 
-            // 🔥 只返回 data 部分（符合声明的类型）
+            //  只返回 data 部分（符合声明的类型）
             return { favorited: res.data?.favorited ?? false }
 
         } catch (error: any) {
@@ -143,7 +143,7 @@ export const useFavoriteStore = defineStore('favorite', () => {
         count,
         initFavorites,
         ontoggle,
-        toggleWithResponse,  // 🔥 暴露新方法
+        toggleWithResponse,  //  暴露新方法
         fetchList,
         batchUpdate,
         clear,

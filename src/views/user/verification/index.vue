@@ -2,7 +2,7 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
-        <!-- 🔹 页面标题 -->
+        <!--  页面标题 -->
         <div class="max-w-2xl mx-auto px-4 py-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 🎓 身份认证
@@ -12,7 +12,7 @@
             </p>
         </div>
 
-        <!-- 🔹 认证状态卡片 -->
+        <!--  认证状态卡片 -->
         <div class="max-w-2xl mx-auto px-4 space-y-4">
 
             <!-- 🟢 已认证 -->
@@ -30,8 +30,7 @@
             </el-alert>
 
             <!-- 🟡 审核中 -->
-            <el-alert v-else-if="isPending" title="⏳ 审核中" type="warning"
-                :closable="false" show-icon>
+            <el-alert v-else-if="isPending" title="⏳ 审核中" type="warning" :closable="false" show-icon>
                 <template #default>
                     <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         <p>您的认证申请已提交，管理员将在 <strong>1-3 个工作日</strong> 内完成审核。</p>
@@ -46,8 +45,7 @@
             </el-alert>
 
             <!-- 🔴 被拒绝 -->
-            <el-alert v-else-if="isRejected" title="❌ 认证未通过" type="error"
-                :closable="false" show-icon>
+            <el-alert v-else-if="isRejected" title="❌ 认证未通过" type="error" :closable="false" show-icon>
                 <template #default>
                     <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         <p><span class="font-medium">拒绝原因：</span></p>
@@ -79,7 +77,7 @@
                 </el-button>
             </div>
 
-            <!-- 🔹 认证说明 -->
+            <!--  认证说明 -->
             <div class="bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
 
                 <h4 class="font-medium text-gray-800 dark:text-gray-100 mb-3">📋 认证说明</h4>
@@ -94,7 +92,7 @@
                     </li>
                     <li class="flex items-start gap-2">
                         <div>
-                            <img class="h-150px " src="../../../assets/img/poster1.png" alt="">
+                            <img class="h-150px " src="../../../assets/img/verify.jpg" alt="">
                         </div>
                     </li>
                     <li class="flex items-start gap-2">
@@ -119,7 +117,7 @@
             </div>
         </div>
 
-        <!-- 🔹 上传对话框 -->
+        <!--  上传对话框 -->
         <el-dialog v-model="showUploadDialog" title="上传学生证" :close-on-click-modal="false"
             class="w-90% md:w-25% mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
             <div class="space-y-4">
@@ -133,8 +131,8 @@
 
                 <!-- 学号 -->
                 <el-form-item label="学号">
-                    <el-input v-model.number="form.studentId" placeholder="请输入 10-13 位学号"
-                        :disabled="isReadOnly" maxlength="13" />
+                    <el-input v-model.number="form.studentId" placeholder="请输入 10-13 位学号" :disabled="isReadOnly"
+                        maxlength="13" />
                     <p v-if="isReadOnly && status?.studentId" class="text-xs text-gray-400 mt-1">
                         审核中或已认证状态不可修改
                     </p>
@@ -142,7 +140,8 @@
 
                 <!-- 手机号 -->
                 <el-form-item label="手机号">
-                    <el-input v-model.trim="form.phone" placeholder="请输入 11 位手机号" :disabled="isReadOnly" maxlength="11" />
+                    <el-input v-model.trim="form.phone" placeholder="请输入 11 位手机号" :disabled="isReadOnly"
+                        maxlength="11" />
                 </el-form-item>
 
                 <!-- 学生证上传 -->
@@ -179,10 +178,10 @@ import { Document, Check } from '@element-plus/icons-vue'
 import verifyApi, { type VerificationStatus } from '@/api/verify'
 import { useUserStore } from '@/stores/modules/user'
 
-// 🔥 替换为你的实际上传组件路径
+//  替换为你的实际上传组件路径
 import OssUploader from '@/components/AdvanceImageUpload.vue'
 
-// 🔹 表单数据类型
+//  表单数据类型
 interface FormState {
     realName: string
     studentId: number
@@ -190,13 +189,13 @@ interface FormState {
     studentCardUrl: string[]
 }
 
-// 🔹 状态
+//  状态
 const status = ref<VerificationStatus | null>(null)
 const showUploadDialog = ref(false)
 const submitting = ref(false)
 const userStore = useUserStore()
 
-// 🔹 表单数据 - 🔥 明确初始值，避免 undefined
+//  表单数据 -  明确初始值，避免 undefined
 const form = ref<FormState>({
     realName: '',
     studentId: 0,
@@ -213,13 +212,13 @@ const isApproved = computed(() => {
 })
 const isReadOnly = computed(() => isPending.value || isApproved.value)
 
-// 🔹 计算属性：预览 URL（🔥 核心修复：确保永远是 string）
+//  计算属性：预览 URL（ 核心修复：确保永远是 string）
 const previewUrl = computed((): string => {
     // 优先级：表单新值 > 已有认证值 > 空字符串
     return form.value.studentCardUrl[0] || status.value?.studentCardUrl || ''
 })
 
-// 🔹 计算属性：是否可以提交
+//  计算属性：是否可以提交
 const canSubmit = computed((): boolean => {
     const phoneValid = /^1\d{10}$/.test(form.value.phone.trim())
     return (
@@ -231,7 +230,7 @@ const canSubmit = computed((): boolean => {
     )
 })
 
-// 🔹 获取认证状态
+//  获取认证状态
 const fetchStatus = async (): Promise<void> => {
     try {
         const res: any = await verifyApi.checkVerifyStatus()
@@ -242,7 +241,7 @@ const fetchStatus = async (): Promise<void> => {
                 verificationStatus: res.data.verificationStatus,
                 phone: res.data.phone || form.value.phone
             })
-            // 🔥 填充表单（用于重新提交）
+            //  填充表单（用于重新提交）
             if (res.data.realName) {
                 form.value.realName = res.data.realName
             }
@@ -263,7 +262,7 @@ const fetchStatus = async (): Promise<void> => {
     }
 }
 
-// 🔹 格式化日期
+//  格式化日期
 const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return '-'
     return new Date(dateStr).toLocaleString('zh-CN', {
@@ -275,10 +274,10 @@ const formatDate = (dateStr: string | null | undefined): string => {
     })
 }
 
-// 🔹 打开上传对话框
+//  打开上传对话框
 const openUploadDialog = (): void => {
     form.value.phone = userStore.userInfo?.phone || form.value.phone || ''
-    // 🔥 如果已有认证信息，填充表单
+    //  如果已有认证信息，填充表单
     if (status.value) {
         if (status.value.realName) {
             form.value.realName = status.value.realName
@@ -296,9 +295,9 @@ const openUploadDialog = (): void => {
     showUploadDialog.value = true
 }
 
-// 🔹 提交认证 - 🔥 修复：统一使用 async/await
+//  提交认证 -  修复：统一t使用 async/awai
 const handleSubmit = async (): Promise<void> => {
-    // 🔥 二次校验
+    //  二次校验
     if (!canSubmit.value) {
         ElMessage.warning('请填写完整且正确的认证信息（手机号需 11 位）')
         return
@@ -307,25 +306,25 @@ const handleSubmit = async (): Promise<void> => {
     submitting.value = true
 
     try {
-        // 🔥 准备提交数据 - 🔥 确保所有字段都有值
+        //  准备提交数据 -  确保所有字段都有值
         const submitData = {
             realName: form.value.realName.trim(),
             studentId: form.value.studentId,
             phone: form.value.phone.trim(),
-            studentCardUrl: previewUrl.value  // 🔥 使用 previewUrl，确保是 string
+            studentCardUrl: previewUrl.value  //  使用 previewUrl，确保是 string
         }
 
-        // 🔥 根据当前状态选择接口
+        //  根据当前状态选择接口
         const apiFn = status.value?.verificationStatus === 'rejected'
             ? verifyApi.resubmitVerification
             : verifyApi.submitVerification
 
-        // 🔥 调用 API（统一用 await）
+        //  调用 API（统一用 await）
         const res: any = await apiFn(submitData)
         if (res.code === 200 || res.code === 201) {
             ElMessage.success(res.msg || '提交成功')
             showUploadDialog.value = false
-            await fetchStatus()  // 🔥 刷新状态
+            await fetchStatus()  //  刷新状态
         }
 
     } catch (error: any) {
@@ -337,14 +336,14 @@ const handleSubmit = async (): Promise<void> => {
     }
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(() => {
     fetchStatus()
 })
 </script>
 
 <style scoped>
-/* 🔥 移动端优化 */
+/*  移动端优化 */
 @media (max-width: 640px) {
     .verification-page {
         @apply px-2;
@@ -355,7 +354,7 @@ onMounted(() => {
     }
 }
 
-/* 🔥 深色模式适配 */
+/*  深色模式适配 */
 :global(.dark) .el-alert--success.is-light {
     @apply bg-green-900/20 border-green-800 text-green-300;
 }
@@ -368,7 +367,7 @@ onMounted(() => {
     @apply bg-red-900/20 border-red-800 text-red-300;
 }
 
-/* 🔥 表单优化 */
+/*  表单优化 */
 :deep(.el-form-item__label) {
     @apply font-medium text-gray-700 dark:text-gray-200;
 }

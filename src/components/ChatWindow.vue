@@ -1,5 +1,5 @@
 <template>
-    <!-- 🔥 模板部分完全保持不变 -->
+    <!--  模板部分完全保持不变 -->
     <div
         class="flex flex-col h-full w-full mx-auto bg-white rounded-xl shadow-lg border border-[var(--el-border-color-lighter)] overflow-hidden font-sans">
 
@@ -102,10 +102,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/modules/user';
 import { ArrowUp, Loading, ChatLineRound, ArrowLeft } from '@element-plus/icons-vue';
 import { ElIcon } from 'element-plus';
-// 🔥 逻辑修改点 1: 引入 socket.io-client
+//  逻辑修改点 1: 引入 socket.io-client
 import { io, Socket } from 'socket.io-client';
 
-// 🔹 Props 定义
+//  Props 定义
 const props = defineProps<{
     businessType: string;
     businessId: number | string;
@@ -113,7 +113,7 @@ const props = defineProps<{
     title?: string;
 }>();
 
-// 🔥 逻辑修改点 2: 定义 emit，包含 receive-new-message
+//  逻辑修改点 2: 定义 emit，包含 receive-new-message
 interface Emits {
     (e: 'black'): void;
     (e: 'receive-new-message', msg: any): void;
@@ -123,7 +123,7 @@ const emit = defineEmits<Emits>();
 const userStore = useUserStore();
 const currentUserId = computed(() => userStore.userInfo?.id || 0);
 
-// 🔥 逻辑修改点 3: 本地状态管理 (替代 useChat)
+//  逻辑修改点 3: 本地状态管理 (替代 useChat)
 const messages = ref<any[]>([]);
 const isConnected = ref(false);
 const error = ref('');
@@ -132,7 +132,7 @@ let socket: Socket | null = null;
 const inputMsg = ref('');
 const isSending = ref(false);
 
-// 🔥 逻辑修改点 4: 初始化 Socket
+//  逻辑修改点 4: 初始化 Socket
 const initSocket = () => {
     const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -173,7 +173,7 @@ const initSocket = () => {
         messages.value.push(msg);
         scrollToBottom();
 
-        // 2. 🔥 通知父组件更新左侧列表
+        // 2.  通知父组件更新左侧列表
         emit('receive-new-message', {
             roomId: msg.room_id,      // 确保字段名匹配后端
             content: msg.content,
@@ -199,7 +199,7 @@ const scrollToBottom = () => {
     }, 100);
 };
 
-// 🔥 逻辑修改点 5: 发送消息
+//  逻辑修改点 5: 发送消息
 const sendMessage = (content: string, type: string) => {
     if (!socket || !isConnected.value) {
         error.value = '未连接服务器';
@@ -250,7 +250,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 🔥 样式部分完全保持不变 */
+/*  样式部分完全保持不变 */
 .chat-container::-webkit-scrollbar {
     width: 6px;
 }

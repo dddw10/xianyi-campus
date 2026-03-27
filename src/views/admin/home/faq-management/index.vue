@@ -2,7 +2,7 @@
 <template>
     <div class="p-4 space-y-4">
 
-        <!-- 🔹 页面头部 -->
+        <!--  页面头部 -->
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-xl font-bold text-[var(--el-text-color-primary)]">❓ 常见问题管理</h2>
@@ -11,7 +11,7 @@
             <el-button type="primary" @click="openModal()">➕ 新增</el-button>
         </div>
 
-        <!-- 🔹 筛选栏（可选扩展） -->
+        <!--  筛选栏（可选扩展） -->
         <div class="flex flex-wrap gap-3">
             <el-select v-model="filters.category" placeholder="分类筛选" clearable class="w-32"
                 @change="handleFilterChange">
@@ -31,7 +31,7 @@
             <el-button @click="fetchList">🔄 刷新</el-button>
         </div>
 
-        <!-- 🔹 常见问题列表 -->
+        <!--  常见问题列表 -->
         <el-table v-loading="loading" :data="list" stripe class="w-full" :empty-text="loading ? '' : '暂无常见问题数据'">
             <el-table-column prop="id" label="ID" width="60" align="center" />
 
@@ -85,12 +85,12 @@
             </template>
         </el-table>
 
-        <!-- 🔹 分页 -->
+        <!--  分页 -->
         <el-pagination v-model:current-page="page" v-model:page-size="limit" :total="total"
             :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @current-change="fetchList"
             @size-change="handleSizeChange" class="flex justify-end" />
 
-        <!-- 🔹 新增/编辑弹窗 -->
+        <!--  新增/编辑弹窗 -->
         <el-dialog v-model="showModal" :title="isEdit ? '✏️ 编辑问题' : '➕ 新增问题'" width="560px"
             :close-on-click-modal="false" :close-on-press-escape="false"
             class="w-90% md:w-60%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" append-to-body
@@ -156,38 +156,38 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import adminHomeApi, { type FaqForm } from '@/api/admin/home'
 
-// 🔹 状态
+//  状态
 const loading = ref(false)
 const submitting = ref(false)
 const showModal = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-// 🔹 筛选条件
+//  筛选条件
 const filters = reactive({
     category: '',
     enabled: undefined as boolean | undefined
 })
 
-// 🔹 分页
+//  分页
 const page = ref(1)
 const limit = ref(20)
 const total = ref(0)
 
-// 🔹 数据列表
+//  数据列表
 const list = ref<any[]>([])
 
-// 🔹 表单数据
+//  表单数据
 const form = reactive<FaqForm>({
     id: 0,
     question: '',
     answer: '',
-    category: 'other',      // 🔥 默认分类
-    sortOrder: 0,           // 🔥 默认排序
-    isEnabled: true         // 🔥 默认启用
+    category: 'other',      //  默认分类
+    sortOrder: 0,           //  默认排序
+    isEnabled: true         //  默认启用
 })
 
-// 🔹 表单校验规则
+//  表单校验规则
 const rules: FormRules = {
     question: [
         { required: true, message: '请输入问题标题', trigger: 'blur' },
@@ -206,7 +206,7 @@ const rules: FormRules = {
     ]
 }
 
-// 🔹 获取常见问题列表
+//  获取常见问题列表
 const fetchList = async () => {
     loading.value = true
     try {
@@ -214,7 +214,7 @@ const fetchList = async () => {
             page: page.value,
             limit: limit.value
         }
-        // 🔥 添加筛选条件
+        //  添加筛选条件
         if (filters.category) params.category = filters.category
         if (filters.enabled !== undefined) params.enabled = filters.enabled
 
@@ -225,7 +225,7 @@ const fetchList = async () => {
             list.value = data.list.map((item: any) => ({
                 ...item,
                 isEnabled: item.isEnabled === 1 || item.isEnabled === true,
-                switchLoading: false  // 🔥 添加开关加载状态
+                switchLoading: false  //  添加开关加载状态
             }))
             total.value = data.pagination?.total || 0
         }
@@ -237,26 +237,26 @@ const fetchList = async () => {
     }
 }
 
-// 🔹 筛选条件变化
+//  筛选条件变化
 const handleFilterChange = () => {
-    page.value = 1  // 🔥 重置到第一页
+    page.value = 1  //  重置到第一页
     fetchList()
 }
 
-// 🔹 分页大小变化
+//  分页大小变化
 const handleSizeChange = (newLimit: number) => {
     limit.value = newLimit
     page.value = 1
     fetchList()
 }
 
-// 🔹 打开弹窗（新增/编辑）
+//  打开弹窗（新增/编辑）
 const openModal = (row?: any) => {
     isEdit.value = !!row
     resetForm()
 
     if (row) {
-        // 🔥 编辑模式：填充表单
+        //  编辑模式：填充表单
         Object.assign(form, {
             id: row.id,
             question: row.question || '',
@@ -270,38 +270,38 @@ const openModal = (row?: any) => {
     showModal.value = true
 }
 
-// 🔹 重置表单
+//  重置表单
 const resetForm = () => {
     Object.assign(form, {
         id: 0,
         question: '',
         answer: '',
-        category: 'other',    // 🔥 重置为默认分类
-        sortOrder: 0,         // 🔥 重置为默认排序
-        isEnabled: true       // 🔥 重置为默认启用
+        category: 'other',    //  重置为默认分类
+        sortOrder: 0,         //  重置为默认排序
+        isEnabled: true       //  重置为默认启用
     })
     formRef.value?.clearValidate()
 }
 
-// 🔹 弹窗关闭后的处理 - 🔥 创建成功后的关键逻辑
+//  弹窗关闭后的处理 -  创建成功后的关键逻辑
 const handleDialogClosed = () => {
-    // 🔥 只在非编辑模式（即新增）且提交成功后执行额外逻辑
+    //  只在非编辑模式（即新增）且提交成功后执行额外逻辑
     if (!isEdit.value && submitting.value === false) {
-        // 🔥 可选：记录创建日志（前端）
+        //  可选：记录创建日志（前端）
         console.log('📝 [FAQ] 新增问题成功:', {
             question: form.question,
             category: form.category,
             time: new Date().toISOString()
         })
 
-        // 🔥 可选：发送通知给其他管理员（需要 WebSocket 或轮询支持）
+        //  可选：发送通知给其他管理员（需要 WebSocket 或轮询支持）
         // notifyAdmins('新常见问题已创建', form.question)
     }
 }
 
-// 🔥 问题输入时的实时处理（可选：自动分类建议）
+//  问题输入时的实时处理（可选：自动分类建议）
 const handleQuestionInput = (value: string) => {
-    // 🔥 简单关键词匹配，自动建议分类
+    //  简单关键词匹配，自动建议分类
     const keywords: Record<string, string> = {
         '发布': 'trade',
         '交易': 'trade',
@@ -323,15 +323,15 @@ const handleQuestionInput = (value: string) => {
     }
 }
 
-// 🔹 提交表单 - 🔥 完善创建成功后的逻辑
+//  提交表单 -  完善创建成功后的逻辑
 const handleSubmit = async () => {
     if (!formRef.value) return
 
     try {
-        // 🔥 1. 表单校验
+        //  1. 表单校验
         await formRef.value.validate()
 
-        // 🔥 2. 二次校验（兜底）
+        //  2. 二次校验（兜底）
         if (!form.question?.trim()) {
             return ElMessage.warning('请输入问题标题')
         }
@@ -341,7 +341,7 @@ const handleSubmit = async () => {
 
         submitting.value = true
 
-        // 🔥 3. 构建提交数据
+        //  3. 构建提交数据
         const submitData: FaqForm = {
             question: form.question.trim(),
             answer: form.answer.trim(),
@@ -350,14 +350,14 @@ const handleSubmit = async () => {
             isEnabled: form.isEnabled
         }
 
-        // 🔥 4. 调用 API
+        //  4. 调用 API
         const res = isEdit.value
             ? await adminHomeApi.updateFaq(form.id!, submitData)
             : await adminHomeApi.createFaq(submitData)
 
         const code = (res as any).code
         if (code === 200 || code === 201) {
-            // 🔥 ✅ 创建/更新成功后的完整逻辑
+            //  ✅ 创建/更新成功后的完整逻辑
 
             // 4.1 提示用户
             const successMsg = isEdit.value ? '✅ 问题已更新' : '✅ 问题已创建'
@@ -369,7 +369,7 @@ const handleSubmit = async () => {
             // 4.3 刷新列表
             fetchList()
 
-            // 4.4 🔥 新增：如果是创建成功，记录操作日志（可对接后端日志接口）
+            // 4.4  新增：如果是创建成功，记录操作日志（可对接后端日志接口）
             if (!isEdit.value) {
                 logOperation('create_faq', {
                     question: form.question,
@@ -378,7 +378,7 @@ const handleSubmit = async () => {
                 })
             }
 
-            // 4.5 🔥 新增：如果是编辑成功，可考虑刷新缓存（如果有）
+            // 4.5  新增：如果是编辑成功，可考虑刷新缓存（如果有）
             // if (isEdit.value) {
             //   clearFaqCache(form.id)
             // }
@@ -389,11 +389,11 @@ const handleSubmit = async () => {
         }
     } catch (error: any) {
         console.error('❌ 提交失败:', error)
-        // 🔥 表单校验失败时不显示错误提示（Element Plus 已处理）
+        //  表单校验失败时不显示错误提示（Element Plus 已处理）
         if (error?.response?.data?.msg) {
             ElMessage.error(error.response.data.msg)
         } else if (error?.message && !error?.errors) {
-            // 🔥 非校验错误才提示
+            //  非校验错误才提示
             ElMessage.error(error.message)
         }
     } finally {
@@ -401,12 +401,12 @@ const handleSubmit = async () => {
     }
 }
 
-// 🔥 辅助函数：记录操作日志（可扩展对接后端）
+//  辅助函数：记录操作日志（可扩展对接后端）
 const logOperation = (action: string, data: any) => {
     // 🔸 前端记录（开发调试用）
     console.log(`🔐 [操作日志] ${action}:`, {
         ...data,
-        operator: 'admin',  // 🔥 实际应从用户信息获取
+        operator: 'admin',  //  实际应从用户信息获取
         timestamp: new Date().toISOString()
     })
 
@@ -414,7 +414,7 @@ const logOperation = (action: string, data: any) => {
     // adminApi.logOperation({ action, data }).catch(() => {})
 }
 
-// 🔹 状态切换（启用/禁用）
+//  状态切换（启用/禁用）
 const handleStatusChange = async (row: any) => {
     row.switchLoading = true
     try {
@@ -424,11 +424,11 @@ const handleStatusChange = async (row: any) => {
 
         const code = (res as any).code
         if (code !== 200) {
-            // 🔥 回滚状态
+            //  回滚状态
             row.isEnabled = !row.isEnabled
             ElMessage.error((res as any).msg || '状态更新失败')
         } else {
-            // 🔥 状态变更成功，可记录日志
+            //  状态变更成功，可记录日志
             logOperation('toggle_faq_status', {
                 id: row.id,
                 question: row.question,
@@ -436,7 +436,7 @@ const handleStatusChange = async (row: any) => {
             })
         }
     } catch (error: any) {
-        // 🔥 回滚状态
+        //  回滚状态
         row.isEnabled = !row.isEnabled
         ElMessage.error(error?.response?.data?.msg || '状态更新失败')
     } finally {
@@ -444,7 +444,7 @@ const handleStatusChange = async (row: any) => {
     }
 }
 
-// 🔹 删除常见问题
+//  删除常见问题
 const handleDelete = async (row: any) => {
     try {
         await ElMessageBox.confirm(
@@ -464,14 +464,14 @@ const handleDelete = async (row: any) => {
         if (code === 200) {
             ElMessage.success('✅ 问题已删除')
 
-            // 🔥 删除成功后的额外逻辑
+            //  删除成功后的额外逻辑
             logOperation('delete_faq', {
                 id: row.id,
                 question: row.question,
                 category: row.category
             })
 
-            // 🔥 如果删除的是当前页最后一项，且不是第一页，则跳转到前一页
+            //  如果删除的是当前页最后一项，且不是第一页，则跳转到前一页
             if (list.value.length === 1 && page.value > 1) {
                 page.value--
             }
@@ -486,7 +486,7 @@ const handleDelete = async (row: any) => {
     }
 }
 
-// 🔹 辅助函数：获取分类标签类型
+//  辅助函数：获取分类标签类型
 const getCategoryTagType = (category: string): 'success' | 'warning' | 'info' | 'danger' => {
     const map: Record<string, any> = {
         trade: 'success',
@@ -497,7 +497,7 @@ const getCategoryTagType = (category: string): 'success' | 'warning' | 'info' | 
     return map[category] || 'info'
 }
 
-// 🔹 辅助函数：获取分类标签文字
+//  辅助函数：获取分类标签文字
 const getCategoryLabel = (category: string): string => {
     const map: Record<string, string> = {
         trade: '🛒 交易',
@@ -508,7 +508,7 @@ const getCategoryLabel = (category: string): string => {
     return map[category] || '其他'
 }
 
-// 🔹 格式化日期
+//  格式化日期
 const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return '-'
     return new Date(dateStr).toLocaleString('zh-CN', {
@@ -520,7 +520,7 @@ const formatDate = (dateStr: string | null | undefined): string => {
     })
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(() => {
     fetchList()
 })

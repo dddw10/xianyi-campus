@@ -3,7 +3,7 @@
     <div
         class="flex flex-col md:flex-row p-4 md:p-6 pt-0 bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-gray-900/50 dark:to-gray-800/50">
 
-        <!-- 🔹 状态筛选标签 -->
+        <!--  状态筛选标签 -->
         <el-tabs v-model="tabPosition" @tab-change="handleTabChange" :tab-position="width > 768 ? 'left' : 'top'"
             class="mb-4 order-tabs flex-shrink-0">
             <el-tab-pane label="全部" name="all" />
@@ -13,13 +13,14 @@
             <el-tab-pane label="已取消" name="cancelled" />
         </el-tabs>
 
-        <!-- 🔥 修复：传递所有必需的 props 给 OrderList -->
+        <!--  修复：传递所有必需的 props 给 OrderList -->
         <OrderList :list="orderList" :loading="loading" :pagination="pagination" :empty-text="getEmptyText(tabPosition)"
-            :list-type="'sold'" :appeal-owner-hints="appealOwnerHints" @page-change="handlePageChange" @refresh-list="fetchOrders"
-            @ship-order="handleShipOrder" @appeal-order="handleAppeal" class="flex-1 ml-0 md:ml-4" />
+            :list-type="'sold'" :appeal-owner-hints="appealOwnerHints" @page-change="handlePageChange"
+            @refresh-list="fetchOrders" @ship-order="handleShipOrder" @appeal-order="handleAppeal"
+            class="flex-1 ml-0 md:ml-4" />
 
-        <AppealDialog v-model:visible="appealDialogVisible" :order-no="currentOrderNo" @submitted="handleAppealSubmitted"
-            @closed="handleAppealClosed" />
+        <AppealDialog v-model:visible="appealDialogVisible" :order-no="currentOrderNo"
+            @submitted="handleAppealSubmitted" @closed="handleAppealClosed" />
     </div>
 </template>
 
@@ -124,7 +125,7 @@ const getEmptyText = (status: string) => {
     return map[status] || '暂无数据'
 }
 
-// 🔹 卖家发货操作
+//  卖家发货操作
 const handleShipOrder = async (orderNo: string) => {
     try {
         const { value: tracking } = await ElMessageBox.prompt('请输入物流单号（可选）', '发货', {

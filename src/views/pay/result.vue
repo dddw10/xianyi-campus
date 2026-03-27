@@ -3,7 +3,7 @@
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
 
-            <!-- 🔹 支付成功 -->
+            <!--  支付成功 -->
             <div v-if="status === 'success'">
                 <el-icon class="text-6xl text-green-500 mb-4">
                     <CircleCheckFilled />
@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <!-- 🔹 支付失败 -->
+            <!--  支付失败 -->
             <div v-else-if="status === 'failed'">
                 <el-icon class="text-6xl text-red-500 mb-4">
                     <CircleCloseFilled />

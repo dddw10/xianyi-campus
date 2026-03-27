@@ -178,7 +178,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "@/stores/modules/user";
 import themeSwitch from "@/components/theme.Switch.vue";
 
-// 🔥 导入图标
+//  导入图标
 import {
     Avatar, Menu, Close, ArrowDown, Search,
     ShoppingBag, HomeFilled, Goods, ChatDotRound, Plus,
@@ -259,7 +259,7 @@ const handleUserCommand = (command: string) => {
     }
 };
 
-// 🔹 默认头像
+//  默认头像
 const getDefaultAvatar = () => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(UserStore.userInfo?.nickname || '同学')}&background=random`
 }

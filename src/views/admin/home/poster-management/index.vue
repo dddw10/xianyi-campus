@@ -2,7 +2,7 @@
 <template>
     <div class="p-4 space-y-4">
 
-        <!-- 🔹 页面头部 -->
+        <!--  页面头部 -->
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-xl font-bold text-[var(--el-text-color-primary)]">🖼️ 海报管理</h2>
@@ -11,7 +11,7 @@
             <el-button type="primary" @click="openModal()">➕ 新增</el-button>
         </div>
 
-        <!-- 🔹 海报列表 -->
+        <!--  海报列表 -->
         <el-table v-loading="loading" :data="list" stripe class="w-full">
             <el-table-column prop="id" label="ID" width="60" align="center" />
 
@@ -75,12 +75,12 @@
             </template>
         </el-table>
 
-        <!-- 🔹 分页 -->
+        <!--  分页 -->
         <el-pagination v-model:current-page="page" v-model:page-size="limit" :total="total"
             :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @current-change="fetchList"
             @size-change="handleSizeChange" class="flex justify-end" />
 
-        <!-- 🔹 新增/编辑弹窗 -->
+        <!--  新增/编辑弹窗 -->
         <el-dialog v-model="showModal" :title="isEdit ? '✏️ 编辑海报' : '➕ 新增海报'"
             class="w-90% md:w-60%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" :close-on-click-modal="false"
             :close-on-press-escape="false" append-to-body>
@@ -91,13 +91,13 @@
                     <el-input v-model="form.title" placeholder="请输入海报标题" maxlength="50" show-word-limit clearable />
                 </el-form-item>
 
-                <!-- 🔥 图片上传 - 关键修复 -->
+                <!--  图片上传 - 关键修复 -->
                 <el-form-item label="海报图片" prop="imageUrl">
-                    <!-- 🔥 上传组件用数组，v-model 绑定 form.imageUrl（数组） -->
+                    <!--  上传组件用数组，v-model 绑定 form.imageUrl（数组） -->
                     <OssUploader v-model="form.imageUrl" folder="posters" :limit="1" @success="handleUploadSuccess"
                         :width="120" @error="handleUploadError" />
 
-                    <!-- 🔥 预览：取数组第一项 -->
+                    <!--  预览：取数组第一项 -->
                     <div v-if="form.imageUrl?.[0]" class="mt-3">
                         <el-image :src="form.imageUrl[0]"
                             class="w-full h-40 rounded-lg border border-[var(--el-border-color)]" fit="cover"
@@ -156,30 +156,30 @@ import OssUploader from '@/components/AdvanceImageUpload.vue'
 import adminHomeApi from '@/api/admin/home'
 import { modalBox } from "@/components/messageBox/modalBox";
 
-// 🔹 状态
+//  状态
 const loading = ref(false)
 const submitting = ref(false)
 const showModal = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-// 🔹 分页
+//  分页
 const page = ref(1)
 const limit = ref(20)
 const total = ref(0)
 const list = ref<any[]>([])
 
-// 🔥 表单数据 - 🔥 imageUrl 是数组！适配上传组件
+//  表单数据 -  imageUrl 是数组！适配上传组件
 const form = reactive({
     id: 0,
     title: '',
-    imageUrl: [] as string[],  // 🔥 数组，适配 OssUploader
+    imageUrl: [] as string[],  //  数组，适配 OssUploader
     linkUrl: '',
     sortOrder: 0,
     isEnabled: true
 })
 
-// 🔹 表单校验规则
+//  表单校验规则
 const rules: FormRules = {
     title: [
         { required: true, message: '请输入海报标题', trigger: 'blur' },
@@ -190,7 +190,7 @@ const rules: FormRules = {
             required: true,
             message: '请上传海报图片',
             trigger: 'change',
-            // 🔥 自定义校验：检查数组是否有值
+            //  自定义校验：检查数组是否有值
             validator: (_rule: any, value: string[], callback: (error?: Error) => void) => {
                 if (!value || !Array.isArray(value) || value.length === 0 || !value[0]) {
                     callback(new Error('请上传海报图片'))
@@ -205,7 +205,7 @@ const rules: FormRules = {
     ]
 }
 
-// 🔥 辅助函数：统一处理 imageUrl（字符串或数组）→ 返回字符串
+//  辅助函数：统一处理 imageUrl（字符串或数组）→ 返回字符串
 const getImageUrl = (value: string | string[] | null | undefined): string => {
     if (!value) return ''
     if (typeof value === 'string') return value
@@ -213,7 +213,7 @@ const getImageUrl = (value: string | string[] | null | undefined): string => {
     return ''
 }
 
-// 🔹 获取海报列表
+//  获取海报列表
 const fetchList = async () => {
     loading.value = true
     try {
@@ -223,7 +223,7 @@ const fetchList = async () => {
         if (data?.list) {
             list.value = data.list.map((item: any) => ({
                 ...item,
-                // 🔥 后端返回字符串，前端直接使用（列表显示不需要数组）
+                //  后端返回字符串，前端直接使用（列表显示不需要数组）
                 imageUrl: typeof item.imageUrl === 'string' ? item.imageUrl : '',
                 isEnabled: item.isEnabled === 1 || item.isEnabled === true,
                 switchLoading: false
@@ -238,25 +238,25 @@ const fetchList = async () => {
     }
 }
 
-// 🔹 分页大小变化
+//  分页大小变化
 const handleSizeChange = (newLimit: number) => {
     limit.value = newLimit
     page.value = 1
     fetchList()
 }
 
-// 🔹 打开弹窗（新增/编辑）
+//  打开弹窗（新增/编辑）
 const openModal = (row?: any) => {
     isEdit.value = !!row
     resetForm()
 
     if (row) {
-        // 🔥 编辑模式：后端返回字符串 → 转为数组供上传组件使用
+        //  编辑模式：后端返回字符串 → 转为数组供上传组件使用
         const imageUrlStr = typeof row.imageUrl === 'string' ? row.imageUrl : ''
         Object.assign(form, {
             id: row.id,
             title: row.title || '',
-            imageUrl: imageUrlStr ? [imageUrlStr] : [],  // 🔥 字符串 → 数组
+            imageUrl: imageUrlStr ? [imageUrlStr] : [],  //  字符串 → 数组
             linkUrl: row.linkUrl || '',
             sortOrder: row.sortOrder || 0,
             isEnabled: row.isEnabled === 1 || row.isEnabled === true
@@ -266,12 +266,12 @@ const openModal = (row?: any) => {
     showModal.value = true
 }
 
-// 🔹 重置表单
+//  重置表单
 const resetForm = () => {
     Object.assign(form, {
         id: 0,
         title: '',
-        imageUrl: [],  // 🔥 重置为空数组
+        imageUrl: [],  //  重置为空数组
         linkUrl: '',
         sortOrder: 0,
         isEnabled: true
@@ -279,18 +279,18 @@ const resetForm = () => {
     formRef.value?.clearValidate()
 }
 
-// 🔹 移除图片
+//  移除图片
 const handleRemoveImage = () => {
     form.imageUrl = []
-    // 🔥 移除后重新校验
+    //  移除后重新校验
     setTimeout(() => {
         formRef.value?.validateField('imageUrl').catch(() => { })
     }, 0)
 }
 
-// 🔹 上传成功回调 - 🔥 上传组件返回数组，直接使用
+//  上传成功回调 -  上传组件返回数组，直接使用
 const handleUploadSuccess = (urls: string | string[]) => {
-    // 🔥 兼容：可能是字符串或数组
+    //  兼容：可能是字符串或数组
     if (typeof urls === 'string') {
         form.imageUrl = [urls]
     } else if (Array.isArray(urls)) {
@@ -299,7 +299,7 @@ const handleUploadSuccess = (urls: string | string[]) => {
         form.imageUrl = []
     }
 
-    // 🔥 手动触发表单校验
+    //  手动触发表单校验
     setTimeout(() => {
         formRef.value?.validateField('imageUrl').catch(() => { })
     }, 0)
@@ -307,16 +307,16 @@ const handleUploadSuccess = (urls: string | string[]) => {
     ElMessage.success('✅ 图片上传成功')
 }
 
-// 🔹 上传失败回调
+//  上传失败回调
 const handleUploadError = (error: any) => {
     console.error('❌ 图片上传失败:', error)
     ElMessage.error(error?.message || '图片上传失败，请重试')
 }
 
-// 🔹 图片加载错误
+//  图片加载错误
 const handleImageError = () => { }
 
-// 🔹 提交表单 - 🔥 关键：数组转字符串
+//  提交表单 -  关键：数组转字符串
 const handleSubmit = async () => {
     if (!formRef.value) return
 
@@ -326,17 +326,17 @@ const handleSubmit = async () => {
         if (!form.title?.trim()) {
             return ElMessage.warning('请输入海报标题')
         }
-        // 🔥 校验图片：数组第一项必须有值
+        //  校验图片：数组第一项必须有值
         if (!form.imageUrl?.[0]?.trim()) {
             return ElMessage.warning('请上传海报图片')
         }
 
         submitting.value = true
 
-        // 🔥 构建提交数据 - 🔥 数组 [url] → 取 [0] 转字符串
+        //  构建提交数据 -  数组 [url] → 取 [0] 转字符串
         const submitData = {
             title: form.title.trim(),
-            imageUrl: form.imageUrl[0],  // 🔥 关键：取数组第一项作为字符串
+            imageUrl: form.imageUrl[0],  //  关键：取数组第一项作为字符串
             linkUrl: form.linkUrl?.trim() || undefined,
             sortOrder: form.sortOrder || 0,
             isEnabled: form.isEnabled
@@ -367,7 +367,7 @@ const handleSubmit = async () => {
     }
 }
 
-// 🔹 状态切换
+//  状态切换
 const handleStatusChange = async (row: any) => {
     row.switchLoading = true
     try {
@@ -385,7 +385,7 @@ const handleStatusChange = async (row: any) => {
     }
 }
 
-// 🔹 删除海报
+//  删除海报
 const handleDelete = async (row: any) => {
     try {
         modalBox({
@@ -414,7 +414,7 @@ const handleDelete = async (row: any) => {
     }
 }
 
-// 🔹 格式化日期
+//  格式化日期
 const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return '-'
     return new Date(dateStr).toLocaleString('zh-CN', {
@@ -423,7 +423,7 @@ const formatDate = (dateStr: string | null | undefined): string => {
     })
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(() => { fetchList() })
 </script>
 

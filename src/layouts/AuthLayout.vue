@@ -1,6 +1,6 @@
 <!-- src/layouts/AuthLayout.vue -->
 <template>
-    <!-- 🔥 页面容器：渐变背景 + 居中布局 + 主题适配 -->
+    <!--  页面容器：渐变背景 + 居中布局 + 主题适配 -->
     <div class="
       min-h-screen w-full 
       flex items-center justify-center 
@@ -12,7 +12,7 @@
         background: 'var(--auth-bg, linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0f2fe 100%))'
     }">
 
-        <!-- 🔥 装饰层：浮动光斑（纯 CSS 动画） -->
+        <!--  装饰层：浮动光斑（纯 CSS 动画） -->
         <div class="absolute inset-0 pointer-events-none">
             <div class="absolute -top-32 -left-32 w-64 h-64 rounded-full blur-3xl opacity-30 animate-float"
                 :style="{ background: 'var(--auth-decoration-1, rgba(59, 130, 246, 0.2))' }"></div>
@@ -22,7 +22,7 @@
             }"></div>
         </div>
 
-        <!-- 🔥 主卡片：毛玻璃效果 + 精致阴影 -->
+        <!--  主卡片：毛玻璃效果 + 精致阴影 -->
         <div class="
         w-full max-w-md
         bg-[var(--card, rgba(255,255,255,0.95))]
@@ -35,7 +35,7 @@
         m-4
       ">
 
-            <!-- 🔥 顶部品牌区：Logo + 标题（支持 slot 自定义） -->
+            <!--  顶部品牌区：Logo + 标题（支持 slot 自定义） -->
             <div class="
           p-6 text-center 
           bg-[var(--bg-elevated, rgba(248,250,252,0.8))]
@@ -63,12 +63,12 @@
                 </div>
             </div>
 
-            <!-- 🔥 内容区：router-view 渲染登录/注册表单 -->
+            <!--  内容区：router-view 渲染登录/注册表单 -->
             <div class="p-8 lt-sm:p-6 bg-[var(--card)]">
                 <router-view />
             </div>
 
-            <!-- 🔥 底部区：版权 + 链接 -->
+            <!--  底部区：版权 + 链接 -->
             <div class="
           p-5 text-center 
           bg-[var(--bg-elevated)] 
@@ -90,7 +90,7 @@
             </div>
         </div>
 
-        <!-- 🔥 底部装饰：品牌色渐变条 -->
+        <!--  底部装饰：品牌色渐变条 -->
         <div class="absolute bottom-0 left-0 right-0 h-1" :style="{
             background: 'var(--auth-accent, linear-gradient(90deg, var(--el-color-primary, #3b82f6), var(--el-color-primary-dark, #2563eb)))'
         }"></div>
@@ -102,7 +102,7 @@ import { ShoppingCart } from '@element-plus/icons-vue'
 </script>
 
 <style scoped>
-/* 🔥 浮动动画关键帧 */
+/*  浮动动画关键帧 */
 @keyframes float {
 
     0%,
@@ -127,14 +127,14 @@ import { ShoppingCart } from '@element-plus/icons-vue'
     animation: float 8s ease-in-out infinite;
 }
 
-/* 🔥 响应式优化 */
+/*  响应式优化 */
 @media (max-width: 640px) {
     .max-w-md {
         max-width: 100%;
     }
 }
 
-/* 🔥 暗黑模式适配（如果 CSS 变量未定义，提供默认值） */
+/*  暗黑模式适配（如果 CSS 变量未定义，提供默认值） */
 @media (prefers-color-scheme: dark) {
     :root {
         --auth-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);

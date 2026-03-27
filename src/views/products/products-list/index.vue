@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <!-- 🔥 滚动容器 -->
+            <!--  滚动容器 -->
             <div ref="scrollContainerRef" class="min-h-[280px]" @scroll="handleScroll">
                 <!-- 3. 商品列表网格 -->
                 <div v-if="filteredProducts.length > 0"
@@ -66,13 +66,13 @@
                                     transition-all duration-500 ease-out
                                     border border-[var(--border)] cursor-pointer group">
 
-                        <!-- 🔥 修改开始：商品照片区域 -->
+                        <!--  修改开始：商品照片区域 -->
                         <div class="aspect-square overflow-hidden bg-[var(--bg)] relative"
                             @click="handleDetail(item.id)">
                             <img :src="item.img" :alt="item.name"
                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
 
-                            <!-- 🔥 新增：已售出水印标签 -->
+                            <!--  新增：已售出水印标签 -->
                             <div v-if="item.product_status === 'sold'"
                                 class="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-black/10">
                                 <div
@@ -84,7 +84,7 @@
                                     卖掉了
                                 </div>
                             </div>
-                            <!-- 🔥 修改结束 -->
+                            <!--  修改结束 -->
 
                             <span class="absolute top-3 left-3 px-2.5 py-1 bg-[var(--card)]/90 backdrop-blur-sm 
                                        text-xs font-medium rounded-full border border-[var(--border)] z-20">

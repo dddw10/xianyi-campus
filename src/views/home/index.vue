@@ -1,7 +1,7 @@
 <!-- src/views/home/Index.vue -->
 <template>
     <div class="min-h-screen w-full bg-[var(--page-bg)]">
-        <!-- 🔹 轮播图 -->
+        <!--  轮播图 -->
         <div class="w-full max-w-7xl mx-auto mt-6 px-4">
             <el-carousel :type="carouselWay" :height="height" v-if="!loading.posters && posters.length > 0"
                 :interval="3000" class="rounded-2xl shadow-[var(--shadow)] overflow-hidden bg-[var(--card)]">
@@ -15,10 +15,10 @@
             <el-empty v-else description="暂无海报" />
         </div>
 
-        <!-- 🔹 推荐商品 -->
+        <!--  推荐商品 -->
         <div class="w-full max-w-6xl mx-auto mt-12 px-4">
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-[var(--text)]">🔥 推荐商品</h2>
+                <h2 class="text-2xl font-bold text-[var(--text)]"> 推荐商品</h2>
                 <p class="text-[var(--text-secondary)] text-sm mt-2">精选好物，品质保证</p>
             </div>
 
@@ -42,19 +42,19 @@
             <el-empty v-else description="暂无推荐商品" />
         </div>
 
-        <!-- 🔹 常见问题 -->
+        <!--  常见问题 -->
         <div class="w-full max-w-4xl mx-auto mt-12 px-4 mb-12">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-[var(--text)]">❓ 常见问题</h2>
                 <p class="text-[var(--text-secondary)] text-sm mt-2">遇到问题？看看这里有没有答案</p>
             </div>
 
-            <!-- 🔹 常见问题区域 -->
+            <!--  常见问题区域 -->
             <el-collapse v-if="!loading.faqs && faqs.length > 0" v-model="activeNames" accordion
                 class="!bg-transparent !border-none">
                 <el-collapse-item v-for="(item, index) in faqs" :key="item.id" :name="item.id"
                     class="faq-item mb-2 last:mb-0 overflow-hidden rounded-lg transition-all duration-300">
-                    <!-- 🔹 标题区域 - 简洁设计 & 交互反馈 -->
+                    <!--  标题区域 - 简洁设计 & 交互反馈 -->
                     <template #title>
                         <div class="flex items-center gap-3 w-full py-3.5 px-4 
                    hover:bg-[var(--el-fill-color-light)] 
@@ -85,7 +85,7 @@
                         </div>
                     </template>
 
-                    <!-- 🔹 答案区域 - 简洁分隔 & 左侧引导线 -->
+                    <!--  答案区域 - 简洁分隔 & 左侧引导线 -->
                     <div class="pr-4  pt-2">
                         <div class="ml-9 pl-4 border-l-2 border-[var(--el-color-primary-light-5)] 
                    animate-fade-in">
@@ -102,7 +102,7 @@
             <el-empty v-else description="暂无常见问题" />
         </div>
 
-        <!-- 🔹 底部 -->
+        <!--  底部 -->
         <footer class="w-full bg-[var(--bg-elevated)] border-t border-[var(--border)] py-6 mt-12 rounded-t-2xl">
             <div class="max-w-6xl mx-auto px-4 text-center text-[var(--text-tertiary)] text-sm">
                 <p>© 2026 闲易校园 - 校园闲置交易平台</p>

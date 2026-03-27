@@ -2,7 +2,7 @@
 <template>
     <div class="p-4 md:p-6 min-h-screen bg-[var(--el-fill-color-light)]">
 
-        <!-- 🔹 头部 -->
+        <!--  头部 -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-[var(--el-text-color-primary)]">📋 申诉审核</h1>
@@ -15,7 +15,7 @@
             </el-tag>
         </div>
 
-        <!-- 🔹 筛选栏 -->
+        <!--  筛选栏 -->
         <div class="bg-[var(--el-bg-color)] rounded-xl p-4 mb-4 shadow-sm">
             <div class="flex flex-col md:flex-row gap-3">
                 <!-- 状态筛选 -->
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <!-- 🔹 表格 -->
+        <!--  表格 -->
         <el-card class="mb-4" shadow="never">
             <el-table v-loading="loading" :data="list" style="width: 100%"
                 :header-cell-style="{ background: 'var(--el-fill-color-light)', color: 'var(--el-text-color-primary)' }">
@@ -85,7 +85,7 @@
                     </template>
                 </el-table-column>
 
-                <!-- 🔥 审核回复（管理员备注） -->
+                <!--  审核回复（管理员备注） -->
                 <el-table-column label="审核回复" min-width="150">
                     <template #default="{ row }">
                         <!-- 待审核：显示待处理 -->
@@ -95,7 +95,7 @@
 
                         <!-- 已处理：显示管理员备注 -->
                         <template v-else>
-                            <!-- 🔥 调试：打印行数据（开发时开启） -->
+                            <!--  调试：打印行数据（开发时开启） -->
                             <!-- <div class="text-[10px] text-gray-300 mb-1">{{ JSON.stringify({ admin_remark: row.admin_remark }) }}</div> -->
 
                             <!-- 有备注：高亮显示 -->
@@ -150,14 +150,14 @@
             </el-table>
         </el-card>
 
-        <!-- 🔹 分页 -->
+        <!--  分页 -->
         <div class="flex justify-end">
             <el-pagination v-model:current-page="pagination.page" v-model:page-size="pagination.limit"
                 :total="pagination.total" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next"
                 @size-change="fetchList" @current-change="fetchList" />
         </div>
 
-        <!-- 🔥 审核弹窗 -->
+        <!--  审核弹窗 -->
         <el-dialog v-model="auditDialogVisible" :title="auditAction === 'approve' ? '✅ 通过申诉' : '❌ 驳回申诉'" width="480px"
             :close-on-click-modal="false">
             <div class="space-y-4">
@@ -192,7 +192,7 @@
             </template>
         </el-dialog>
 
-        <!-- 🔥 审核详情弹窗 -->
+        <!--  审核详情弹窗 -->
         <el-dialog v-model="detailDialogVisible" title="📋 审核详情" width="420px" :close-on-click-modal="false">
             <div class="space-y-4">
                 <!-- 订单信息 -->
@@ -275,7 +275,7 @@ const pagination = ref({
     total: 0
 })
 
-// 🔥 审核弹窗相关
+//  审核弹窗相关
 const auditDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const currentOrder = ref<any>(null)
@@ -325,7 +325,7 @@ const getStatusType = (status?: string): 'success' | 'warning' | 'danger' | 'inf
 // 核心方法
 // ============================================================================
 
-// 🔹 获取申诉列表
+//  获取申诉列表
 const fetchList = async () => {
     loading.value = true
     try {
@@ -346,7 +346,7 @@ const fetchList = async () => {
                 console.log('🔍 [Debug] 申诉列表第一条:', {
                     order_no: list.value[0].order_no,
                     appeal_status: list.value[0].appeal_status,
-                    admin_remark: list.value[0].admin_remark  // 🔥 确认这个字段有值
+                    admin_remark: list.value[0].admin_remark  //  确认这个字段有值
                 })
             }
 
@@ -369,7 +369,7 @@ const fetchList = async () => {
     }
 }
 
-// 🔹 打开审核弹窗
+//  打开审核弹窗
 const openAuditDialog = (order: any, action: 'approve' | 'reject') => {
     currentOrder.value = order
     auditAction.value = action
@@ -377,9 +377,9 @@ const openAuditDialog = (order: any, action: 'approve' | 'reject') => {
     auditDialogVisible.value = true
 }
 
-// 🔹 提交审核
+//  提交审核
 const handleAuditSubmit = async () => {
-    // 🔹 驳回时必须填备注
+    //  驳回时必须填备注
     if (auditAction.value === 'reject' && !auditRemark.value.trim()) {
         return ElMessage.warning('驳回申诉必须填写原因')
     }
@@ -409,7 +409,7 @@ const handleAuditSubmit = async () => {
     }
 }
 
-// 🔥 查看审核详情
+//  查看审核详情
 const viewAuditDetail = (order: any) => {
     currentOrder.value = order
     // 🔍 调试：打印详情数据
@@ -429,17 +429,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 🔹 表格行悬停效果 */
+/*  表格行悬停效果 */
 :deep(.el-table__row:hover) {
     --el-table-row-hover-bg-color: var(--el-fill-color-light);
 }
 
-/* 🔹 图片预览遮罩 */
+/*  图片预览遮罩 */
 :deep(.el-image-viewer__wrapper) {
     z-index: 9999 !important;
 }
 
-/* 🔹 审核回复高亮样式（备用） */
+/*  审核回复高亮样式（备用） */
 :deep(.audit-remark-approved) {
     @apply text-green-600 dark:text-green-400 font-medium;
 }

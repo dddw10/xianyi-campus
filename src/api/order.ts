@@ -28,9 +28,9 @@ export interface OrderListResponse {
 export interface PublishGoodsParams {
     page?: number
     limit?: number
-    // 🔹 审核状态筛选（卖家专用）
+    //  审核状态筛选（卖家专用）
     review_status?: 'pending' | 'approved' | 'rejected'
-    // 🔹 商品状态筛选（卖家专用）
+    //  商品状态筛选（卖家专用）
     status?: 'available' | 'sold' | 'deleted'
 }
 
@@ -40,8 +40,8 @@ export interface PublicProductsParams {
     limit?: number
     category?: string
     keyword?: string
-    // 🔹 买家只能看到 approved + (available | sold) 的商品
-    // 🔹 不需要传状态筛选，后端自动过滤
+    //  买家只能看到 approved + (available | sold) 的商品
+    //  不需要传状态筛选，后端自动过滤
 }
 
 export interface OrderItem {
@@ -73,7 +73,7 @@ export interface PayOrderResponse {
     payUrl: string
     orderNo: string
     amount: string
-    mock?: boolean  // 🔥 开发环境标记
+    mock?: boolean  //  开发环境标记
 }
 
 export type AppealStatus = 'none' | 'pending' | 'approved' | 'rejected'
@@ -157,7 +157,7 @@ export interface AppealListResponse {
 }
 
 export const orderApi = {
-    // 🔹 我发布的（商品状态）
+    //  我发布的（商品状态）
     getPublishGoods(params?: {
         page?: number
         limit?: number
@@ -170,7 +170,7 @@ export const orderApi = {
         })
     },
 
-    // 🔹 我买到的（订单状态）
+    //  我买到的（订单状态）
     getBoughtGoods(params?: {
         page?: number
         limit?: number
@@ -187,7 +187,7 @@ export const orderApi = {
         })
     },
 
-    // 🔹 我卖出的（订单状态）
+    //  我卖出的（订单状态）
     getSoldGoods(params?: {
         page?: number
         limit?: number
@@ -204,7 +204,7 @@ export const orderApi = {
         })
     },
 
-    // 🔹 更新订单状态
+    //  更新订单状态
     updateStatus(orderNo: string, status: string) {
         return request({
             url: `/api/user/orders/${orderNo}/status`,
@@ -213,7 +213,7 @@ export const orderApi = {
         })
     },
 
-    // 🔹 获取订单详情
+    //  获取订单详情
     getOrderDetail(orderNo: string) {
         return request({
             url: `/api/user/orders/${orderNo}`,
@@ -221,37 +221,37 @@ export const orderApi = {
         })
     },
 
-    // 🔹 创建订单
+    //  创建订单
     createOrder(data: CreateOrderParams) {
         return request({ url: '/api/user/orders', method: 'post', data })
     },
 
-    // 🔹 发起支付
+    //  发起支付
     payOrder(orderNo: string, paymentMethod: string = 'alipay') {
         return request({ url: `/api/user/orders/${orderNo}/pay`, method: 'post', data: { paymentMethod } })
     },
 
-    // 🔹 查询支付结果
+    //  查询支付结果
     getPayResult(orderNo: string) {
         return request({ url: `/api/user/orders/${orderNo}/pay-result`, method: 'get' })
     },
 
-    // 🔹 我的订单列表（买家视角）
+    //  我的订单列表（买家视角）
     getBoughtOrders(params?: { page?: number; limit?: number; status?: string }) {
         return request({ url: '/api/user/orders/bought', method: 'get', params: { page: 1, limit: 20, ...params } })
     },
 
-    // 🔹 我的订单列表（卖家视角 - 卖出的）
+    //  我的订单列表（卖家视角 - 卖出的）
     getSoldOrders(params?: { page?: number; limit?: number; status?: string }) {
         return request({ url: '/api/user/orders/sold', method: 'get', params: { page: 1, limit: 20, ...params } })
     },
 
-    // 🔹 订单详情
+    //  订单详情
     // getOrderDetail(orderNo: string) {
     //     return request({ url: `/api/user/orders/${orderNo}`, method: 'get' })
     // },
 
-    // 🔹 更新订单状态（确认收货/发货等）
+    //  更新订单状态（确认收货/发货等）
     updateOrderStatus(orderNo: string, status: string, proofImage?: string) {
         return request({
             url: `/api/user/orders/${orderNo}/status`,
@@ -284,7 +284,7 @@ export const orderApi = {
      */
     auditAppeal(orderNo: string, data: AuditAppealParams) {
         return request<AuditAppealResponse>({
-            // 🔥 修复：/api/user/orders/admin/orders/:orderNo/appeal
+            //  修复：/api/user/orders/admin/orders/:orderNo/appeal
             // ⚠️ 注意：路径中有两个 /orders，是因为：
             // 1. 挂载点：/api/user/orders
             // 2. 路由定义：/admin/orders/:orderNo/appeal
@@ -306,7 +306,7 @@ export const orderApi = {
         keyword?: string
     }) {
         return request<AppealListResponse>({
-            // 🔥 修复：/api/user/orders/admin/appeals
+            //  修复：/api/user/orders/admin/appeals
             // ⚠️ 注意：挂载点 + 路由定义 = /api/user/orders + /admin/appeals
             url: '/api/user/orders/admin/appeals',
             method: 'get',

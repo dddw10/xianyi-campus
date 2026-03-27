@@ -2,11 +2,11 @@
 <template>
     <div class="min-h-screen bg-[var(--el-fill-color-blank)] flex">
 
-        <!-- 🔹 小屏遮罩层（抽屉打开时显示） -->
+        <!--  小屏遮罩层（抽屉打开时显示） -->
         <div v-if="isMobile && drawerVisible" class="fixed inset-0 bg-black/50 z-30 transition-opacity"
             @click="drawerVisible = false" />
 
-        <!-- 🔹 侧边栏（大屏固定 / 小屏抽屉） -->
+        <!--  侧边栏（大屏固定 / 小屏抽屉） -->
         <aside :class="[
             'bg-[var(--el-bg-color)] border-r border-[var(--el-border-color-light)] flex flex-col transition-all duration-300 z-40',
             isMobile
@@ -49,12 +49,12 @@
                 </div>
             </div>
 
-            <!-- 🔥 导航菜单（支持嵌套子菜单） -->
+            <!--  导航菜单（支持嵌套子菜单） -->
             <el-menu :default-active="activeMenu" class="flex-1 border-none overflow-y-auto" :collapse="false"
                 :collapse-transition="false" @select="handleMenuSelect">
                 <template v-for="item in menuItems" :key="item.path">
 
-                    <!-- 🔹 普通菜单项（无子菜单） -->
+                    <!--  普通菜单项（无子菜单） -->
                     <el-menu-item v-if="!item.children" :index="item.path" class="border-none">
                         <el-icon class="text-[var(--el-text-color-regular)] mr-2">
                             <component :is="item.icon" />
@@ -64,7 +64,7 @@
                             type="danger" :hidden="item.badge === 0" /> -->
                     </el-menu-item>
 
-                    <!-- 🔹 子菜单（有 children） -->
+                    <!--  子菜单（有 children） -->
                     <el-sub-menu v-else :index="item.path" class="border-none">
                         <template #title>
                             <el-icon class="text-[var(--el-text-color-regular)] mr-2">
@@ -96,7 +96,7 @@
             </div>
         </aside>
 
-        <!-- 🔹 主内容区 -->
+        <!--  主内容区 -->
         <main :class="['flex-1 flex flex-col min-w-0 transition-all duration-300', !isMobile ? 'ml-64' : 'ml-0']">
             <!-- 顶部栏 -->
             <header class="
@@ -107,13 +107,13 @@
         flex items-center justify-between
         sticky top-0 z-20
       ">
-                <!-- 🔥 左侧：汉堡按钮（小屏）+ 页面标题 -->
+                <!--  左侧：汉堡按钮（小屏）+ 页面标题 -->
                 <div class="flex items-center gap-4">
                     <el-button v-if="isMobile" link :icon="Expand" class="text-[var(--el-text-color-primary)] text-xl"
                         @click="drawerVisible = true" />
 
                     <h2 class="text-lg font-semibold text-[var(--el-text-color-primary)]">
-                        <!-- 🔥 显示父菜单 / 子菜单 格式 -->
+                        <!--  显示父菜单 / 子菜单 格式 -->
                         <template v-if="currentMenu?.parent">
                             {{ currentMenu.parent }} / {{ currentMenu.title }}
                         </template>
@@ -203,7 +203,7 @@ import { modalBox } from "@/components/messageBox/modalBox"
 import themeSwitch from "@/components/theme.Switch.vue"
 import type { Component } from 'vue'
 
-// 🔥 菜单项类型定义
+//  菜单项类型定义
 interface MenuItem {
     path: string
     title: string
@@ -212,7 +212,7 @@ interface MenuItem {
     children?: MenuItem[]
 }
 
-// 🔥 当前菜单类型（支持 parent 属性）
+//  当前菜单类型（支持 parent 属性）
 interface CurrentMenu extends MenuItem {
     parent?: string
 }
@@ -238,7 +238,7 @@ onUnmounted(() => {
     window.removeEventListener('resize', handleResize)
 })
 
-// 🔹 菜单配置
+//  菜单配置
 const menuItems: MenuItem[] = [
     {
         path: '/admin/dashboard',
@@ -277,7 +277,7 @@ const menuItems: MenuItem[] = [
     }
 ]
 
-// 🔹 当前激活菜单
+//  当前激活菜单
 const activeMenu = computed(() => route.path)
 
 const currentMenu = computed((): CurrentMenu | undefined => {
@@ -296,15 +296,15 @@ const currentMenu = computed((): CurrentMenu | undefined => {
     return menuItems.find(item => route.path.startsWith(item.path + '/')) as CurrentMenu | undefined
 })
 
-// 🔹 菜单点击
+//  菜单点击
 const handleMenuSelect = (path: string) => {
-    router.push(path)  // 🔥 直接跳转，不检查 children
+    router.push(path)  //  直接跳转，不检查 children
     if (isMobile.value) {
         drawerVisible.value = false
     }
 }
 
-// 🔹 退出登录
+//  退出登录
 const handleLogout = () => {
     modalBox({
         type: 'info',

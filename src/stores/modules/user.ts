@@ -87,7 +87,7 @@ export const useUserStore = defineStore('user', {
             this.routes = data.routes || []
             this.permissions = data.permissions || {}
 
-            // 🔥 2. 保存角色和细粒度权限（管理员专用）
+            //  2. 保存角色和细粒度权限（管理员专用）
             this.role = normalizedUser?.role || 'user'
             this.userPermissions = data.permissions?.permissions || []
 
@@ -96,8 +96,8 @@ export const useUserStore = defineStore('user', {
             localStorage.setItem('userInfo', JSON.stringify(normalizedUser))
             localStorage.setItem('routes', JSON.stringify(data.routes))
             localStorage.setItem('permissions', JSON.stringify(data.permissions))
-            localStorage.setItem('userRole', this.role)  // 🔥 新增
-            localStorage.setItem('userPermissions', JSON.stringify(this.userPermissions))  // 🔥 新增
+            localStorage.setItem('userRole', this.role)  //  新增
+            localStorage.setItem('userPermissions', JSON.stringify(this.userPermissions))  //  新增
 
             // 4. 加载动态路由
             await this.loadDynamicRoutes()
@@ -190,8 +190,8 @@ export const useUserStore = defineStore('user', {
             this.userInfo = {}
             this.routes = []
             this.permissions = {}
-            this.role = 'user'  // 🔥 重置角色
-            this.userPermissions = []  // 🔥 重置权限
+            this.role = 'user'  //  重置角色
+            this.userPermissions = []  //  重置权限
 
             const favoriteStore = useFavoriteStore()
             favoriteStore.clear()
@@ -202,8 +202,8 @@ export const useUserStore = defineStore('user', {
             localStorage.removeItem('userInfo')
             localStorage.removeItem('routes')
             localStorage.removeItem('permissions')
-            localStorage.removeItem('userRole')  // 🔥 新增
-            localStorage.removeItem('userPermissions')  // 🔥 新增
+            localStorage.removeItem('userRole')  //  新增
+            localStorage.removeItem('userPermissions')  //  新增
 
             // 4. 根据角色跳转到对应登录页
             const redirectPath = currentRole === 'admin' ? '/admin/login' : '/auth/login'

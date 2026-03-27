@@ -2,7 +2,7 @@ import axios from "axios"
 import { ElMessage } from "element-plus";
 import { getToken } from "./token";
 
-// 🔥 定义后端响应数据结构
+//  定义后端响应数据结构
 export interface ApiResponse<T = any> {
     code: number
     msg: string

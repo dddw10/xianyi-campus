@@ -1,9 +1,9 @@
 <!-- src/views/admin/login.vue -->
 <template>
-    <!-- 🔥 页面内容（AuthLayout 已提供背景，这里只需表单） -->
+    <!--  页面内容（AuthLayout 已提供背景，这里只需表单） -->
     <div class="w-full">
 
-        <!-- 🔥 表单标题 -->
+        <!--  表单标题 -->
         <div class="text-center mb-8">
             <!-- 管理员专属 Logo -->
             <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -14,12 +14,13 @@
             </p>
         </div>
 
-        <!-- 🔥 登录表单 -->
+        <!--  登录表单 -->
         <el-form ref="formRef" :model="formData" :rules="rules" class="space-y-5">
 
             <!-- 用户名输入 -->
             <el-form-item prop="username">
-                <el-input v-model="formData.username" placeholder="请输入管理员账号" class="w-full">
+
+                <el-input v-model="formData.username" placeholder="admin002" class="w-full">
                     <template #prepend>
                         <el-icon class="text-gray-400">
                             <User />
@@ -30,7 +31,7 @@
 
             <!-- 密码输入 -->
             <el-form-item prop="password">
-                <el-input v-model="formData.password" type="password" placeholder="请输入密码" show-password class="w-full"
+                <el-input v-model="formData.password" type="password" placeholder="123456" show-password class="w-full"
                     @keyup.enter="handleLogin">
                     <template #prepend>
                         <el-icon class="text-gray-400">
@@ -120,10 +121,10 @@ const handleLogin = async () => {
         if (res.code === 200) {
             ElMessage.success('🎉 管理员登录成功')
 
-            // 🔥 关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
+            //  关键：调用 setUserInfo 处理管理员响应（包含 routes + permissions）
             userStore.setUserInfo(res.data)
 
-            // 🔥 跳转到管理员数据看板（路由已动态添加）
+            //  跳转到管理员数据看板（路由已动态添加）
             await router.push('/admin/dashboard')
             window.location.reload()
         } else {
@@ -147,12 +148,12 @@ const goToUserLogin = () => {
 </script>
 
 <style scoped>
-/* 🔥 输入框聚焦时的额外效果 */
+/*  输入框聚焦时的额外效果 */
 :deep(.el-input__wrapper.is-focus) {
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
 }
 
-/* 🔥 按钮点击缩放反馈 */
+/*  按钮点击缩放反馈 */
 :deep(.el-button:active) {
     transform: scale(0.98);
 }

@@ -2,7 +2,7 @@
 <template>
     <div
         class="p-4 md:p-6 min-h-screen bg-gradient-to-br from-blue-50/30 to-indigo-50/30 dark:from-gray-900/50 dark:to-gray-800/50">
-        <!-- 🔹 头部 -->
+        <!--  头部 -->
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-[var(--el-text-color-primary)]">📊 数据看板</h1>
             <p class="text-sm text-[var(--el-text-color-secondary)] mt-1">
@@ -10,7 +10,7 @@
             </p>
         </div>
 
-        <!-- 🔹 核心指标卡片 -->
+        <!--  核心指标卡片 -->
         <el-row :gutter="16" class="mb-6">
             <!-- 👥 用户数据 -->
             <el-col :xs="24" :sm="12" :lg="6">
@@ -93,7 +93,7 @@
             </el-col>
         </el-row>
 
-        <!-- 🔹 快捷操作 -->
+        <!--  快捷操作 -->
         <el-card class="mb-6" shadow="never">
             <template #header>
                 <div class="flex items-center gap-2">
@@ -117,7 +117,7 @@
             </div>
         </el-card>
 
-        <!-- 🔹 图表区域 -->
+        <!--  图表区域 -->
         <el-row :gutter="16" class="mb-6">
             <!-- 📈 趋势折线图（✅ 同时显示订单+用户，移除切换按钮） -->
             <el-col :xs="24" :lg="16">
@@ -150,7 +150,7 @@
             </el-col>
         </el-row>
 
-        <!-- 🔹 最新动态 -->
+        <!--  最新动态 -->
         <el-row :gutter="16">
             <!-- 📋 最新订单 -->
             <el-col :xs="24" :lg="12">
@@ -241,7 +241,7 @@ import * as echarts from 'echarts'
 import adminApi from '@/api/admin'
 
 // ============================================================================
-// 🔥 响应式数据
+//  响应式数据
 // ============================================================================
 const stats = ref<any>({})
 const lastUpdateTime = ref('')
@@ -251,7 +251,7 @@ let trendChart: echarts.ECharts | null = null
 let categoryChart: echarts.ECharts | null = null
 
 // ============================================================================
-// 🔥 快捷操作配置（✅ computed 自动响应式更新）
+//  快捷操作配置（✅ computed 自动响应式更新）
 // ============================================================================
 const quickActions = computed(() => [
     {
@@ -285,7 +285,7 @@ const quickActions = computed(() => [
 ])
 
 // ============================================================================
-// 🔥 工具函数
+//  工具函数
 // ============================================================================
 const getStatusText = (status: string) => {
     const map: Record<string, string> = {
@@ -332,7 +332,7 @@ const getAppealStatusType = (
 }
 
 // ============================================================================
-// 🔥 API 调用
+//  API 调用
 // ============================================================================
 const fetchStats = async () => {
     try {
@@ -347,7 +347,7 @@ const fetchStats = async () => {
     }
 }
 
-// 🔥 获取趋势数据（✅ 只请求一次）
+//  获取趋势数据（✅ 只请求一次）
 const fetchTrendData = async () => {
     try {
         const res = await adminApi.getDashboardTrend()
@@ -360,14 +360,14 @@ const fetchTrendData = async () => {
 }
 
 // ============================================================================
-// 🔥 图表渲染
+//  图表渲染
 // ============================================================================
 const renderCharts = () => {
     renderTrendChart()
     renderCategoryChart()
 }
 
-// 🔥 渲染趋势折线图（✅ 同时显示订单+用户两条线）
+//  渲染趋势折线图（✅ 同时显示订单+用户两条线）
 const renderTrendChart = () => {
     if (!trendChartRef.value) return
 
@@ -416,7 +416,7 @@ const renderTrendChart = () => {
     fetchTrendData()
 }
 
-// 🔥 更新趋势图表数据（✅ 同时更新两条线）
+//  更新趋势图表数据（✅ 同时更新两条线）
 const updateTrendChart = (data: {
     dates: string[]
     orders: number[]
@@ -433,7 +433,7 @@ const updateTrendChart = (data: {
     })
 }
 
-// 🔥 渲染分类饼图
+//  渲染分类饼图
 const renderCategoryChart = () => {
     if (!categoryChartRef.value) return
 
@@ -466,12 +466,12 @@ const renderCategoryChart = () => {
 }
 
 // ============================================================================
-// 🔥 生命周期
+//  生命周期
 // ============================================================================
 onMounted(() => {
     fetchStats()
 
-    // 🔥 每 5 分钟自动刷新
+    //  每 5 分钟自动刷新
     const timer = setInterval(fetchStats, 5 * 60 * 1000)
     onBeforeUnmount(() => clearInterval(timer))
 })

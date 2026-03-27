@@ -3,7 +3,7 @@ import type { Ref } from 'vue';
 import { io, Socket } from 'socket.io-client';
 import { useUserStore } from '@/stores/modules/user'; // 确保你的 user store 已导出类型
 
-// 🔹 类型定义
+//  类型定义
 
 // 消息类型枚举映射
 export type MessageType = 'text' | 'image' | 'file' | 'system';

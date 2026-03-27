@@ -1,12 +1,12 @@
 <template>
     <div class="w-90% md:w-60% my-4 md:my-12 mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl">
 
-        <!-- 🔹 加载状态 -->
+        <!--  加载状态 -->
         <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
             <el-skeleton :rows="10" animated />
         </div>
 
-        <!-- 🔹 商品详情 -->
+        <!--  商品详情 -->
         <div v-else-if="product" class="max-w-5xl mx-auto px-4 py-6">
 
             <!-- 🔸 顶部：返回 + 卖家信息 -->
@@ -41,7 +41,7 @@
             <!-- 🔸 主体内容：左右布局 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                <!-- 🔹 左侧：图片 -->
+                <!--  左侧：图片 -->
                 <div class="space-y-3">
                     <!-- 主图 -->
                     <div class="rounded-2xl overflow-hidden bg-white dark:bg-gray-800">
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <!-- 🔹 右侧：信息 + 操作 -->
+                <!--  右侧：信息 + 操作 -->
                 <div class="space-y-0 bg-[--bg] p-4 rounded-2xl">
 
                     <!-- 价格 + 状态 -->
@@ -140,35 +140,35 @@
                     </div>
 
                     <!-- 操作按钮区（买家） -->
-                    <!-- 🔹 修复后的底部操作栏 -->
-                    <!-- 🔹 底部操作栏 - 4:4:1 比例布局 -->
+                    <!--  修复后的底部操作栏 -->
+                    <!--  底部操作栏 - 4:4:1 比例布局 -->
                     <div v-if="!isSeller"
                         class="pt-4 sticky bottom-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm -mx-4 px-4 py-3 z-10">
 
-                        <!-- 🔥 使用 flex 容器 + gap -->
+                        <!--  使用 flex 容器 + gap -->
                         <div class="flex items-center gap-3 min-w-0">
 
-                            <!-- 🔹 聊一聊 - flex: 4 -->
+                            <!--  聊一聊 - flex: 4 -->
                             <el-button v-if="product.status === 'available'" type="warning" size="large"
                                 class="!rounded-full !px-3 font-medium truncate whitespace-nowrap flex-[4] min-w-0"
                                 @click="handleContact()">
                                 💬 聊一聊
                             </el-button>
 
-                            <!-- 🔹 立即购买 - flex: 4 -->
+                            <!--  立即购买 - flex: 4 -->
                             <el-button v-if="product.status === 'available'" type="primary" size="large"
                                 class="!rounded-full !px-3 font-medium truncate whitespace-nowrap flex-[4] min-w-0 !bg-gray-900 !border-gray-900 hover:!bg-gray-800"
                                 @click="handleBuy">
                                 🛒 立即购买
                             </el-button>
 
-                            <!-- 🔹 已售出 - flex: 8 (占两个按钮的位置) -->
+                            <!--  已售出 - flex: 8 (占两个按钮的位置) -->
                             <el-button v-if="product.status === 'sold'" size="large" disabled
                                 class="!rounded-full !px-3 truncate whitespace-nowrap flex-[8] min-w-0">
                                 ✅ 已售出
                             </el-button>
 
-                            <!-- 🔹 收藏按钮 - flex: 1 -->
+                            <!--  收藏按钮 - flex: 1 -->
                             <FavoriteButton
                                 class="!rounded-full font-medium flex items-center justify-center flex-[1] min-w-0"
                                 size="large" :product-id="product.id" @change="handleFavorite(product.id, $event)">
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <!-- 🔹 404 状态 -->
+        <!--  404 状态 -->
         <div v-else class="flex flex-col items-center justify-center min-h-[60vh]">
             <div class="text-5xl mb-4">🔍</div>
             <h3 class="text-base font-medium text-gray-700 dark:text-gray-200 mb-3">
@@ -221,7 +221,7 @@
             </el-button>
         </div>
 
-        <!-- 🔹 编辑弹窗 -->
+        <!--  编辑弹窗 -->
         <EditProductModal v-if="showEditModal" :product="product" @close="showEditModal = false"
             @success="handleEditSuccess" />
     </div>
@@ -244,14 +244,14 @@ const route = useRoute()
 const userStore = useUserStore()
 const favoriteStore = useFavoriteStore()
 
-// 🔹 状态
+//  状态
 const loading = ref(true)
 const product = ref<any>(null)
 const currentImage = ref('')
 const showEditModal = ref(false)
 const typeOptions = ref<any[]>([])
 
-// 🔹 计算属性
+//  计算属性
 const isSeller = computed(() => {
     return userStore.isLoggedIn && product.value?.seller_id === userStore.userInfo?.id
 })
@@ -275,7 +275,7 @@ const canRepublish = computed(() => {
     return product.value.status === 'deleted' && product.value.review_status === 'approved'
 })
 
-// 🔹 获取商品详情
+//  获取商品详情
 const fetchProductDetail = async () => {
     loading.value = true
     try {
@@ -297,7 +297,7 @@ const fetchProductDetail = async () => {
     }
 }
 
-// 🔹 获取分类列表
+//  获取分类列表
 const getEnabledCategories = async () => {
     try {
         const res: any = await adminCategoryApi.getCategoriesEnabled()
@@ -310,7 +310,7 @@ const getEnabledCategories = async () => {
     }
 }
 
-// 🔹 工具函数
+//  工具函数
 const getCategoryName = (categoryValue?: string) => {
     const category = typeOptions.value.find((cat) =>
         cat.value === categoryValue ||
@@ -365,7 +365,7 @@ const formatRelativeTime = (date: string) => {
     return formatDate(date)
 }
 
-// 🔹 操作处理
+//  操作处理
 const handleEdit = () => {
     if (!userStore.isLoggedIn) {
         ElMessage.warning('请先登录')
@@ -477,7 +477,7 @@ const handleEditSuccess = () => {
     fetchProductDetail()
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(() => {
     fetchProductDetail()
     getEnabledCategories()

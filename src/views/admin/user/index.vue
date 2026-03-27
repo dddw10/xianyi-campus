@@ -2,7 +2,7 @@
 <template>
     <div class="flex flex-col p-4 sm:p-6 space-y-6 h-full">
 
-        <!-- 🔹 页面头部 -->
+        <!--  页面头部 -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-[var(--el-text-color-primary)]">
@@ -17,7 +17,7 @@
             </el-button>
         </div>
 
-        <!-- 🔹 搜索筛选栏 -->
+        <!--  搜索筛选栏 -->
         <div class="w-full">
             <div class="flex flex-col ">
                 <el-row :gutter="20">
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <!-- 🔹 批量操作栏（选中时显示） -->
+        <!--  批量操作栏（选中时显示） -->
         <!-- <div v-if="selectedRows.length > 0"
             class="flex items-center gap-3 p-3 bg-[var(--el-fill-color-light)] rounded-lg">
             <span class="text-sm text-[var(--el-text-color-secondary)]">
@@ -92,7 +92,7 @@
             </el-button>
         </div> -->
 
-        <!-- 🔹 用户列表表格 -->
+        <!--  用户列表表格 -->
         <div class="flex-1 flex flex-col">
             <el-table v-loading="loading" :data="userList" class="flex-1" :header-cell-class-name="darkHeaderClass">
                 <!-- @selection-change="handleSelectionChange" -->
@@ -227,7 +227,7 @@
                 @current-change="handlePageChange" @size-change="handlePageSizeChange" class="mt-4" />
         </div>
 
-        <!-- 🔹 用户详情弹窗 -->
+        <!--  用户详情弹窗 -->
         <el-dialog v-model="showDetailModal" title="👤 用户详情" width="600px" :close-on-click-modal="false"
             class="w-90% md:w-60%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" append-to-body>
             <div v-if="currentUser" class="space-y-4">
@@ -325,7 +325,7 @@
             </template>
         </el-dialog>
 
-        <!-- 🔹 编辑用户弹窗 -->
+        <!--  编辑用户弹窗 -->
         <el-dialog v-model="showEditModal" :title="isCreateMode ? '➕ 新增用户' : '✏️ 编辑用户'" :close-on-click-modal="false"
             class="w-90% md:w-60%  mx-auto bg-[--card] rounded-2xl shadow-2xl" append-to-body>
             <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-position="top" class="space-y-4">
@@ -388,7 +388,7 @@
             </template>
         </el-dialog>
 
-        <!-- 🔹 重置密码弹窗 -->
+        <!--  重置密码弹窗 -->
         <el-dialog v-model="showResetModal" title="🔑 重置密码" width="400px" :close-on-click-modal="false"
             class="w-90% md:w-60%  mx-auto bg-[--bg-elevated] rounded-2xl shadow-2xl" append-to-body>
             <el-alert title="重置后用户需使用新密码登录，首次登录需修改密码" type="warning" :closable="false" class="mb-4" />
@@ -419,7 +419,7 @@ import { User, Search } from '@element-plus/icons-vue'
 import adminUserApi from '@/api/admin/user'
 import { modalBox } from "@/components/messageBox/modalBox";
 
-// 🔹 状态
+//  状态
 const loading = ref(false)
 const submitting = ref(false)
 // const selectedRows = ref<any[]>([])
@@ -430,7 +430,7 @@ const isCreateMode = ref(false)
 const currentUser = ref<any>(null)
 const editFormRef = ref<FormInstance>()
 
-// 🔹 筛选条件
+//  筛选条件
 const filters = reactive({
     studentId: '',
     keyword: '',
@@ -438,17 +438,17 @@ const filters = reactive({
     role: ''
 })
 
-// 🔹 分页
+//  分页
 const pagination = reactive({
     page: 1,
     limit: 20,
     total: 0
 })
 
-// 🔹 用户列表
+//  用户列表
 const userList = ref<any[]>([])
 
-// 🔹 编辑表单
+//  编辑表单
 const editForm = reactive({
     id: undefined as number | undefined,
     studentId: '',
@@ -461,7 +461,7 @@ const editForm = reactive({
     enabled: true
 })
 
-// 🔹 表单校验规则
+//  表单校验规则
 const editRules: FormRules = {
     studentId: [
         { required: true, message: '请输入学号', trigger: 'blur' },
@@ -479,11 +479,11 @@ const editRules: FormRules = {
     ]
 }
 
-// 🔹 重置密码
+//  重置密码
 const resetPassword = ref('')
 const resetTargetId = ref<number | undefined>()
 
-// 🔹 获取用户列表
+//  获取用户列表
 const fetchUserList = async () => {
     loading.value = true
     try {
@@ -507,13 +507,13 @@ const fetchUserList = async () => {
     }
 }
 
-// 🔹 搜索
+//  搜索
 const handleSearch = () => {
     pagination.page = 1
     fetchUserList()
 }
 
-// 🔹 重置筛选
+//  重置筛选
 const handleReset = () => {
     Object.assign(filters, {
         studentId: '',
@@ -525,7 +525,7 @@ const handleReset = () => {
     fetchUserList()
 }
 
-// 🔹 分页变化
+//  分页变化
 const handlePageChange = (page: number) => {
     pagination.page = page
     fetchUserList()
@@ -537,12 +537,12 @@ const handlePageSizeChange = (limit: number) => {
     fetchUserList()
 }
 
-// 🔹 多选
+//  多选
 // const handleSelectionChange = (rows: any[]) => {
 //     selectedRows.value = rows
 // }
 
-// // 🔹 批量禁用
+// //  批量禁用
 // const handleBatchDisable = async () => {
 //     if (selectedRows.value.length === 0) return
 
@@ -570,7 +570,7 @@ const handlePageSizeChange = (limit: number) => {
 //     }
 // }
 
-// // 🔹 批量启用
+// //  批量启用
 // const handleBatchEnable = async () => {
 //     if (selectedRows.value.length === 0) return
 
@@ -598,7 +598,7 @@ const handlePageSizeChange = (limit: number) => {
 //     }
 // }
 
-// 🔹 单个状态切换
+//  单个状态切换
 // const handleStatusChange = async (row: any) => {
 //     row.loading = true
 //     try {
@@ -618,7 +618,7 @@ const handlePageSizeChange = (limit: number) => {
 //     }
 // }
 
-// 🔹 更多操作
+//  更多操作
 const handleCommand = async (command: string, row: any) => {
     switch (command) {
         case 'resetPassword':
@@ -666,13 +666,13 @@ const handleCommand = async (command: string, row: any) => {
     }
 }
 
-// 🔹 打开详情
+//  打开详情
 const openUserDetail = (row: any) => {
     currentUser.value = row
     showDetailModal.value = true
 }
 
-// 🔹 打开编辑/创建
+//  打开编辑/创建
 const openEditModal = (row?: any) => {
     isCreateMode.value = !row
     resetEditForm()
@@ -690,7 +690,7 @@ const openEditModal = (row?: any) => {
         })
     }
 
-    // 🔥 动态设置密码校验规则
+    //  动态设置密码校验规则
     editRules.password = isCreateMode.value
         ? [
             { required: true, message: '请输入密码', trigger: 'blur' },
@@ -705,12 +705,12 @@ const openEditModal = (row?: any) => {
     showEditModal.value = true
 }
 
-// 🔹 打开创建
+//  打开创建
 const openCreateModal = () => {
     openEditModal()
 }
 
-// 🔹 重置编辑表单
+//  重置编辑表单
 const resetEditForm = () => {
     Object.assign(editForm, {
         id: undefined,
@@ -726,7 +726,7 @@ const resetEditForm = () => {
     editFormRef.value?.clearValidate()
 }
 
-// 🔹 提交编辑/创建
+//  提交编辑/创建
 const handleSubmit = async () => {
     if (!editFormRef.value) return
 
@@ -734,10 +734,10 @@ const handleSubmit = async () => {
         await editFormRef.value.validate()
         submitting.value = true
 
-        // 🔥 修复：用解构分离 password，保持类型正确
+        //  修复：用解构分离 password，保持类型正确
         const { password, ...submitData } = editForm
 
-        // 🔥 创建时包含密码，编辑时排除密码
+        //  创建时包含密码，编辑时排除密码
         const res = isCreateMode.value
             ? await adminUserApi.createUser({
                 studentId: submitData.studentId,
@@ -747,7 +747,7 @@ const handleSubmit = async () => {
                 phone: submitData.phone,
                 creditScore: submitData.creditScore,
                 enabled: submitData.enabled,
-                password: password || undefined  // 🔥 空密码转为 undefined
+                password: password || undefined  //  空密码转为 undefined
             })
             : await adminUserApi.updateUser(editForm.id!, {
                 nickname: submitData.nickname,
@@ -756,7 +756,7 @@ const handleSubmit = async () => {
                 role: submitData.role,
                 creditScore: submitData.creditScore,
                 enabled: submitData.enabled
-                // 🔥 编辑时不包含 password
+                //  编辑时不包含 password
             })
 
         if ((res as any).code === 200) {
@@ -772,7 +772,7 @@ const handleSubmit = async () => {
     }
 }
 
-// 🔹 重置密码
+//  重置密码
 const handleResetPassword = async () => {
     if (!resetTargetId.value || resetPassword.value.length < 7) {
         ElMessage.warning('请输入有效的新密码')
@@ -795,7 +795,7 @@ const handleResetPassword = async () => {
     }
 }
 
-// 🔹 辅助函数
+//  辅助函数
 const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return '-'
     return new Date(dateStr).toLocaleString('zh-CN', {
@@ -844,7 +844,7 @@ const darkHeaderClass = (): string => {
     return 'dark:bg-[var(--el-fill-color-dark)] dark:text-[var(--el-text-color-primary)]'
 }
 
-// 🔹 初始化
+//  初始化
 onMounted(() => {
     fetchUserList()
 })

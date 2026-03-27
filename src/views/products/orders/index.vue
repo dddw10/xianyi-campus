@@ -54,7 +54,7 @@ const publishRef = ref<InstanceType<typeof PublishGoods>>()
 const boughtRef = ref<InstanceType<typeof BoughtOrders>>()
 const soldRef = ref<InstanceType<typeof SoldOrders>>()
 
-// 🔥 类型守卫：校验 tab 名称是否合法
+//  类型守卫：校验 tab 名称是否合法
 const isValidTab = (name: TabPaneName): name is OrderTab => {
     return ['published', 'bought', 'sold'].includes(name as OrderTab)
 }
@@ -73,7 +73,7 @@ watch(
     }
 )
 
-// 🔥 修复：参数类型用 TabPaneName，内部校验后使用
+//  修复：参数类型用 TabPaneName，内部校验后使用
 const handleTabChange = (name: TabPaneName) => {
     if (!isValidTab(name)) {
         console.warn('⚠️ 非法的 tab 名称:', name)
