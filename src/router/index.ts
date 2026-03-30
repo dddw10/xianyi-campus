@@ -57,6 +57,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '首页', public: true }
       },
       {
+        path: 'users/:id',
+        name: 'user-home',
+        component: () => import('@/views/user/public-profile/index.vue'),
+        meta: { title: '用户主页', public: true }
+      },
+      {
         path: '/pay/result',
         name: 'PayResult',
         component: () => import('@/views/pay/result.vue'),

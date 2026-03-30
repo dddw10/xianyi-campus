@@ -16,9 +16,13 @@
                 </el-button>
 
                 <div class="flex items-center gap-3">
-                    <el-avatar :size="36" :src="product.seller_avatar" class="!bg-blue-100">
-                        {{ product.seller_nickname?.[0] || 'U' }}
-                    </el-avatar>
+                    <button type="button" class="rounded-full focus:outline-none flex"
+                        :class="isSeller ? 'cursor-default' : 'cursor-pointer'" :disabled="isSeller"
+                        @click="handleOpenSellerHome">
+                        <el-avatar :size="36" :src="product.seller_avatar" class="!bg-blue-100 ">
+                            {{ product.seller_nickname?.[0] || 'U' }}
+                        </el-avatar>
+                    </button>
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="font-medium text-gray-800 dark:text-gray-100 text-sm">
@@ -27,11 +31,13 @@
                             <el-tag size="small" type="success" class="!rounded-full !h-5 !text-xs">
                                 ✓ 实名
                             </el-tag>
+
                         </div>
                         <div class="flex items-center gap-2 text-xs text-gray-400">
-                            <span>📍 {{ product.seller_location || '未知' }}</span>
-                            <span>•</span>
                             <span>{{ formatRelativeTime(product.created_at) }}</span>
+                            <el-tag size="small" type="warning" class="!rounded-full !h-5 !text-xs">
+                                信用分 {{ sellerCreditScoreDisplay }}
+                            </el-tag>
                         </div>
                     </div>
                     <!-- <el-button size="small" class="!rounded-full !ml-2">关注</el-button> -->
@@ -124,12 +130,7 @@
 
                     <!-- 交易信息 -->
                     <div class="py-4 border-b border-gray-200 dark:border-gray-700">
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="text-gray-500">发货地</span>
-                                <p class="text-gray-800 dark:text-gray-200 mt-1">{{ product.seller_location || '未知' }}
-                                </p>
-                            </div>
+                        <div class="grid grid-cols-1 gap-4 text-sm">
                             <div>
                                 <span class="text-gray-500">运费</span>
                                 <p class="text-gray-800 dark:text-gray-200 mt-1">{{ product.shipping_fee ?
@@ -273,6 +274,28 @@ const canDelete = computed(() => {
 const canRepublish = computed(() => {
     if (!product.value) return false
     return product.value.status === 'deleted' && product.value.review_status === 'approved'
+})
+
+const sellerCreditScoreDisplay = computed(() => {
+    if (!product.value) return '--'
+
+    const candidates = [
+        product.value.seller_credit_score,
+        product.value.sellerCreditScore,
+        product.value.seller_credit,
+        product.value.sellerCredit,
+        product.value.creditScore,
+        product.value.credit_score
+    ]
+
+    for (const raw of candidates) {
+        const num = Number(raw)
+        if (Number.isFinite(num)) {
+            return String(Math.max(0, Math.min(100, Math.round(num))))
+        }
+    }
+
+    return '--'
 })
 
 //  获取商品详情
@@ -448,6 +471,29 @@ const handleContact = () => {
         path: '/main/chat',
         query: { targetId: product.value.seller_id, type: 'product', bizId: product.value.id }
     });
+}
+
+const handleOpenSellerHome = () => {
+    if (!product.value?.seller_id) {
+        ElMessage.warning('暂无法查看该用户主页')
+        return
+    }
+
+    if (isSeller.value) {
+        router.push('/main/profile')
+        return
+    }
+
+    router.push({
+        name: 'user-home',
+        params: { id: String(product.value.seller_id) },
+        query: {
+            nickname: String(product.value.seller_nickname || ''),
+            avatar: String(product.value.seller_avatar || ''),
+            studentId: String(product.value.seller_student_id || ''),
+            creditScore: sellerCreditScoreDisplay.value
+        }
+    })
 }
 
 const handleFavorite = (productId: number, favorited: boolean): void => {
