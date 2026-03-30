@@ -82,7 +82,7 @@
                                 {{ stats.appeals?.pending ?? 0 }}
                             </p>
                             <p class="text-xs text-gray-400 mt-1">
-                                {{ stats.reports?.pending ?? 0 }} 待处理举报
+                                {{ stats.appeals?.pending ?? 0 }} 待处理举报
                             </p>
                         </div>
                         <el-icon class="text-4xl text-red-200">
@@ -158,7 +158,8 @@
                     <template #header>
                         <div class="flex items-center justify-between">
                             <span class="font-medium">📋 最新订单</span>
-                            <el-button link type="primary" size="small" @click="$router.push('/admin/orders')">
+                            <el-button link type="primary" size="small"
+                                @click="$router.push('/admin/order-management')">
                                 查看更多
                             </el-button>
                         </div>
@@ -194,7 +195,8 @@
                     <template #header>
                         <div class="flex items-center justify-between">
                             <span class="font-medium">⚠️ 最新申诉</span>
-                            <el-button link type="primary" size="small" @click="$router.push('/admin/appeals')">
+                            <el-button link type="primary" size="small"
+                                @click="$router.push('/admin/report-management')">
                                 查看更多
                             </el-button>
                         </div>
@@ -257,7 +259,7 @@ const quickActions = computed(() => [
     {
         label: '待审核申诉',
         desc: `${stats.value?.appeals?.pending ?? 0} 条待处理`,
-        path: '/admin/appeals',
+        path: '/admin/report-management',
         type: 'warning' as const,
         icon: 'Warning' as const,
     },
@@ -277,8 +279,8 @@ const quickActions = computed(() => [
     },
     {
         label: '待处理举报',
-        desc: `${stats.value?.reports?.pending ?? 0} 条待处理`,
-        path: '/admin/reports',
+        desc: `${stats.value?.appeals?.pending ?? 0} 条待处理`,
+        path: '/admin/report-management',
         type: 'danger' as const,
         icon: 'Warning' as const,
     },

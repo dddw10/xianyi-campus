@@ -193,7 +193,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
     Management, User, Close, Expand,
-    Odometer, Checked, Goods, Warning,
+    Odometer, Checked, Goods, Warning, List,
     SwitchButton, ArrowDown,
     Picture,
     QuestionFilled
@@ -269,6 +269,11 @@ const menuItems: MenuItem[] = [
         path: '/admin/product-review',
         title: '📦 商品审核',
         icon: markRaw(Checked),
+    },
+    {
+        path: '/admin/order-management',
+        title: '🧾 订单管理',
+        icon: markRaw(List),
     },
     {
         path: '/admin/report-management',

@@ -30,6 +30,7 @@ const componentMap: Record<string, any> = {
   'AdminUserReview': () => import('@/views/admin/user/review.vue'),
   'AdminUserManagement': () => import('@/views/admin/user/index.vue'),
   'AdminProductReview': () => import('@/views/admin/product/review.vue'),
+  'AdminOrderManagement': () => import('@/views/admin/order/index.vue'),
   'AdminReportManagement': () => import('@/views/admin/report/index.vue'),
   'AdminHomePosters': () => import('@/views/admin/home/poster-management/index.vue'),
   'AdminHomeFaqs': () => import('@/views/admin/home/faq-management/index.vue'),
@@ -79,7 +80,15 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/AdminLayout.vue'),  //  使用后台布局
     meta: { requiresAuth: true, requiresAdmin: true, isBackend: true },
     redirect: '/admin/dashboard',
-    children: []  //  动态路由通过 addDynamicRoutes 添加到这里
+    children: [
+      // 订单管理采用静态兜底，避免后端未下发动态路由时出现 404
+      {
+        path: 'order-management',
+        name: 'AdminOrderManagement',
+        component: () => import('@/views/admin/order/index.vue'),
+        meta: { title: '订单管理', requiresAuth: true, requiresAdmin: true }
+      }
+    ]  //  其他动态路由通过 addDynamicRoutes 添加到这里
   },
 
   // ==================== 认证布局 ====================
@@ -178,6 +187,11 @@ export function addDynamicRoutes(dynamicRoutes: any[]) {
 
   dynamicRoutes.forEach((route: any) => {
     console.log(`\n🔄 处理路由: ${route.name}, path: ${route.path}`)
+
+    if (route?.name && router.hasRoute(route.name)) {
+      console.log(`  ⏭️ 已存在同名路由，跳过: ${route.name}`)
+      return
+    }
 
     // 1. 转换 component 字符串
     if (typeof route.component === 'string') {

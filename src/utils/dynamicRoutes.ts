@@ -61,6 +61,12 @@ function buildAdminRoutes(): DynamicRoute[] {
             meta: { title: 'Product Review', requiresAdmin: true }
         },
         {
+            path: '/admin/order-management',
+            name: 'AdminOrderManagement',
+            component: 'AdminOrderManagement',
+            meta: { title: 'Order Management', requiresAdmin: true }
+        },
+        {
             path: '/admin/report-management',
             name: 'AdminReportManagement',
             component: 'AdminReportManagement',
