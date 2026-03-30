@@ -16,8 +16,8 @@
         <!--  修复：传递所有必需的 props 给 OrderList -->
         <OrderList :list="orderList" :loading="loading" :pagination="pagination" :empty-text="getEmptyText(tabPosition)"
             :list-type="'sold'" :appeal-owner-hints="appealOwnerHints" @page-change="handlePageChange"
-            @refresh-list="fetchOrders" @ship-order="handleShipOrder" @appeal-order="handleAppeal"
-            class="flex-1 ml-0 md:ml-4" />
+            @refresh-list="fetchOrders" @cancel-order="handleCancelOrder" @ship-order="handleShipOrder"
+            @appeal-order="handleAppeal" class="flex-1 ml-0 md:ml-4" />
 
         <AppealDialog v-model:visible="appealDialogVisible" :order-no="currentOrderNo"
             @submitted="handleAppealSubmitted" @closed="handleAppealClosed" />
@@ -144,6 +144,26 @@ const handleShipOrder = async (orderNo: string) => {
         if (error !== 'cancel') {
             ElMessage.error(error?.message || '发货失败')
         }
+    }
+}
+
+const handleCancelOrder = async (orderNo: string) => {
+    if (!orderNo || orderNo === 'undefined' || orderNo === 'null') {
+        ElMessage.error('订单号异常，请刷新页面重试')
+        return
+    }
+
+    try {
+        const res = await orderApi.updateOrderStatus(orderNo, 'cancelled')
+        if ((res as any)?.code === 200) {
+            ElMessage.success('✅ 订单已取消')
+            await userStore.refreshCurrentUser()
+            fetchOrders()
+        } else {
+            ElMessage.error((res as any)?.msg || '取消失败')
+        }
+    } catch (error: any) {
+        ElMessage.error(error?.response?.data?.msg || error?.message || '取消失败')
     }
 }
 
