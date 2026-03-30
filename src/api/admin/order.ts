@@ -16,6 +16,16 @@ export interface AdminOrderItem {
     seller_name?: string
     amount?: string | number
     payment_amount?: string | number
+    paymentTime?: string
+    payment_time?: string
+    appealStatus?: string
+    appeal_status?: string
+    deliveryProof?: string | string[]
+    delivery_proof?: string | string[]
+    receiveProof?: string | string[]
+    receive_proof?: string | string[]
+    deliveryAddress?: string | Record<string, any>
+    delivery_address?: string | Record<string, any>
     status?: string
     createdAt?: string
     created_at?: string
