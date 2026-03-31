@@ -79,10 +79,10 @@
                         <div>
                             <p class="text-sm text-gray-500">待处理申诉</p>
                             <p class="text-2xl font-bold text-red-600 mt-1">
-                                {{ stats.appeals?.pending ?? 0 }}
+                                {{ pendingAppealCount }}
                             </p>
                             <p class="text-xs text-gray-400 mt-1">
-                                {{ stats.appeals?.pending ?? 0 }} 待处理举报
+                                {{ pendingAppealCount }} 待处理举报
                             </p>
                         </div>
                         <el-icon class="text-4xl text-red-200">
@@ -241,6 +241,7 @@ import {
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import adminApi from '@/api/admin'
+import verifyApi from '@/api/verify'
 
 // ============================================================================
 //  响应式数据
@@ -252,39 +253,110 @@ const categoryChartRef = ref<HTMLElement>()
 let trendChart: echarts.ECharts | null = null
 let categoryChart: echarts.ECharts | null = null
 
+const toNumberOrNull = (value: unknown): number | null => {
+    if (value === null || value === undefined || value === '') return null
+    const n = Number(value)
+    return Number.isFinite(n) && n >= 0 ? n : null
+}
+
+const pickFirstNumber = (...values: unknown[]): number => {
+    for (const value of values) {
+        const parsed = toNumberOrNull(value)
+        if (parsed !== null) return parsed
+    }
+    return 0
+}
+
+const pendingAppealCount = computed(() => pickFirstNumber(
+    stats.value?.appeals?.pending,
+    stats.value?.appeals?.pending_count,
+    stats.value?.appeals?.pendingCount,
+    stats.value?.reports?.pending,
+    stats.value?.reports?.pending_count,
+    stats.value?.reports?.pendingCount,
+    stats.value?.pendingAppeals,
+    stats.value?.pending_appeals
+))
+
+const pendingProductCount = computed(() => pickFirstNumber(
+    stats.value?.products?.pendingReview,
+    stats.value?.products?.pending_review,
+    stats.value?.products?.pendingCount,
+    stats.value?.products?.pending_count,
+    stats.value?.pendingProducts,
+    stats.value?.pending_products
+))
+
+const pendingUserCount = ref(0)
+
+const resolvePendingUserCountFromStats = (data: any): number => {
+    return pickFirstNumber(
+        data?.users?.pendingReview,
+        data?.users?.pending_review,
+        data?.users?.pendingCount,
+        data?.users?.pending_count,
+        data?.users?.pending,
+        data?.verify?.pending,
+        data?.verify?.pending_count,
+        data?.verify?.pendingCount,
+        data?.pendingUsers,
+        data?.pending_users
+    )
+}
+
 // ============================================================================
 //  快捷操作配置（✅ computed 自动响应式更新）
 // ============================================================================
 const quickActions = computed(() => [
     {
         label: '待审核申诉',
-        desc: `${stats.value?.appeals?.pending ?? 0} 条待处理`,
+        desc: `${pendingAppealCount.value} 条待处理`,
         path: '/admin/report-management',
         type: 'warning' as const,
         icon: 'Warning' as const,
     },
     {
         label: '待审核用户',
-        desc: '身份认证审核',
+        desc: `${pendingUserCount.value} 份待审核`,
         path: '/admin/user-review',
         type: 'primary' as const,
         icon: 'User' as const,
     },
     {
         label: '待审核商品',
-        desc: `${stats.value?.products?.pendingReview ?? 0} 件待上架`,
+        desc: `${pendingProductCount.value} 件待上架`,
         path: '/admin/product-review',
         type: 'success' as const,
         icon: 'Goods' as const,
     },
     {
         label: '待处理举报',
-        desc: `${stats.value?.appeals?.pending ?? 0} 条待处理`,
+        desc: `${pendingAppealCount.value} 条待处理`,
         path: '/admin/report-management',
         type: 'danger' as const,
         icon: 'Warning' as const,
     },
 ])
+
+const fetchPendingUserCount = async () => {
+    try {
+        const res: any = await verifyApi.getPendingList({
+            page: 1,
+            limit: 1
+        })
+        if (res.code === 200) {
+            pendingUserCount.value = pickFirstNumber(
+                res.data?.pagination?.total,
+                res.data?.total,
+                res.data?.pending_count,
+                res.data?.pendingCount,
+                pendingUserCount.value
+            )
+        }
+    } catch (error: any) {
+        console.warn('获取待审核用户数量失败:', error)
+    }
+}
 
 // ============================================================================
 //  工具函数
@@ -341,8 +413,10 @@ const fetchStats = async () => {
         const res = await adminApi.getDashboardStats()
         if ((res as any).code === 200) {
             stats.value = res.data
+            pendingUserCount.value = resolvePendingUserCountFromStats(res.data)
             lastUpdateTime.value = new Date().toLocaleTimeString('zh-CN')
             renderCharts()
+            fetchPendingUserCount()
         }
     } catch (error: any) {
         console.error('❌ 获取数据面板失败:', error)

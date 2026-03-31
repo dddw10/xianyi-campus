@@ -226,6 +226,51 @@ const tableData = ref<tableDataType>({
     }
 })
 
+const toNumber = (value: unknown, fallback = 0): number => {
+    const n = Number(value)
+    return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
+const normalizePendingProductsData = (data: any): tableDataType => {
+    const list = Array.isArray(data?.list)
+        ? data.list
+        : Array.isArray(data?.rows)
+            ? data.rows
+            : []
+
+    const paginationData = data?.pagination || {}
+    const page = toNumber(
+        paginationData.page ?? data?.page ?? pagination.page,
+        pagination.page
+    )
+    const limit = toNumber(
+        paginationData.limit ?? data?.limit ?? pagination.limit,
+        pagination.limit
+    )
+    const totalCount = toNumber(
+        paginationData.total ??
+        data?.total ??
+        data?.pending_count ??
+        data?.pendingCount ??
+        list.length,
+        0
+    )
+    const pages = toNumber(
+        paginationData.pages ?? data?.pages ?? Math.ceil(totalCount / Math.max(limit, 1)),
+        0
+    )
+
+    return {
+        list,
+        pagination: {
+            page,
+            limit,
+            total: totalCount,
+            pages
+        }
+    }
+}
+
 
 // 获取类型选择的options的方法
 const getEnabledCategories = async () => {
@@ -245,7 +290,9 @@ const LoadPendingProducts = async () => {
     try {
         const res: any = await adminApi.getLoadPendingProducts(pagination)
         if (res.code === 200) {
-            tableData.value = res.data
+            const normalizedData = normalizePendingProductsData(res.data)
+            tableData.value = normalizedData
+            total.value = normalizedData.pagination.total
             ElMessage.success('获取成功')
         }
     } catch {
